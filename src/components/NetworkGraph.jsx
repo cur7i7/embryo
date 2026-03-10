@@ -243,6 +243,9 @@ function NetworkGraph({
       .transition(transition)
       .attr('r', (d) => d.radius)
       .attr('fill', (d) => d.color)
+      .attr('stroke', NODE_STROKE)
+      .attr('stroke-width', 1.2)
+      .style('filter', 'none')
 
     nodeSelection
       .select('text')
@@ -250,7 +253,6 @@ function NetworkGraph({
       .transition(transition)
       .attr('y', (d) => d.radius + 13)
 
-    applySelectionStyle(nodeSelection, selectedArtistName)
     nodeSelectionRef.current = nodeSelection
 
     if (simulationRef.current) {
@@ -298,13 +300,13 @@ function NetworkGraph({
     return () => {
       simulation.stop()
     }
-  }, [nodes, connections, dimensions, onSelectArtist, selectedArtistName])
+  }, [nodes, connections, dimensions, onSelectArtist])
 
   useEffect(() => {
     if (nodeSelectionRef.current) {
       applySelectionStyle(nodeSelectionRef.current, selectedArtistName)
     }
-  }, [selectedArtistName])
+  }, [selectedArtistName, nodes])
 
   return (
     <div
