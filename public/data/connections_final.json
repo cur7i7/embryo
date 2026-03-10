@@ -1,0 +1,1852 @@
+[
+  {
+    "source_id": "artist_0000",
+    "target_id": "artist_0001",
+    "source_name": "Claudio Monteverdi",
+    "target_name": "Heinrich Schütz",
+    "type": "influence",
+    "confidence": 0.8,
+    "evidence": "Schütz studied Monteverdi's Venetian style",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0003",
+    "target_id": "artist_0006",
+    "source_name": "Arcangelo Corelli",
+    "target_name": "Antonio Vivaldi",
+    "type": "influence",
+    "confidence": 0.85,
+    "evidence": "Corelli's concerto grosso form shaped Vivaldi",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0003",
+    "target_id": "artist_0010",
+    "source_name": "Arcangelo Corelli",
+    "target_name": "George Frideric Handel",
+    "type": "influence",
+    "confidence": 0.8,
+    "evidence": "Handel studied Corelli's style in Rome",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0006",
+    "target_id": "artist_0009",
+    "source_name": "Antonio Vivaldi",
+    "target_name": "Johann Sebastian Bach",
+    "type": "influence",
+    "confidence": 0.95,
+    "evidence": "Bach transcribed multiple Vivaldi concertos",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0010",
+    "target_id": "artist_0009",
+    "source_name": "George Frideric Handel",
+    "target_name": "Johann Sebastian Bach",
+    "type": "influence",
+    "confidence": 0.7,
+    "evidence": "Baroque contemporaries, mutual awareness of works",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0005",
+    "target_id": "artist_0011",
+    "source_name": "Alessandro Scarlatti",
+    "target_name": "Domenico Scarlatti",
+    "type": "teacher",
+    "confidence": 1.0,
+    "evidence": "Father taught son in Naples",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0005",
+    "target_id": "artist_0010",
+    "source_name": "Alessandro Scarlatti",
+    "target_name": "George Frideric Handel",
+    "type": "peer",
+    "confidence": 0.8,
+    "evidence": "Met and worked in same circles in Italy",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0002",
+    "target_id": "artist_0008",
+    "source_name": "Jean-Baptiste Lully",
+    "target_name": "Jean-Philippe Rameau",
+    "type": "influence",
+    "confidence": 0.85,
+    "evidence": "Lully established French operatic tradition Rameau inherited",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0007",
+    "target_id": "artist_0009",
+    "source_name": "Georg Philipp Telemann",
+    "target_name": "Johann Sebastian Bach",
+    "type": "peer",
+    "confidence": 0.9,
+    "evidence": "Close friends; Bach was godfather to Telemann's son",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0007",
+    "target_id": "artist_0010",
+    "source_name": "Georg Philipp Telemann",
+    "target_name": "George Frideric Handel",
+    "type": "peer",
+    "confidence": 0.85,
+    "evidence": "Lifelong friends from student days in Halle",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0004",
+    "target_id": "artist_0010",
+    "source_name": "Henry Purcell",
+    "target_name": "George Frideric Handel",
+    "type": "influence",
+    "confidence": 0.75,
+    "evidence": "Purcell's English style influenced Handel's oratorios",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0009",
+    "target_id": "artist_0014",
+    "source_name": "Johann Sebastian Bach",
+    "target_name": "Carl Philipp Emanuel Bach",
+    "type": "teacher",
+    "confidence": 1.0,
+    "evidence": "Father taught son",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0009",
+    "target_id": "artist_0016",
+    "source_name": "Johann Sebastian Bach",
+    "target_name": "Johann Christian Bach",
+    "type": "teacher",
+    "confidence": 1.0,
+    "evidence": "Father taught son",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0014",
+    "target_id": "artist_0015",
+    "source_name": "Carl Philipp Emanuel Bach",
+    "target_name": "Joseph Haydn",
+    "type": "influence",
+    "confidence": 0.9,
+    "evidence": "CPE Bach's keyboard works deeply influenced Haydn",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0014",
+    "target_id": "artist_0020",
+    "source_name": "Carl Philipp Emanuel Bach",
+    "target_name": "Wolfgang Amadeus Mozart",
+    "type": "influence",
+    "confidence": 0.8,
+    "evidence": "Mozart studied CPE Bach's treatises",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0016",
+    "target_id": "artist_0020",
+    "source_name": "Johann Christian Bach",
+    "target_name": "Wolfgang Amadeus Mozart",
+    "type": "influence",
+    "confidence": 0.9,
+    "evidence": "Young Mozart met JC Bach in London; profound impact",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0015",
+    "target_id": "artist_0020",
+    "source_name": "Joseph Haydn",
+    "target_name": "Wolfgang Amadeus Mozart",
+    "type": "peer",
+    "confidence": 0.95,
+    "evidence": "Close friends in Vienna; mutual admiration",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0015",
+    "target_id": "artist_0021",
+    "source_name": "Joseph Haydn",
+    "target_name": "Ludwig van Beethoven",
+    "type": "teacher",
+    "confidence": 0.95,
+    "evidence": "Haydn taught Beethoven counterpoint in Vienna 1792-94",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0020",
+    "target_id": "artist_0021",
+    "source_name": "Wolfgang Amadeus Mozart",
+    "target_name": "Ludwig van Beethoven",
+    "type": "influence",
+    "confidence": 0.9,
+    "evidence": "Beethoven studied and revered Mozart's works",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0018",
+    "target_id": "artist_0021",
+    "source_name": "Antonio Salieri",
+    "target_name": "Ludwig van Beethoven",
+    "type": "teacher",
+    "confidence": 0.85,
+    "evidence": "Salieri taught Beethoven vocal composition in Vienna",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0018",
+    "target_id": "artist_0026",
+    "source_name": "Antonio Salieri",
+    "target_name": "Franz Schubert",
+    "type": "teacher",
+    "confidence": 0.9,
+    "evidence": "Salieri taught Schubert at the Imperial Seminary",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0018",
+    "target_id": "artist_0034",
+    "source_name": "Antonio Salieri",
+    "target_name": "Franz Liszt",
+    "type": "teacher",
+    "confidence": 0.85,
+    "evidence": "Salieri taught young Liszt composition in Vienna",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0019",
+    "target_id": "artist_0021",
+    "source_name": "Muzio Clementi",
+    "target_name": "Ludwig van Beethoven",
+    "type": "influence",
+    "confidence": 0.8,
+    "evidence": "Clementi's piano sonatas influenced Beethoven",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0013",
+    "target_id": "artist_0020",
+    "source_name": "Christoph Willibald Gluck",
+    "target_name": "Wolfgang Amadeus Mozart",
+    "type": "influence",
+    "confidence": 0.8,
+    "evidence": "Gluck's operatic reforms influenced Mozart's operas",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0009",
+    "target_id": "artist_0020",
+    "source_name": "Johann Sebastian Bach",
+    "target_name": "Wolfgang Amadeus Mozart",
+    "type": "influence",
+    "confidence": 0.85,
+    "evidence": "Mozart studied Bach's fugues via Baron van Swieten",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0009",
+    "target_id": "artist_0021",
+    "source_name": "Johann Sebastian Bach",
+    "target_name": "Ludwig van Beethoven",
+    "type": "influence",
+    "confidence": 0.9,
+    "evidence": "Bach's Well-Tempered Clavier fundamental to Beethoven",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0009",
+    "target_id": "artist_0031",
+    "source_name": "Johann Sebastian Bach",
+    "target_name": "Felix Mendelssohn",
+    "type": "influence",
+    "confidence": 0.95,
+    "evidence": "Mendelssohn revived Bach's St. Matthew Passion in 1829",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0021",
+    "target_id": "artist_0023",
+    "source_name": "Ludwig van Beethoven",
+    "target_name": "Carl Czerny",
+    "type": "teacher",
+    "confidence": 0.95,
+    "evidence": "Beethoven taught Czerny piano",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0023",
+    "target_id": "artist_0034",
+    "source_name": "Carl Czerny",
+    "target_name": "Franz Liszt",
+    "type": "teacher",
+    "confidence": 0.95,
+    "evidence": "Czerny taught young Liszt piano in Vienna",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0020",
+    "target_id": "artist_0022",
+    "source_name": "Wolfgang Amadeus Mozart",
+    "target_name": "Johann Nepomuk Hummel",
+    "type": "teacher",
+    "confidence": 0.9,
+    "evidence": "Hummel lived in Mozart's house and studied with him",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0021",
+    "target_id": "artist_0026",
+    "source_name": "Ludwig van Beethoven",
+    "target_name": "Franz Schubert",
+    "type": "influence",
+    "confidence": 0.9,
+    "evidence": "Schubert idolized Beethoven; both in Vienna",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0021",
+    "target_id": "artist_0029",
+    "source_name": "Ludwig van Beethoven",
+    "target_name": "Hector Berlioz",
+    "type": "influence",
+    "confidence": 0.9,
+    "evidence": "Berlioz was transformed by hearing Beethoven's symphonies",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0021",
+    "target_id": "artist_0043",
+    "source_name": "Ludwig van Beethoven",
+    "target_name": "Johannes Brahms",
+    "type": "influence",
+    "confidence": 0.9,
+    "evidence": "Brahms seen as Beethoven's symphonic heir",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0021",
+    "target_id": "artist_0035",
+    "source_name": "Ludwig van Beethoven",
+    "target_name": "Richard Wagner",
+    "type": "influence",
+    "confidence": 0.85,
+    "evidence": "Wagner deeply influenced by Beethoven's Ninth",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0021",
+    "target_id": "artist_0034",
+    "source_name": "Ludwig van Beethoven",
+    "target_name": "Franz Liszt",
+    "type": "influence",
+    "confidence": 0.85,
+    "evidence": "Liszt studied under Czerny, carried Beethoven's tradition",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0026",
+    "target_id": "artist_0043",
+    "source_name": "Franz Schubert",
+    "target_name": "Johannes Brahms",
+    "type": "influence",
+    "confidence": 0.85,
+    "evidence": "Brahms edited and championed Schubert's works",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0029",
+    "target_id": "artist_0034",
+    "source_name": "Hector Berlioz",
+    "target_name": "Franz Liszt",
+    "type": "peer",
+    "confidence": 0.9,
+    "evidence": "Close friends; Liszt transcribed Berlioz's symphonies",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0034",
+    "target_id": "artist_0035",
+    "source_name": "Franz Liszt",
+    "target_name": "Richard Wagner",
+    "type": "peer",
+    "confidence": 0.95,
+    "evidence": "Allies and family; Liszt's daughter Cosima married Wagner",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0034",
+    "target_id": "artist_0032",
+    "source_name": "Franz Liszt",
+    "target_name": "Frédéric Chopin",
+    "type": "peer",
+    "confidence": 0.9,
+    "evidence": "Friends and pianistic rivals in Paris",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0034",
+    "target_id": "artist_0043",
+    "source_name": "Franz Liszt",
+    "target_name": "Johannes Brahms",
+    "type": "rivalry",
+    "confidence": 0.85,
+    "evidence": "Opposing camps: New German School vs Traditionalists",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0031",
+    "target_id": "artist_0033",
+    "source_name": "Felix Mendelssohn",
+    "target_name": "Robert Schumann",
+    "type": "peer",
+    "confidence": 0.9,
+    "evidence": "Close friends; Schumann taught at Mendelssohn's Leipzig Conservatory",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0033",
+    "target_id": "artist_0043",
+    "source_name": "Robert Schumann",
+    "target_name": "Johannes Brahms",
+    "type": "peer",
+    "confidence": 0.95,
+    "evidence": "Schumann championed young Brahms: 'New Paths' article 1853",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0033",
+    "target_id": "artist_0032",
+    "source_name": "Robert Schumann",
+    "target_name": "Frédéric Chopin",
+    "type": "peer",
+    "confidence": 0.85,
+    "evidence": "Schumann praised Chopin: 'Hats off, gentlemen, a genius!'",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0033",
+    "target_id": "artist_0037",
+    "source_name": "Robert Schumann",
+    "target_name": "Clara Schumann",
+    "type": "peer",
+    "confidence": 0.95,
+    "evidence": "Married; she premiered many of his works",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0037",
+    "target_id": "artist_0043",
+    "source_name": "Clara Schumann",
+    "target_name": "Johannes Brahms",
+    "type": "peer",
+    "confidence": 0.95,
+    "evidence": "Lifelong close friendship and artistic partnership",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0043",
+    "target_id": "artist_0052",
+    "source_name": "Johannes Brahms",
+    "target_name": "Antonín Dvořák",
+    "type": "teacher",
+    "confidence": 0.9,
+    "evidence": "Brahms mentored and promoted Dvořák internationally",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0043",
+    "target_id": "artist_0041",
+    "source_name": "Johannes Brahms",
+    "target_name": "Anton Bruckner",
+    "type": "rivalry",
+    "confidence": 0.85,
+    "evidence": "Famous artistic rivalry in Vienna",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0035",
+    "target_id": "artist_0041",
+    "source_name": "Richard Wagner",
+    "target_name": "Anton Bruckner",
+    "type": "influence",
+    "confidence": 0.9,
+    "evidence": "Bruckner was a devoted Wagnerian; dedicated Symphony No. 3",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0035",
+    "target_id": "artist_0061",
+    "source_name": "Richard Wagner",
+    "target_name": "Gustav Mahler",
+    "type": "influence",
+    "confidence": 0.9,
+    "evidence": "Wagner's operas deeply shaped Mahler's orchestration",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0035",
+    "target_id": "artist_0063",
+    "source_name": "Richard Wagner",
+    "target_name": "Richard Strauss",
+    "type": "influence",
+    "confidence": 0.9,
+    "evidence": "Strauss extended Wagner's orchestral language",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0035",
+    "target_id": "artist_0062",
+    "source_name": "Richard Wagner",
+    "target_name": "Claude Debussy",
+    "type": "influence",
+    "confidence": 0.8,
+    "evidence": "Debussy was influenced by then reacted against Wagner",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0036",
+    "target_id": "artist_0059",
+    "source_name": "Giuseppe Verdi",
+    "target_name": "Giacomo Puccini",
+    "type": "influence",
+    "confidence": 0.9,
+    "evidence": "Puccini continued Italian opera tradition after Verdi",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0036",
+    "target_id": "artist_0035",
+    "source_name": "Giuseppe Verdi",
+    "target_name": "Richard Wagner",
+    "type": "rivalry",
+    "confidence": 0.8,
+    "evidence": "The great opera rivalry of the 19th century",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0025",
+    "target_id": "artist_0027",
+    "source_name": "Gioachino Rossini",
+    "target_name": "Gaetano Donizetti",
+    "type": "influence",
+    "confidence": 0.85,
+    "evidence": "Rossini's bel canto style shaped Donizetti",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0025",
+    "target_id": "artist_0036",
+    "source_name": "Gioachino Rossini",
+    "target_name": "Giuseppe Verdi",
+    "type": "influence",
+    "confidence": 0.8,
+    "evidence": "Rossini's operatic innovations influenced Verdi",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0028",
+    "target_id": "artist_0035",
+    "source_name": "Vincenzo Bellini",
+    "target_name": "Richard Wagner",
+    "type": "influence",
+    "confidence": 0.75,
+    "evidence": "Wagner admired Bellini's melodic genius",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0028",
+    "target_id": "artist_0032",
+    "source_name": "Vincenzo Bellini",
+    "target_name": "Frédéric Chopin",
+    "type": "influence",
+    "confidence": 0.8,
+    "evidence": "Chopin admired Bellini's vocal lyricism; shaped his piano style",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0032",
+    "target_id": "artist_0062",
+    "source_name": "Frédéric Chopin",
+    "target_name": "Claude Debussy",
+    "type": "influence",
+    "confidence": 0.85,
+    "evidence": "Debussy deeply inspired by Chopin's harmonic language",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0051",
+    "target_id": "artist_0067",
+    "source_name": "Pyotr Ilyich Tchaikovsky",
+    "target_name": "Sergei Rachmaninoff",
+    "type": "influence",
+    "confidence": 0.9,
+    "evidence": "Rachmaninoff deeply admired Tchaikovsky",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0047",
+    "target_id": "artist_0050",
+    "source_name": "Mily Balakirev",
+    "target_name": "Modest Mussorgsky",
+    "type": "teacher",
+    "confidence": 0.85,
+    "evidence": "Balakirev mentored Mussorgsky in composition",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0047",
+    "target_id": "artist_0055",
+    "source_name": "Mily Balakirev",
+    "target_name": "Nikolai Rimsky-Korsakov",
+    "type": "teacher",
+    "confidence": 0.85,
+    "evidence": "Balakirev guided Rimsky-Korsakov's early development",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0050",
+    "target_id": "artist_0062",
+    "source_name": "Modest Mussorgsky",
+    "target_name": "Claude Debussy",
+    "type": "influence",
+    "confidence": 0.8,
+    "evidence": "Debussy admired Mussorgsky's harmonic innovations",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0055",
+    "target_id": "artist_0072",
+    "source_name": "Nikolai Rimsky-Korsakov",
+    "target_name": "Igor Stravinsky",
+    "type": "teacher",
+    "confidence": 0.95,
+    "evidence": "Rimsky-Korsakov was Stravinsky's private composition teacher",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0055",
+    "target_id": "artist_0075",
+    "source_name": "Nikolai Rimsky-Korsakov",
+    "target_name": "Sergei Prokofiev",
+    "type": "influence",
+    "confidence": 0.7,
+    "evidence": "Rimsky's orchestration influenced Prokofiev at the Conservatory",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0061",
+    "target_id": "artist_0063",
+    "source_name": "Gustav Mahler",
+    "target_name": "Richard Strauss",
+    "type": "peer",
+    "confidence": 0.9,
+    "evidence": "Contemporaries with mutual respect and friendly rivalry",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0061",
+    "target_id": "artist_0086",
+    "source_name": "Gustav Mahler",
+    "target_name": "Dmitri Shostakovich",
+    "type": "influence",
+    "confidence": 0.9,
+    "evidence": "Shostakovich profoundly influenced by Mahler's symphonies",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0061",
+    "target_id": "artist_0068",
+    "source_name": "Gustav Mahler",
+    "target_name": "Arnold Schoenberg",
+    "type": "influence",
+    "confidence": 0.8,
+    "evidence": "Mahler championed Schoenberg; Schoenberg admired Mahler",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0062",
+    "target_id": "artist_0070",
+    "source_name": "Claude Debussy",
+    "target_name": "Maurice Ravel",
+    "type": "peer",
+    "confidence": 0.85,
+    "evidence": "Complex relationship; mutual influence and rivalry",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0062",
+    "target_id": "artist_0072",
+    "source_name": "Claude Debussy",
+    "target_name": "Igor Stravinsky",
+    "type": "peer",
+    "confidence": 0.85,
+    "evidence": "Mutual admiration; Debussy premiered at Rite of Spring era",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0056",
+    "target_id": "artist_0070",
+    "source_name": "Gabriel Fauré",
+    "target_name": "Maurice Ravel",
+    "type": "teacher",
+    "confidence": 0.9,
+    "evidence": "Fauré taught Ravel at the Paris Conservatoire",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0056",
+    "target_id": "artist_0062",
+    "source_name": "Gabriel Fauré",
+    "target_name": "Claude Debussy",
+    "type": "peer",
+    "confidence": 0.75,
+    "evidence": "Contemporaries at Paris Conservatoire",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0045",
+    "target_id": "artist_0056",
+    "source_name": "Camille Saint-Saëns",
+    "target_name": "Gabriel Fauré",
+    "type": "teacher",
+    "confidence": 0.85,
+    "evidence": "Saint-Saëns taught Fauré at École Niedermeyer",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0039",
+    "target_id": "artist_0062",
+    "source_name": "César Franck",
+    "target_name": "Claude Debussy",
+    "type": "influence",
+    "confidence": 0.7,
+    "evidence": "Franck's chromaticism influenced young Debussy",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0040",
+    "target_id": "artist_0052",
+    "source_name": "Bedřich Smetana",
+    "target_name": "Antonín Dvořák",
+    "type": "influence",
+    "confidence": 0.85,
+    "evidence": "Smetana founded Czech national music Dvořák continued",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0054",
+    "target_id": "artist_0062",
+    "source_name": "Edvard Grieg",
+    "target_name": "Claude Debussy",
+    "type": "influence",
+    "confidence": 0.7,
+    "evidence": "Grieg's harmonic color influenced Debussy",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0065",
+    "target_id": "artist_0062",
+    "source_name": "Erik Satie",
+    "target_name": "Claude Debussy",
+    "type": "peer",
+    "confidence": 0.85,
+    "evidence": "Friends; Satie's innovations influenced Debussy",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0065",
+    "target_id": "artist_0070",
+    "source_name": "Erik Satie",
+    "target_name": "Maurice Ravel",
+    "type": "influence",
+    "confidence": 0.8,
+    "evidence": "Ravel championed Satie's piano works",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0024",
+    "target_id": "artist_0035",
+    "source_name": "Carl Maria von Weber",
+    "target_name": "Richard Wagner",
+    "type": "influence",
+    "confidence": 0.85,
+    "evidence": "Weber's Der Freischütz laid groundwork for Wagner's operas",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0063",
+    "target_id": "artist_0068",
+    "source_name": "Richard Strauss",
+    "target_name": "Arnold Schoenberg",
+    "type": "influence",
+    "confidence": 0.7,
+    "evidence": "Early Schoenberg influenced by Strauss's tone poems",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0058",
+    "target_id": "artist_0090",
+    "source_name": "Edward Elgar",
+    "target_name": "Benjamin Britten",
+    "type": "influence",
+    "confidence": 0.7,
+    "evidence": "Elgar's English tradition influenced Britten",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0064",
+    "target_id": "artist_0090",
+    "source_name": "Jean Sibelius",
+    "target_name": "Benjamin Britten",
+    "type": "influence",
+    "confidence": 0.7,
+    "evidence": "Sibelius's orchestral style influenced Britten",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0068",
+    "target_id": "artist_0073",
+    "source_name": "Arnold Schoenberg",
+    "target_name": "Anton Webern",
+    "type": "teacher",
+    "confidence": 0.95,
+    "evidence": "Webern was Schoenberg's student in Vienna",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0068",
+    "target_id": "artist_0074",
+    "source_name": "Arnold Schoenberg",
+    "target_name": "Alban Berg",
+    "type": "teacher",
+    "confidence": 0.95,
+    "evidence": "Berg was Schoenberg's student in Vienna",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0068",
+    "target_id": "artist_0089",
+    "source_name": "Arnold Schoenberg",
+    "target_name": "John Cage",
+    "type": "teacher",
+    "confidence": 0.85,
+    "evidence": "Cage studied briefly with Schoenberg in LA",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0087",
+    "target_id": "artist_0157",
+    "source_name": "Olivier Messiaen",
+    "target_name": "Pierre Boulez",
+    "type": "teacher",
+    "confidence": 0.95,
+    "evidence": "Boulez studied under Messiaen at Paris Conservatoire",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0087",
+    "target_id": "artist_0158",
+    "source_name": "Olivier Messiaen",
+    "target_name": "Karlheinz Stockhausen",
+    "type": "teacher",
+    "confidence": 0.9,
+    "evidence": "Stockhausen studied under Messiaen in Paris",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0072",
+    "target_id": "artist_0075",
+    "source_name": "Igor Stravinsky",
+    "target_name": "Sergei Prokofiev",
+    "type": "peer",
+    "confidence": 0.8,
+    "evidence": "Contemporaries; both Russian émigrés",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0072",
+    "target_id": "artist_0082",
+    "source_name": "Igor Stravinsky",
+    "target_name": "Aaron Copland",
+    "type": "influence",
+    "confidence": 0.8,
+    "evidence": "Stravinsky's neoclassicism influenced Copland",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0082",
+    "target_id": "artist_0091",
+    "source_name": "Aaron Copland",
+    "target_name": "Leonard Bernstein",
+    "type": "peer",
+    "confidence": 0.85,
+    "evidence": "Close friends and mutual champions",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0076",
+    "target_id": "artist_0108",
+    "source_name": "Darius Milhaud",
+    "target_name": "Dave Brubeck",
+    "type": "teacher",
+    "confidence": 0.9,
+    "evidence": "Brubeck studied under Milhaud",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0076",
+    "target_id": "artist_0159",
+    "source_name": "Darius Milhaud",
+    "target_name": "Steve Reich",
+    "type": "teacher",
+    "confidence": 0.8,
+    "evidence": "Reich studied under Milhaud at Mills College",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0079",
+    "target_id": "artist_0091",
+    "source_name": "George Gershwin",
+    "target_name": "Leonard Bernstein",
+    "type": "influence",
+    "confidence": 0.8,
+    "evidence": "Gershwin's Broadway/jazz fusion influenced Bernstein",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0071",
+    "target_id": "artist_0156",
+    "source_name": "Béla Bartók",
+    "target_name": "György Ligeti",
+    "type": "influence",
+    "confidence": 0.85,
+    "evidence": "Ligeti studied at Budapest where Bartók's legacy loomed",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0089",
+    "target_id": "artist_0159",
+    "source_name": "John Cage",
+    "target_name": "Steve Reich",
+    "type": "influence",
+    "confidence": 0.7,
+    "evidence": "Cage's experimental approach influenced minimalists",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0159",
+    "target_id": "artist_0160",
+    "source_name": "Steve Reich",
+    "target_name": "Philip Glass",
+    "type": "peer",
+    "confidence": 0.85,
+    "evidence": "Fellow minimalist pioneers in 1960s New York",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0166",
+    "target_id": "artist_0159",
+    "source_name": "Terry Riley",
+    "target_name": "Steve Reich",
+    "type": "influence",
+    "confidence": 0.85,
+    "evidence": "Riley's In C directly inspired Reich's early minimalism",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0166",
+    "target_id": "artist_0160",
+    "source_name": "Terry Riley",
+    "target_name": "Philip Glass",
+    "type": "influence",
+    "confidence": 0.8,
+    "evidence": "Riley's repetitive structures influenced Glass",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0157",
+    "target_id": "artist_0158",
+    "source_name": "Pierre Boulez",
+    "target_name": "Karlheinz Stockhausen",
+    "type": "peer",
+    "confidence": 0.85,
+    "evidence": "Leading serialists; fellow Messiaen students",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0088",
+    "target_id": "artist_0091",
+    "source_name": "Samuel Barber",
+    "target_name": "Leonard Bernstein",
+    "type": "peer",
+    "confidence": 0.8,
+    "evidence": "Contemporaries at Curtis Institute",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0090",
+    "target_id": "artist_0086",
+    "source_name": "Benjamin Britten",
+    "target_name": "Dmitri Shostakovich",
+    "type": "peer",
+    "confidence": 0.85,
+    "evidence": "Close friends; mutual dedication of works",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0165",
+    "target_id": "artist_0179",
+    "source_name": "Krzysztof Penderecki",
+    "target_name": "Radiohead",
+    "type": "influence",
+    "confidence": 0.75,
+    "evidence": "Penderecki's textures influenced Radiohead's Kid A",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0162",
+    "target_id": "artist_0163",
+    "source_name": "Ennio Morricone",
+    "target_name": "Hans Zimmer",
+    "type": "influence",
+    "confidence": 0.8,
+    "evidence": "Morricone's film scoring approach influenced Zimmer",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0161",
+    "target_id": "artist_0163",
+    "source_name": "John Williams",
+    "target_name": "Hans Zimmer",
+    "type": "peer",
+    "confidence": 0.7,
+    "evidence": "Two dominant film composers; different approaches",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0095",
+    "target_id": "artist_0081",
+    "source_name": "Louis Armstrong",
+    "target_name": "Duke Ellington",
+    "type": "peer",
+    "confidence": 0.85,
+    "evidence": "Both titans of early jazz; mutual respect",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0095",
+    "target_id": "artist_0103",
+    "source_name": "Louis Armstrong",
+    "target_name": "Billie Holiday",
+    "type": "influence",
+    "confidence": 0.8,
+    "evidence": "Armstrong's phrasing influenced Holiday's singing",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0095",
+    "target_id": "artist_0111",
+    "source_name": "Louis Armstrong",
+    "target_name": "Miles Davis",
+    "type": "influence",
+    "confidence": 0.85,
+    "evidence": "Armstrong's trumpet innovations influenced all who followed",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0081",
+    "target_id": "artist_0111",
+    "source_name": "Duke Ellington",
+    "target_name": "Miles Davis",
+    "type": "influence",
+    "confidence": 0.8,
+    "evidence": "Ellington's orchestral jazz influenced Davis",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0081",
+    "target_id": "artist_0110",
+    "source_name": "Duke Ellington",
+    "target_name": "Charles Mingus",
+    "type": "influence",
+    "confidence": 0.85,
+    "evidence": "Mingus idolized Ellington; similar compositional ambition",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0107",
+    "target_id": "artist_0111",
+    "source_name": "Charlie Parker",
+    "target_name": "Miles Davis",
+    "type": "peer",
+    "confidence": 0.95,
+    "evidence": "Played together in Parker's quintet; bebop pioneers",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0107",
+    "target_id": "artist_0112",
+    "source_name": "Charlie Parker",
+    "target_name": "John Coltrane",
+    "type": "influence",
+    "confidence": 0.9,
+    "evidence": "Parker's virtuosity directly influenced Coltrane",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0107",
+    "target_id": "artist_0104",
+    "source_name": "Charlie Parker",
+    "target_name": "Dizzy Gillespie",
+    "type": "peer",
+    "confidence": 0.95,
+    "evidence": "Co-creators of bebop",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0104",
+    "target_id": "artist_0111",
+    "source_name": "Dizzy Gillespie",
+    "target_name": "Miles Davis",
+    "type": "teacher",
+    "confidence": 0.8,
+    "evidence": "Gillespie mentored young Davis",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0106",
+    "target_id": "artist_0112",
+    "source_name": "Thelonious Monk",
+    "target_name": "John Coltrane",
+    "type": "peer",
+    "confidence": 0.9,
+    "evidence": "Coltrane played in Monk's quartet; transformative",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0111",
+    "target_id": "artist_0112",
+    "source_name": "Miles Davis",
+    "target_name": "John Coltrane",
+    "type": "peer",
+    "confidence": 0.95,
+    "evidence": "Coltrane was in Miles's first great quintet",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0111",
+    "target_id": "artist_0117",
+    "source_name": "Miles Davis",
+    "target_name": "Herbie Hancock",
+    "type": "peer",
+    "confidence": 0.9,
+    "evidence": "Hancock was in Miles's second great quintet",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0111",
+    "target_id": "artist_0118",
+    "source_name": "Miles Davis",
+    "target_name": "Wayne Shorter",
+    "type": "peer",
+    "confidence": 0.9,
+    "evidence": "Shorter was in Miles's second great quintet",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0112",
+    "target_id": "artist_0114",
+    "source_name": "John Coltrane",
+    "target_name": "Ornette Coleman",
+    "type": "peer",
+    "confidence": 0.8,
+    "evidence": "Fellow free jazz explorers",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0109",
+    "target_id": "artist_0118",
+    "source_name": "Art Blakey",
+    "target_name": "Wayne Shorter",
+    "type": "peer",
+    "confidence": 0.85,
+    "evidence": "Shorter played in Blakey's Jazz Messengers",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0097",
+    "target_id": "artist_0096",
+    "source_name": "Fats Waller",
+    "target_name": "Count Basie",
+    "type": "teacher",
+    "confidence": 0.8,
+    "evidence": "Basie studied organ under Waller in Harlem",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0101",
+    "target_id": "artist_0102",
+    "source_name": "Robert Johnson",
+    "target_name": "Muddy Waters",
+    "type": "influence",
+    "confidence": 0.85,
+    "evidence": "Johnson's Delta blues directly influenced Waters",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0102",
+    "target_id": "artist_0115",
+    "source_name": "Muddy Waters",
+    "target_name": "B.B. King",
+    "type": "peer",
+    "confidence": 0.8,
+    "evidence": "Contemporaries; both shaped Chicago/electric blues",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0102",
+    "target_id": "artist_0133",
+    "source_name": "Muddy Waters",
+    "target_name": "Mick Jagger",
+    "type": "influence",
+    "confidence": 0.9,
+    "evidence": "Rolling Stones named after Muddy Waters song",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0102",
+    "target_id": "artist_0136",
+    "source_name": "Muddy Waters",
+    "target_name": "Eric Clapton",
+    "type": "influence",
+    "confidence": 0.9,
+    "evidence": "Clapton deeply influenced by Waters's electric blues",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0115",
+    "target_id": "artist_0136",
+    "source_name": "B.B. King",
+    "target_name": "Eric Clapton",
+    "type": "influence",
+    "confidence": 0.9,
+    "evidence": "Clapton called B.B. King his greatest influence",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0094",
+    "target_id": "artist_0103",
+    "source_name": "Bessie Smith",
+    "target_name": "Billie Holiday",
+    "type": "influence",
+    "confidence": 0.85,
+    "evidence": "Holiday cited Bessie Smith as primary influence",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0103",
+    "target_id": "artist_0116",
+    "source_name": "Billie Holiday",
+    "target_name": "Nina Simone",
+    "type": "influence",
+    "confidence": 0.8,
+    "evidence": "Simone admired Holiday's emotional depth",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0113",
+    "target_id": "artist_0138",
+    "source_name": "Ray Charles",
+    "target_name": "Stevie Wonder",
+    "type": "influence",
+    "confidence": 0.85,
+    "evidence": "Wonder followed Charles's genre-crossing path",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0113",
+    "target_id": "artist_0127",
+    "source_name": "Ray Charles",
+    "target_name": "Aretha Franklin",
+    "type": "influence",
+    "confidence": 0.8,
+    "evidence": "Charles's gospel-soul fusion influenced Franklin",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0119",
+    "target_id": "artist_0129",
+    "source_name": "Chuck Berry",
+    "target_name": "John Lennon",
+    "type": "influence",
+    "confidence": 0.9,
+    "evidence": "Lennon: 'If you tried to give rock and roll another name, call it Chuck Berry'",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0119",
+    "target_id": "artist_0134",
+    "source_name": "Chuck Berry",
+    "target_name": "Keith Richards",
+    "type": "influence",
+    "confidence": 0.95,
+    "evidence": "Richards's guitar style directly modeled on Berry",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0120",
+    "target_id": "artist_0128",
+    "source_name": "Little Richard",
+    "target_name": "Paul McCartney",
+    "type": "influence",
+    "confidence": 0.85,
+    "evidence": "McCartney's vocal style influenced by Little Richard",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0120",
+    "target_id": "artist_0122",
+    "source_name": "Little Richard",
+    "target_name": "James Brown",
+    "type": "influence",
+    "confidence": 0.8,
+    "evidence": "Little Richard's showmanship influenced Brown",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0123",
+    "target_id": "artist_0129",
+    "source_name": "Elvis Presley",
+    "target_name": "John Lennon",
+    "type": "influence",
+    "confidence": 0.85,
+    "evidence": "Lennon: 'Before Elvis there was nothing'",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0124",
+    "target_id": "artist_0129",
+    "source_name": "Buddy Holly",
+    "target_name": "John Lennon",
+    "type": "influence",
+    "confidence": 0.85,
+    "evidence": "Holly's songwriting influenced Beatles",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0124",
+    "target_id": "artist_0128",
+    "source_name": "Buddy Holly",
+    "target_name": "Paul McCartney",
+    "type": "influence",
+    "confidence": 0.85,
+    "evidence": "McCartney bought Holly's song catalog",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0126",
+    "target_id": "artist_0129",
+    "source_name": "Bob Dylan",
+    "target_name": "John Lennon",
+    "type": "influence",
+    "confidence": 0.9,
+    "evidence": "Dylan pushed Beatles toward deeper songwriting",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0126",
+    "target_id": "artist_0142",
+    "source_name": "Bob Dylan",
+    "target_name": "Bruce Springsteen",
+    "type": "influence",
+    "confidence": 0.85,
+    "evidence": "Springsteen's storytelling deeply Dylan-influenced",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0126",
+    "target_id": "artist_0139",
+    "source_name": "Bob Dylan",
+    "target_name": "Joni Mitchell",
+    "type": "peer",
+    "confidence": 0.8,
+    "evidence": "Fellow folk-to-electric pioneers",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0129",
+    "target_id": "artist_0128",
+    "source_name": "John Lennon",
+    "target_name": "Paul McCartney",
+    "type": "collaboration",
+    "confidence": 0.95,
+    "evidence": "Lennon-McCartney: greatest songwriting partnership",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0129",
+    "target_id": "artist_0130",
+    "source_name": "John Lennon",
+    "target_name": "George Harrison",
+    "type": "peer",
+    "confidence": 0.9,
+    "evidence": "Beatles bandmates",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0130",
+    "target_id": "artist_0152",
+    "source_name": "George Harrison",
+    "target_name": "Ravi Shankar",
+    "type": "teacher",
+    "confidence": 0.85,
+    "evidence": "Shankar taught Harrison sitar and Indian music",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0152",
+    "target_id": "artist_0112",
+    "source_name": "Ravi Shankar",
+    "target_name": "John Coltrane",
+    "type": "influence",
+    "confidence": 0.8,
+    "evidence": "Indian music influenced Coltrane's late period",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0131",
+    "target_id": "artist_0136",
+    "source_name": "Jimi Hendrix",
+    "target_name": "Eric Clapton",
+    "type": "peer",
+    "confidence": 0.85,
+    "evidence": "Mutual admiration; Hendrix's debut stunned Clapton",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0131",
+    "target_id": "artist_0144",
+    "source_name": "Jimi Hendrix",
+    "target_name": "Prince",
+    "type": "influence",
+    "confidence": 0.9,
+    "evidence": "Prince's guitar virtuosity directly inspired by Hendrix",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0131",
+    "target_id": "artist_0135",
+    "source_name": "Jimi Hendrix",
+    "target_name": "Jimmy Page",
+    "type": "peer",
+    "confidence": 0.8,
+    "evidence": "Both pioneered electric guitar's possibilities",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0122",
+    "target_id": "artist_0144",
+    "source_name": "James Brown",
+    "target_name": "Prince",
+    "type": "influence",
+    "confidence": 0.85,
+    "evidence": "Brown's funk directly influenced Prince",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0122",
+    "target_id": "artist_0145",
+    "source_name": "James Brown",
+    "target_name": "Michael Jackson",
+    "type": "influence",
+    "confidence": 0.85,
+    "evidence": "Jackson modeled his performance style on Brown",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0137",
+    "target_id": "artist_0147",
+    "source_name": "David Bowie",
+    "target_name": "Kurt Cobain",
+    "type": "influence",
+    "confidence": 0.75,
+    "evidence": "Cobain admired Bowie's artistic reinvention",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0137",
+    "target_id": "artist_0179",
+    "source_name": "David Bowie",
+    "target_name": "Radiohead",
+    "type": "influence",
+    "confidence": 0.8,
+    "evidence": "Bowie's art rock influenced Radiohead",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0137",
+    "target_id": "artist_0141",
+    "source_name": "David Bowie",
+    "target_name": "Brian Eno",
+    "type": "collaboration",
+    "confidence": 0.95,
+    "evidence": "Berlin Trilogy: Heroes, Low, Lodger",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0141",
+    "target_id": "artist_0137",
+    "source_name": "Brian Eno",
+    "target_name": "David Bowie",
+    "type": "collaboration",
+    "confidence": 0.95,
+    "evidence": "Co-produced Bowie's most innovative albums",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0141",
+    "target_id": "artist_0176",
+    "source_name": "Brian Eno",
+    "target_name": "Aphex Twin",
+    "type": "influence",
+    "confidence": 0.8,
+    "evidence": "Eno's ambient innovations influenced Aphex Twin",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0151",
+    "target_id": "artist_0137",
+    "source_name": "Kraftwerk",
+    "target_name": "David Bowie",
+    "type": "influence",
+    "confidence": 0.8,
+    "evidence": "Kraftwerk's electronic sound inspired Bowie's Berlin era",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0151",
+    "target_id": "artist_0177",
+    "source_name": "Kraftwerk",
+    "target_name": "Daft Punk",
+    "type": "influence",
+    "confidence": 0.85,
+    "evidence": "Kraftwerk's electronic blueprint inspired Daft Punk",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0151",
+    "target_id": "artist_0169",
+    "source_name": "Kraftwerk",
+    "target_name": "Afrika Bambaataa",
+    "type": "influence",
+    "confidence": 0.9,
+    "evidence": "Planet Rock sampled Kraftwerk; bridged electronic and hip-hop",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0151",
+    "target_id": "artist_0141",
+    "source_name": "Kraftwerk",
+    "target_name": "Brian Eno",
+    "type": "influence",
+    "confidence": 0.75,
+    "evidence": "Kraftwerk's electronic approach influenced Eno",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0132",
+    "target_id": "artist_0143",
+    "source_name": "Bob Marley",
+    "target_name": "Sting",
+    "type": "influence",
+    "confidence": 0.75,
+    "evidence": "Reggae influenced Police's rhythmic approach",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0138",
+    "target_id": "artist_0144",
+    "source_name": "Stevie Wonder",
+    "target_name": "Prince",
+    "type": "influence",
+    "confidence": 0.85,
+    "evidence": "Prince's multi-instrumentalist approach inspired by Wonder",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0139",
+    "target_id": "artist_0144",
+    "source_name": "Joni Mitchell",
+    "target_name": "Prince",
+    "type": "influence",
+    "confidence": 0.75,
+    "evidence": "Mitchell's harmonic sophistication influenced Prince",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0139",
+    "target_id": "artist_0149",
+    "source_name": "Joni Mitchell",
+    "target_name": "Björk",
+    "type": "influence",
+    "confidence": 0.7,
+    "evidence": "Mitchell's genre-defying path influenced Björk",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0140",
+    "target_id": "artist_0145",
+    "source_name": "Freddie Mercury",
+    "target_name": "Michael Jackson",
+    "type": "peer",
+    "confidence": 0.7,
+    "evidence": "Mutual admiration; recorded together",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0150",
+    "target_id": "artist_0132",
+    "source_name": "Fela Kuti",
+    "target_name": "Bob Marley",
+    "type": "peer",
+    "confidence": 0.7,
+    "evidence": "Both pioneers of African diasporic music",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0150",
+    "target_id": "artist_0122",
+    "source_name": "Fela Kuti",
+    "target_name": "James Brown",
+    "type": "influence",
+    "confidence": 0.8,
+    "evidence": "Brown's funk heavily influenced Kuti's Afrobeat",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0066",
+    "target_id": "artist_0079",
+    "source_name": "Scott Joplin",
+    "target_name": "George Gershwin",
+    "type": "influence",
+    "confidence": 0.75,
+    "evidence": "Joplin's ragtime influenced Gershwin's early style",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0168",
+    "target_id": "artist_0170",
+    "source_name": "Grandmaster Flash",
+    "target_name": "Run-DMC",
+    "type": "influence",
+    "confidence": 0.85,
+    "evidence": "Flash pioneered the techniques Run-DMC commercialized",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0169",
+    "target_id": "artist_0168",
+    "source_name": "Afrika Bambaataa",
+    "target_name": "Grandmaster Flash",
+    "type": "peer",
+    "confidence": 0.9,
+    "evidence": "Fellow hip-hop founding fathers",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0170",
+    "target_id": "artist_0173",
+    "source_name": "Run-DMC",
+    "target_name": "Jay-Z",
+    "type": "influence",
+    "confidence": 0.8,
+    "evidence": "Run-DMC paved the way for New York hip-hop",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0171",
+    "target_id": "artist_0175",
+    "source_name": "Tupac Shakur",
+    "target_name": "Kendrick Lamar",
+    "type": "influence",
+    "confidence": 0.85,
+    "evidence": "Lamar has cited Tupac as his greatest influence",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0172",
+    "target_id": "artist_0173",
+    "source_name": "The Notorious B.I.G.",
+    "target_name": "Jay-Z",
+    "type": "peer",
+    "confidence": 0.85,
+    "evidence": "Brooklyn peers; Jay-Z deeply affected by Biggie's death",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0171",
+    "target_id": "artist_0172",
+    "source_name": "Tupac Shakur",
+    "target_name": "The Notorious B.I.G.",
+    "type": "rivalry",
+    "confidence": 0.95,
+    "evidence": "Defining rivalry of 1990s hip-hop",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0173",
+    "target_id": "artist_0174",
+    "source_name": "Jay-Z",
+    "target_name": "Kanye West",
+    "type": "collaboration",
+    "confidence": 0.9,
+    "evidence": "Mentor-protégé; Watch the Throne collaboration",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0174",
+    "target_id": "artist_0175",
+    "source_name": "Kanye West",
+    "target_name": "Kendrick Lamar",
+    "type": "peer",
+    "confidence": 0.75,
+    "evidence": "Both pushing hip-hop's artistic boundaries",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0062",
+    "target_id": "artist_0081",
+    "source_name": "Claude Debussy",
+    "target_name": "Duke Ellington",
+    "type": "influence",
+    "confidence": 0.75,
+    "evidence": "Debussy's impressionism influenced Ellington's tonal palette",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0072",
+    "target_id": "artist_0107",
+    "source_name": "Igor Stravinsky",
+    "target_name": "Charlie Parker",
+    "type": "influence",
+    "confidence": 0.7,
+    "evidence": "Stravinsky's rhythms influenced bebop's complexity",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0070",
+    "target_id": "artist_0079",
+    "source_name": "Maurice Ravel",
+    "target_name": "George Gershwin",
+    "type": "peer",
+    "confidence": 0.8,
+    "evidence": "Met in Paris; Ravel admired Gershwin's Rhapsody in Blue",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0009",
+    "target_id": "artist_0108",
+    "source_name": "Johann Sebastian Bach",
+    "target_name": "Dave Brubeck",
+    "type": "influence",
+    "confidence": 0.7,
+    "evidence": "Bach's counterpoint influenced Brubeck's jazz",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0071",
+    "target_id": "artist_0159",
+    "source_name": "Béla Bartók",
+    "target_name": "Steve Reich",
+    "type": "influence",
+    "confidence": 0.75,
+    "evidence": "Bartók's rhythmic innovations influenced minimalism",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0086",
+    "target_id": "artist_0165",
+    "source_name": "Dmitri Shostakovich",
+    "target_name": "Krzysztof Penderecki",
+    "type": "peer",
+    "confidence": 0.7,
+    "evidence": "Both navigated composing under political pressure",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0111",
+    "target_id": "artist_0117",
+    "source_name": "Miles Davis",
+    "target_name": "Herbie Hancock",
+    "type": "teacher",
+    "confidence": 0.85,
+    "evidence": "Davis's bands were the ultimate jazz school",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0154",
+    "target_id": "artist_0149",
+    "source_name": "Nusrat Fateh Ali Khan",
+    "target_name": "Björk",
+    "type": "influence",
+    "confidence": 0.7,
+    "evidence": "Khan's qawwali influenced Björk's vocal approach",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0167",
+    "target_id": "artist_0179",
+    "source_name": "Ryuichi Sakamoto",
+    "target_name": "Radiohead",
+    "type": "influence",
+    "confidence": 0.7,
+    "evidence": "Sakamoto's electronic-classical fusion influenced Radiohead",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0160",
+    "target_id": "artist_0137",
+    "source_name": "Philip Glass",
+    "target_name": "David Bowie",
+    "type": "peer",
+    "confidence": 0.75,
+    "evidence": "Glass created symphony from Bowie's Heroes",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0160",
+    "target_id": "artist_0179",
+    "source_name": "Philip Glass",
+    "target_name": "Radiohead",
+    "type": "influence",
+    "confidence": 0.7,
+    "evidence": "Glass's minimalism influenced Radiohead's textures",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0155",
+    "target_id": "artist_0167",
+    "source_name": "Ástor Piazzolla",
+    "target_name": "Ryuichi Sakamoto",
+    "type": "influence",
+    "confidence": 0.65,
+    "evidence": "Piazzolla's nuevo tango influenced Sakamoto",
+    "source_pipeline": "curated"
+  },
+  {
+    "source_id": "artist_0116",
+    "target_id": "artist_0127",
+    "source_name": "Nina Simone",
+    "target_name": "Aretha Franklin",
+    "type": "peer",
+    "confidence": 0.75,
+    "evidence": "Both civil rights era icons of Black music",
+    "source_pipeline": "curated"
+  }
+]

@@ -1,0 +1,4383 @@
+[
+  {
+    "name": "Claudio Monteverdi",
+    "birth_year": 1567,
+    "death_year": 1643,
+    "birth_city": "Cremona",
+    "birth_country": "Italy",
+    "genres": [
+      "opera",
+      "madrigal"
+    ],
+    "education": [
+      "University of Cremona"
+    ],
+    "id": "artist_0000",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1585,
+    "active_end": 1643,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Heinrich Schütz",
+    "birth_year": 1585,
+    "death_year": 1672,
+    "birth_city": "Köstritz",
+    "birth_country": "Germany",
+    "genres": [
+      "sacred music"
+    ],
+    "education": [
+      "Venice under Giovanni Gabrieli"
+    ],
+    "id": "artist_0001",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1603,
+    "active_end": 1672,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Jean-Baptiste Lully",
+    "birth_year": 1632,
+    "death_year": 1687,
+    "birth_city": "Florence",
+    "birth_country": "Italy",
+    "genres": [
+      "opera",
+      "ballet"
+    ],
+    "education": [
+      "Self-taught, French court"
+    ],
+    "id": "artist_0002",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1650,
+    "active_end": 1687,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Arcangelo Corelli",
+    "birth_year": 1653,
+    "death_year": 1713,
+    "birth_city": "Fusignano",
+    "birth_country": "Italy",
+    "genres": [
+      "concerto grosso",
+      "sonata"
+    ],
+    "education": [
+      "Bologna"
+    ],
+    "id": "artist_0003",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1671,
+    "active_end": 1713,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Henry Purcell",
+    "birth_year": 1659,
+    "death_year": 1695,
+    "birth_city": "London",
+    "birth_country": "England",
+    "genres": [
+      "opera",
+      "sacred music"
+    ],
+    "education": [
+      "Chapel Royal"
+    ],
+    "id": "artist_0004",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1677,
+    "active_end": 1695,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Alessandro Scarlatti",
+    "birth_year": 1660,
+    "death_year": 1725,
+    "birth_city": "Palermo",
+    "birth_country": "Italy",
+    "genres": [
+      "opera"
+    ],
+    "education": [
+      "Rome"
+    ],
+    "id": "artist_0005",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1678,
+    "active_end": 1725,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Antonio Vivaldi",
+    "birth_year": 1678,
+    "death_year": 1741,
+    "birth_city": "Venice",
+    "birth_country": "Italy",
+    "genres": [
+      "concerto",
+      "opera"
+    ],
+    "education": [
+      "Ospedale della Pietà, Venice"
+    ],
+    "id": "artist_0006",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1696,
+    "active_end": 1741,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Georg Philipp Telemann",
+    "birth_year": 1681,
+    "death_year": 1767,
+    "birth_city": "Magdeburg",
+    "birth_country": "Germany",
+    "genres": [
+      "orchestral",
+      "opera"
+    ],
+    "education": [
+      "University of Leipzig"
+    ],
+    "id": "artist_0007",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1699,
+    "active_end": 1767,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Jean-Philippe Rameau",
+    "birth_year": 1683,
+    "death_year": 1764,
+    "birth_city": "Dijon",
+    "birth_country": "France",
+    "genres": [
+      "opera",
+      "harpsichord"
+    ],
+    "education": [
+      "Jesuit college, Dijon"
+    ],
+    "id": "artist_0008",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1701,
+    "active_end": 1764,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Johann Sebastian Bach",
+    "birth_year": 1685,
+    "death_year": 1750,
+    "birth_city": "Eisenach",
+    "birth_country": "Germany",
+    "genres": [
+      "sacred music",
+      "keyboard",
+      "orchestral"
+    ],
+    "education": [
+      "St. Michael's School, Lüneburg"
+    ],
+    "id": "artist_0009",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1703,
+    "active_end": 1750,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "George Frideric Handel",
+    "birth_year": 1685,
+    "death_year": 1759,
+    "birth_city": "Halle",
+    "birth_country": "Germany",
+    "genres": [
+      "opera",
+      "oratorio"
+    ],
+    "education": [
+      "University of Halle",
+      "Hamburg Opera"
+    ],
+    "id": "artist_0010",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1703,
+    "active_end": 1759,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Domenico Scarlatti",
+    "birth_year": 1685,
+    "death_year": 1757,
+    "birth_city": "Naples",
+    "birth_country": "Italy",
+    "genres": [
+      "keyboard"
+    ],
+    "education": [
+      "Naples under father Alessandro"
+    ],
+    "id": "artist_0011",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1703,
+    "active_end": 1757,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Giovanni Battista Pergolesi",
+    "birth_year": 1710,
+    "death_year": 1736,
+    "birth_city": "Jesi",
+    "birth_country": "Italy",
+    "genres": [
+      "opera"
+    ],
+    "education": [
+      "Conservatorio dei Poveri di Gesù Cristo, Naples"
+    ],
+    "id": "artist_0012",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1728,
+    "active_end": 1736,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Christoph Willibald Gluck",
+    "birth_year": 1714,
+    "death_year": 1787,
+    "birth_city": "Erasbach",
+    "birth_country": "Germany",
+    "genres": [
+      "opera"
+    ],
+    "education": [
+      "Prague",
+      "Milan under Sammartini"
+    ],
+    "id": "artist_0013",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1732,
+    "active_end": 1787,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Carl Philipp Emanuel Bach",
+    "birth_year": 1714,
+    "death_year": 1788,
+    "birth_city": "Weimar",
+    "birth_country": "Germany",
+    "genres": [
+      "keyboard",
+      "symphony"
+    ],
+    "education": [
+      "Under father J.S. Bach",
+      "University of Frankfurt"
+    ],
+    "id": "artist_0014",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1732,
+    "active_end": 1788,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Joseph Haydn",
+    "birth_year": 1732,
+    "death_year": 1809,
+    "birth_city": "Rohrau",
+    "birth_country": "Austria",
+    "genres": [
+      "symphony",
+      "string quartet",
+      "opera"
+    ],
+    "education": [
+      "St. Stephen's Cathedral, Vienna"
+    ],
+    "id": "artist_0015",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": true,
+    "active_start": 1750,
+    "active_end": 1809,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Johann Christian Bach",
+    "birth_year": 1735,
+    "death_year": 1782,
+    "birth_city": "Leipzig",
+    "birth_country": "Germany",
+    "genres": [
+      "opera",
+      "symphony"
+    ],
+    "education": [
+      "Under father J.S. Bach",
+      "Milan under Padre Martini"
+    ],
+    "id": "artist_0016",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1753,
+    "active_end": 1782,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Luigi Boccherini",
+    "birth_year": 1743,
+    "death_year": 1805,
+    "birth_city": "Lucca",
+    "birth_country": "Italy",
+    "genres": [
+      "chamber music"
+    ],
+    "education": [
+      "Rome"
+    ],
+    "id": "artist_0017",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1761,
+    "active_end": 1805,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Antonio Salieri",
+    "birth_year": 1750,
+    "death_year": 1825,
+    "birth_city": "Legnago",
+    "birth_country": "Italy",
+    "genres": [
+      "opera"
+    ],
+    "education": [
+      "Vienna under Gassmann"
+    ],
+    "id": "artist_0018",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": true,
+    "active_start": 1768,
+    "active_end": 1825,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Muzio Clementi",
+    "birth_year": 1752,
+    "death_year": 1832,
+    "birth_city": "Rome",
+    "birth_country": "Italy",
+    "genres": [
+      "keyboard"
+    ],
+    "education": [
+      "Rome",
+      "Dorset England"
+    ],
+    "id": "artist_0019",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1770,
+    "active_end": 1832,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Wolfgang Amadeus Mozart",
+    "birth_year": 1756,
+    "death_year": 1791,
+    "birth_city": "Salzburg",
+    "birth_country": "Austria",
+    "genres": [
+      "opera",
+      "symphony",
+      "chamber music",
+      "piano"
+    ],
+    "education": [
+      "Under father Leopold Mozart",
+      "Padre Martini, Bologna"
+    ],
+    "id": "artist_0020",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": true,
+    "active_start": 1774,
+    "active_end": 1791,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Ludwig van Beethoven",
+    "birth_year": 1770,
+    "death_year": 1827,
+    "birth_city": "Bonn",
+    "birth_country": "Germany",
+    "genres": [
+      "symphony",
+      "piano",
+      "chamber music"
+    ],
+    "education": [
+      "Under Neefe in Bonn",
+      "Haydn, Albrechtsberger, Salieri in Vienna"
+    ],
+    "id": "artist_0021",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": true,
+    "active_start": 1788,
+    "active_end": 1827,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Johann Nepomuk Hummel",
+    "birth_year": 1778,
+    "death_year": 1837,
+    "birth_city": "Pressburg",
+    "birth_country": "Austria",
+    "genres": [
+      "piano"
+    ],
+    "education": [
+      "Under Mozart in Vienna"
+    ],
+    "id": "artist_0022",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": true,
+    "active_start": 1796,
+    "active_end": 1837,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Carl Czerny",
+    "birth_year": 1791,
+    "death_year": 1857,
+    "birth_city": "Vienna",
+    "birth_country": "Austria",
+    "genres": [
+      "piano",
+      "pedagogy"
+    ],
+    "education": [
+      "Under Beethoven in Vienna"
+    ],
+    "id": "artist_0023",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": true,
+    "active_start": 1809,
+    "active_end": 1857,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Carl Maria von Weber",
+    "birth_year": 1786,
+    "death_year": 1826,
+    "birth_city": "Eutin",
+    "birth_country": "Germany",
+    "genres": [
+      "opera"
+    ],
+    "education": [
+      "Under Michael Haydn",
+      "Vienna under Vogler"
+    ],
+    "id": "artist_0024",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": true,
+    "active_start": 1804,
+    "active_end": 1826,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Gioachino Rossini",
+    "birth_year": 1792,
+    "death_year": 1868,
+    "birth_city": "Pesaro",
+    "birth_country": "Italy",
+    "genres": [
+      "opera"
+    ],
+    "education": [
+      "Liceo Musicale, Bologna"
+    ],
+    "id": "artist_0025",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1810,
+    "active_end": 1868,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Franz Schubert",
+    "birth_year": 1797,
+    "death_year": 1828,
+    "birth_city": "Vienna",
+    "birth_country": "Austria",
+    "genres": [
+      "lieder",
+      "symphony",
+      "chamber music"
+    ],
+    "education": [
+      "Imperial Seminary Vienna",
+      "Under Salieri"
+    ],
+    "id": "artist_0026",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": true,
+    "active_start": 1815,
+    "active_end": 1828,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Gaetano Donizetti",
+    "birth_year": 1797,
+    "death_year": 1848,
+    "birth_city": "Bergamo",
+    "birth_country": "Italy",
+    "genres": [
+      "opera"
+    ],
+    "education": [
+      "Bergamo under Simon Mayr"
+    ],
+    "id": "artist_0027",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1815,
+    "active_end": 1848,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Vincenzo Bellini",
+    "birth_year": 1801,
+    "death_year": 1835,
+    "birth_city": "Catania",
+    "birth_country": "Italy",
+    "genres": [
+      "opera"
+    ],
+    "education": [
+      "Naples Conservatory"
+    ],
+    "id": "artist_0028",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1819,
+    "active_end": 1835,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Hector Berlioz",
+    "birth_year": 1803,
+    "death_year": 1869,
+    "birth_city": "La Côte-Saint-André",
+    "birth_country": "France",
+    "genres": [
+      "orchestral",
+      "opera"
+    ],
+    "education": [
+      "Paris Conservatoire"
+    ],
+    "id": "artist_0029",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1821,
+    "active_end": 1869,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Johann Strauss I",
+    "birth_year": 1804,
+    "death_year": 1849,
+    "birth_city": "Vienna",
+    "birth_country": "Austria",
+    "genres": [
+      "waltz",
+      "dance music"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0030",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": true,
+    "active_start": 1822,
+    "active_end": 1849,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Felix Mendelssohn",
+    "birth_year": 1809,
+    "death_year": 1847,
+    "birth_city": "Hamburg",
+    "birth_country": "Germany",
+    "genres": [
+      "symphony",
+      "oratorio"
+    ],
+    "education": [
+      "Under Zelter in Berlin"
+    ],
+    "id": "artist_0031",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1827,
+    "active_end": 1847,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Frédéric Chopin",
+    "birth_year": 1810,
+    "death_year": 1849,
+    "birth_city": "Żelazowa Wola",
+    "birth_country": "Poland",
+    "genres": [
+      "piano"
+    ],
+    "education": [
+      "Warsaw Conservatory"
+    ],
+    "id": "artist_0032",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1828,
+    "active_end": 1849,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Robert Schumann",
+    "birth_year": 1810,
+    "death_year": 1856,
+    "birth_city": "Zwickau",
+    "birth_country": "Germany",
+    "genres": [
+      "piano",
+      "lieder",
+      "symphony"
+    ],
+    "education": [
+      "Leipzig University",
+      "Under Wieck"
+    ],
+    "id": "artist_0033",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1828,
+    "active_end": 1856,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Franz Liszt",
+    "birth_year": 1811,
+    "death_year": 1886,
+    "birth_city": "Raiding",
+    "birth_country": "Hungary",
+    "genres": [
+      "piano",
+      "orchestral"
+    ],
+    "education": [
+      "Under Czerny and Salieri in Vienna"
+    ],
+    "id": "artist_0034",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": true,
+    "active_start": 1829,
+    "active_end": 1886,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Richard Wagner",
+    "birth_year": 1813,
+    "death_year": 1883,
+    "birth_city": "Leipzig",
+    "birth_country": "Germany",
+    "genres": [
+      "opera"
+    ],
+    "education": [
+      "Thomasschule Leipzig",
+      "Under Weinlig"
+    ],
+    "id": "artist_0035",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1831,
+    "active_end": 1883,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Giuseppe Verdi",
+    "birth_year": 1813,
+    "death_year": 1901,
+    "birth_city": "Le Roncole",
+    "birth_country": "Italy",
+    "genres": [
+      "opera"
+    ],
+    "education": [
+      "Under Lavigna in Milan"
+    ],
+    "id": "artist_0036",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1831,
+    "active_end": 1901,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Clara Schumann",
+    "birth_year": 1819,
+    "death_year": 1896,
+    "birth_city": "Leipzig",
+    "birth_country": "Germany",
+    "genres": [
+      "piano"
+    ],
+    "education": [
+      "Under father Friedrich Wieck"
+    ],
+    "id": "artist_0037",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1837,
+    "active_end": 1896,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Jacques Offenbach",
+    "birth_year": 1819,
+    "death_year": 1880,
+    "birth_city": "Cologne",
+    "birth_country": "Germany",
+    "genres": [
+      "operetta"
+    ],
+    "education": [
+      "Paris Conservatoire"
+    ],
+    "id": "artist_0038",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1837,
+    "active_end": 1880,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "César Franck",
+    "birth_year": 1822,
+    "death_year": 1890,
+    "birth_city": "Liège",
+    "birth_country": "Belgium",
+    "genres": [
+      "organ",
+      "symphony"
+    ],
+    "education": [
+      "Paris Conservatoire"
+    ],
+    "id": "artist_0039",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1840,
+    "active_end": 1890,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Bedřich Smetana",
+    "birth_year": 1824,
+    "death_year": 1884,
+    "birth_city": "Litomyšl",
+    "birth_country": "Bohemia",
+    "genres": [
+      "opera",
+      "orchestral"
+    ],
+    "education": [
+      "Prague under Proksch"
+    ],
+    "id": "artist_0040",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1842,
+    "active_end": 1884,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Anton Bruckner",
+    "birth_year": 1824,
+    "death_year": 1896,
+    "birth_city": "Ansfelden",
+    "birth_country": "Austria",
+    "genres": [
+      "symphony"
+    ],
+    "education": [
+      "St. Florian monastery",
+      "Vienna Conservatory"
+    ],
+    "id": "artist_0041",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": true,
+    "active_start": 1842,
+    "active_end": 1896,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Johann Strauss II",
+    "birth_year": 1825,
+    "death_year": 1899,
+    "birth_city": "Vienna",
+    "birth_country": "Austria",
+    "genres": [
+      "waltz",
+      "operetta"
+    ],
+    "education": [
+      "Self-taught, against father's wishes"
+    ],
+    "id": "artist_0042",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": true,
+    "active_start": 1843,
+    "active_end": 1899,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Johannes Brahms",
+    "birth_year": 1833,
+    "death_year": 1897,
+    "birth_city": "Hamburg",
+    "birth_country": "Germany",
+    "genres": [
+      "symphony",
+      "chamber music",
+      "piano"
+    ],
+    "education": [
+      "Under Marxsen in Hamburg"
+    ],
+    "id": "artist_0043",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1851,
+    "active_end": 1897,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Alexander Borodin",
+    "birth_year": 1833,
+    "death_year": 1887,
+    "birth_city": "St. Petersburg",
+    "birth_country": "Russia",
+    "genres": [
+      "opera",
+      "orchestral"
+    ],
+    "education": [
+      "Imperial Medical Academy"
+    ],
+    "id": "artist_0044",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1851,
+    "active_end": 1887,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Camille Saint-Saëns",
+    "birth_year": 1835,
+    "death_year": 1921,
+    "birth_city": "Paris",
+    "birth_country": "France",
+    "genres": [
+      "symphony",
+      "concerto",
+      "opera"
+    ],
+    "education": [
+      "Paris Conservatoire"
+    ],
+    "id": "artist_0045",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1853,
+    "active_end": 1921,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Léo Delibes",
+    "birth_year": 1836,
+    "death_year": 1891,
+    "birth_city": "Saint-Germain-du-Val",
+    "birth_country": "France",
+    "genres": [
+      "ballet",
+      "opera"
+    ],
+    "education": [
+      "Paris Conservatoire"
+    ],
+    "id": "artist_0046",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1854,
+    "active_end": 1891,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Mily Balakirev",
+    "birth_year": 1837,
+    "death_year": 1910,
+    "birth_city": "Nizhny Novgorod",
+    "birth_country": "Russia",
+    "genres": [
+      "orchestral",
+      "piano"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0047",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1855,
+    "active_end": 1910,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Georges Bizet",
+    "birth_year": 1838,
+    "death_year": 1875,
+    "birth_city": "Paris",
+    "birth_country": "France",
+    "genres": [
+      "opera"
+    ],
+    "education": [
+      "Paris Conservatoire"
+    ],
+    "id": "artist_0048",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1856,
+    "active_end": 1875,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Max Bruch",
+    "birth_year": 1838,
+    "death_year": 1920,
+    "birth_city": "Cologne",
+    "birth_country": "Germany",
+    "genres": [
+      "concerto",
+      "choral"
+    ],
+    "education": [
+      "Cologne Conservatory"
+    ],
+    "id": "artist_0049",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1856,
+    "active_end": 1920,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Modest Mussorgsky",
+    "birth_year": 1839,
+    "death_year": 1881,
+    "birth_city": "Karevo",
+    "birth_country": "Russia",
+    "genres": [
+      "opera",
+      "piano"
+    ],
+    "education": [
+      "Military school",
+      "Under Balakirev"
+    ],
+    "id": "artist_0050",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1857,
+    "active_end": 1881,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Pyotr Ilyich Tchaikovsky",
+    "birth_year": 1840,
+    "death_year": 1893,
+    "birth_city": "Votkinsk",
+    "birth_country": "Russia",
+    "genres": [
+      "symphony",
+      "ballet",
+      "opera"
+    ],
+    "education": [
+      "St. Petersburg Conservatory under Rubinstein"
+    ],
+    "id": "artist_0051",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1858,
+    "active_end": 1893,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Antonín Dvořák",
+    "birth_year": 1841,
+    "death_year": 1904,
+    "birth_city": "Nelahozeves",
+    "birth_country": "Bohemia",
+    "genres": [
+      "symphony",
+      "chamber music",
+      "opera"
+    ],
+    "education": [
+      "Prague Organ School"
+    ],
+    "id": "artist_0052",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1859,
+    "active_end": 1904,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Jules Massenet",
+    "birth_year": 1842,
+    "death_year": 1912,
+    "birth_city": "Montaud",
+    "birth_country": "France",
+    "genres": [
+      "opera"
+    ],
+    "education": [
+      "Paris Conservatoire"
+    ],
+    "id": "artist_0053",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1860,
+    "active_end": 1912,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Edvard Grieg",
+    "birth_year": 1843,
+    "death_year": 1907,
+    "birth_city": "Bergen",
+    "birth_country": "Norway",
+    "genres": [
+      "orchestral",
+      "piano"
+    ],
+    "education": [
+      "Leipzig Conservatory"
+    ],
+    "id": "artist_0054",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1861,
+    "active_end": 1907,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Nikolai Rimsky-Korsakov",
+    "birth_year": 1844,
+    "death_year": 1908,
+    "birth_city": "Tikhvin",
+    "birth_country": "Russia",
+    "genres": [
+      "opera",
+      "orchestral"
+    ],
+    "education": [
+      "Naval Academy",
+      "Under Balakirev"
+    ],
+    "id": "artist_0055",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1862,
+    "active_end": 1908,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Gabriel Fauré",
+    "birth_year": 1845,
+    "death_year": 1924,
+    "birth_city": "Pamiers",
+    "birth_country": "France",
+    "genres": [
+      "chamber music",
+      "art song"
+    ],
+    "education": [
+      "École Niedermeyer under Saint-Saëns"
+    ],
+    "id": "artist_0056",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1863,
+    "active_end": 1924,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Leoš Janáček",
+    "birth_year": 1854,
+    "death_year": 1928,
+    "birth_city": "Hukvaldy",
+    "birth_country": "Moravia",
+    "genres": [
+      "opera"
+    ],
+    "education": [
+      "Prague Organ School",
+      "Leipzig Conservatory"
+    ],
+    "id": "artist_0057",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1872,
+    "active_end": 1928,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Edward Elgar",
+    "birth_year": 1857,
+    "death_year": 1934,
+    "birth_city": "Broadheath",
+    "birth_country": "England",
+    "genres": [
+      "orchestral",
+      "choral"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0058",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1875,
+    "active_end": 1934,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Giacomo Puccini",
+    "birth_year": 1858,
+    "death_year": 1924,
+    "birth_city": "Lucca",
+    "birth_country": "Italy",
+    "genres": [
+      "opera"
+    ],
+    "education": [
+      "Milan Conservatory under Ponchielli"
+    ],
+    "id": "artist_0059",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1876,
+    "active_end": 1924,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Hugo Wolf",
+    "birth_year": 1860,
+    "death_year": 1903,
+    "birth_city": "Slovenj Gradec",
+    "birth_country": "Austria",
+    "genres": [
+      "lieder"
+    ],
+    "education": [
+      "Vienna Conservatory"
+    ],
+    "id": "artist_0060",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": true,
+    "active_start": 1878,
+    "active_end": 1903,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Gustav Mahler",
+    "birth_year": 1860,
+    "death_year": 1911,
+    "birth_city": "Kaliště",
+    "birth_country": "Bohemia",
+    "genres": [
+      "symphony"
+    ],
+    "education": [
+      "Vienna Conservatory"
+    ],
+    "id": "artist_0061",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": true,
+    "active_start": 1878,
+    "active_end": 1911,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Claude Debussy",
+    "birth_year": 1862,
+    "death_year": 1918,
+    "birth_city": "Saint-Germain-en-Laye",
+    "birth_country": "France",
+    "genres": [
+      "orchestral",
+      "piano",
+      "opera"
+    ],
+    "education": [
+      "Paris Conservatoire"
+    ],
+    "id": "artist_0062",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1880,
+    "active_end": 1918,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Richard Strauss",
+    "birth_year": 1864,
+    "death_year": 1949,
+    "birth_city": "Munich",
+    "birth_country": "Germany",
+    "genres": [
+      "opera",
+      "tone poem"
+    ],
+    "education": [
+      "Under father Franz Strauss"
+    ],
+    "id": "artist_0063",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1882,
+    "active_end": 1949,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Jean Sibelius",
+    "birth_year": 1865,
+    "death_year": 1957,
+    "birth_city": "Hämeenlinna",
+    "birth_country": "Finland",
+    "genres": [
+      "symphony",
+      "tone poem"
+    ],
+    "education": [
+      "Helsinki Music Institute",
+      "Berlin",
+      "Vienna"
+    ],
+    "id": "artist_0064",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": true,
+    "active_start": 1883,
+    "active_end": 1957,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Erik Satie",
+    "birth_year": 1866,
+    "death_year": 1925,
+    "birth_city": "Honfleur",
+    "birth_country": "France",
+    "genres": [
+      "piano",
+      "avant-garde"
+    ],
+    "education": [
+      "Paris Conservatoire"
+    ],
+    "id": "artist_0065",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1884,
+    "active_end": 1925,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Scott Joplin",
+    "birth_year": 1868,
+    "death_year": 1917,
+    "birth_city": "Texarkana",
+    "birth_country": "United States",
+    "genres": [
+      "ragtime"
+    ],
+    "education": [
+      "George R. Smith College"
+    ],
+    "id": "artist_0066",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1886,
+    "active_end": 1917,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Sergei Rachmaninoff",
+    "birth_year": 1873,
+    "death_year": 1943,
+    "birth_city": "Semyonovo",
+    "birth_country": "Russia",
+    "genres": [
+      "piano",
+      "symphony"
+    ],
+    "education": [
+      "Moscow Conservatory"
+    ],
+    "id": "artist_0067",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1891,
+    "active_end": 1943,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Arnold Schoenberg",
+    "birth_year": 1874,
+    "death_year": 1951,
+    "birth_city": "Vienna",
+    "birth_country": "Austria",
+    "genres": [
+      "atonal",
+      "twelve-tone"
+    ],
+    "education": [
+      "Self-taught, mentored by Alexander Zemlinsky"
+    ],
+    "id": "artist_0068",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": true,
+    "active_start": 1892,
+    "active_end": 1951,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Charles Ives",
+    "birth_year": 1874,
+    "death_year": 1954,
+    "birth_city": "Danbury",
+    "birth_country": "United States",
+    "genres": [
+      "orchestral",
+      "avant-garde"
+    ],
+    "education": [
+      "Yale under Horatio Parker"
+    ],
+    "id": "artist_0069",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1892,
+    "active_end": 1954,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Maurice Ravel",
+    "birth_year": 1875,
+    "death_year": 1937,
+    "birth_city": "Ciboure",
+    "birth_country": "France",
+    "genres": [
+      "orchestral",
+      "piano",
+      "ballet"
+    ],
+    "education": [
+      "Paris Conservatoire under Fauré"
+    ],
+    "id": "artist_0070",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1893,
+    "active_end": 1937,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Béla Bartók",
+    "birth_year": 1881,
+    "death_year": 1945,
+    "birth_city": "Nagyszentmiklós",
+    "birth_country": "Hungary",
+    "genres": [
+      "orchestral",
+      "folk music",
+      "piano"
+    ],
+    "education": [
+      "Royal Academy of Music, Budapest"
+    ],
+    "id": "artist_0071",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1899,
+    "active_end": 1945,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Igor Stravinsky",
+    "birth_year": 1882,
+    "death_year": 1971,
+    "birth_city": "Oranienbaum",
+    "birth_country": "Russia",
+    "genres": [
+      "ballet",
+      "orchestral",
+      "neoclassical"
+    ],
+    "education": [
+      "Under Rimsky-Korsakov"
+    ],
+    "id": "artist_0072",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1900,
+    "active_end": 1971,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Anton Webern",
+    "birth_year": 1883,
+    "death_year": 1945,
+    "birth_city": "Vienna",
+    "birth_country": "Austria",
+    "genres": [
+      "twelve-tone",
+      "serial"
+    ],
+    "education": [
+      "Under Schoenberg in Vienna"
+    ],
+    "id": "artist_0073",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": true,
+    "active_start": 1901,
+    "active_end": 1945,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Alban Berg",
+    "birth_year": 1885,
+    "death_year": 1935,
+    "birth_city": "Vienna",
+    "birth_country": "Austria",
+    "genres": [
+      "opera",
+      "twelve-tone"
+    ],
+    "education": [
+      "Under Schoenberg in Vienna"
+    ],
+    "id": "artist_0074",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": true,
+    "active_start": 1903,
+    "active_end": 1935,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Sergei Prokofiev",
+    "birth_year": 1891,
+    "death_year": 1953,
+    "birth_city": "Sontsivka",
+    "birth_country": "Ukraine",
+    "genres": [
+      "symphony",
+      "ballet",
+      "opera",
+      "piano"
+    ],
+    "education": [
+      "St. Petersburg Conservatory"
+    ],
+    "id": "artist_0075",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1909,
+    "active_end": 1953,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Darius Milhaud",
+    "birth_year": 1892,
+    "death_year": 1974,
+    "birth_city": "Marseille",
+    "birth_country": "France",
+    "genres": [
+      "opera",
+      "orchestral"
+    ],
+    "education": [
+      "Paris Conservatoire"
+    ],
+    "id": "artist_0076",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1910,
+    "active_end": 1974,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Paul Hindemith",
+    "birth_year": 1895,
+    "death_year": 1963,
+    "birth_city": "Hanau",
+    "birth_country": "Germany",
+    "genres": [
+      "orchestral",
+      "opera"
+    ],
+    "education": [
+      "Hoch Conservatory, Frankfurt"
+    ],
+    "id": "artist_0077",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1913,
+    "active_end": 1963,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Carl Orff",
+    "birth_year": 1895,
+    "death_year": 1982,
+    "birth_city": "Munich",
+    "birth_country": "Germany",
+    "genres": [
+      "choral",
+      "theatrical"
+    ],
+    "education": [
+      "Munich Academy of Music"
+    ],
+    "id": "artist_0078",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1913,
+    "active_end": 1982,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "George Gershwin",
+    "birth_year": 1898,
+    "death_year": 1937,
+    "birth_city": "Brooklyn",
+    "birth_country": "United States",
+    "genres": [
+      "jazz",
+      "musical theatre",
+      "orchestral"
+    ],
+    "education": [
+      "Under Charles Hambitzer",
+      "Studied with Rubin Goldmark"
+    ],
+    "id": "artist_0079",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1916,
+    "active_end": 1937,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Francis Poulenc",
+    "birth_year": 1899,
+    "death_year": 1963,
+    "birth_city": "Paris",
+    "birth_country": "France",
+    "genres": [
+      "opera",
+      "choral",
+      "chamber music"
+    ],
+    "education": [
+      "Under Ricardo Viñes and Charles Koechlin"
+    ],
+    "id": "artist_0080",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1917,
+    "active_end": 1963,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Duke Ellington",
+    "birth_year": 1899,
+    "death_year": 1974,
+    "birth_city": "Washington, D.C.",
+    "birth_country": "United States",
+    "genres": [
+      "jazz",
+      "big band"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0081",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1917,
+    "active_end": 1974,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Aaron Copland",
+    "birth_year": 1900,
+    "death_year": 1990,
+    "birth_city": "Brooklyn",
+    "birth_country": "United States",
+    "genres": [
+      "orchestral",
+      "ballet",
+      "film"
+    ],
+    "education": [
+      "Under Nadia Boulanger in Paris"
+    ],
+    "id": "artist_0082",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1918,
+    "active_end": 1990,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Joaquín Rodrigo",
+    "birth_year": 1901,
+    "death_year": 1999,
+    "birth_city": "Sagunto",
+    "birth_country": "Spain",
+    "genres": [
+      "concerto",
+      "guitar"
+    ],
+    "education": [
+      "Under Paul Dukas in Paris"
+    ],
+    "id": "artist_0083",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1919,
+    "active_end": 1999,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "William Walton",
+    "birth_year": 1902,
+    "death_year": 1983,
+    "birth_city": "Oldham",
+    "birth_country": "England",
+    "genres": [
+      "orchestral",
+      "film"
+    ],
+    "education": [
+      "Christ Church, Oxford"
+    ],
+    "id": "artist_0084",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1920,
+    "active_end": 1983,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Aram Khachaturian",
+    "birth_year": 1903,
+    "death_year": 1978,
+    "birth_city": "Tbilisi",
+    "birth_country": "Georgia",
+    "genres": [
+      "ballet",
+      "symphony"
+    ],
+    "education": [
+      "Moscow Conservatory"
+    ],
+    "id": "artist_0085",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1921,
+    "active_end": 1978,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Dmitri Shostakovich",
+    "birth_year": 1906,
+    "death_year": 1975,
+    "birth_city": "St. Petersburg",
+    "birth_country": "Russia",
+    "genres": [
+      "symphony",
+      "opera",
+      "string quartet"
+    ],
+    "education": [
+      "Petrograd Conservatory"
+    ],
+    "id": "artist_0086",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1924,
+    "active_end": 1975,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Olivier Messiaen",
+    "birth_year": 1908,
+    "death_year": 1992,
+    "birth_city": "Avignon",
+    "birth_country": "France",
+    "genres": [
+      "organ",
+      "orchestral"
+    ],
+    "education": [
+      "Paris Conservatoire under Paul Dukas"
+    ],
+    "id": "artist_0087",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1926,
+    "active_end": 1992,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Samuel Barber",
+    "birth_year": 1910,
+    "death_year": 1981,
+    "birth_city": "West Chester",
+    "birth_country": "United States",
+    "genres": [
+      "orchestral",
+      "opera"
+    ],
+    "education": [
+      "Curtis Institute"
+    ],
+    "id": "artist_0088",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1928,
+    "active_end": 1981,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "John Cage",
+    "birth_year": 1912,
+    "death_year": 1992,
+    "birth_city": "Los Angeles",
+    "birth_country": "United States",
+    "genres": [
+      "avant-garde",
+      "experimental"
+    ],
+    "education": [
+      "Under Schoenberg",
+      "Under Henry Cowell"
+    ],
+    "id": "artist_0089",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1930,
+    "active_end": 1992,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Benjamin Britten",
+    "birth_year": 1913,
+    "death_year": 1976,
+    "birth_city": "Lowestoft",
+    "birth_country": "England",
+    "genres": [
+      "opera",
+      "orchestral"
+    ],
+    "education": [
+      "Royal College of Music"
+    ],
+    "id": "artist_0090",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1931,
+    "active_end": 1976,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Leonard Bernstein",
+    "birth_year": 1918,
+    "death_year": 1990,
+    "birth_city": "Lawrence",
+    "birth_country": "United States",
+    "genres": [
+      "musical theatre",
+      "symphony",
+      "conducting"
+    ],
+    "education": [
+      "Harvard",
+      "Curtis Institute under Fritz Reiner"
+    ],
+    "id": "artist_0091",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1936,
+    "active_end": 1990,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "W.C. Handy",
+    "birth_year": 1873,
+    "death_year": 1958,
+    "birth_city": "Florence",
+    "birth_country": "United States",
+    "genres": [
+      "blues"
+    ],
+    "education": [
+      "Teachers College, Huntsville"
+    ],
+    "id": "artist_0092",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1891,
+    "active_end": 1958,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Jelly Roll Morton",
+    "birth_year": 1890,
+    "death_year": 1941,
+    "birth_city": "New Orleans",
+    "birth_country": "United States",
+    "genres": [
+      "jazz",
+      "ragtime"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0093",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1908,
+    "active_end": 1941,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Bessie Smith",
+    "birth_year": 1894,
+    "death_year": 1937,
+    "birth_city": "Chattanooga",
+    "birth_country": "United States",
+    "genres": [
+      "blues"
+    ],
+    "education": [
+      "Mentored by Ma Rainey"
+    ],
+    "id": "artist_0094",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1912,
+    "active_end": 1937,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Louis Armstrong",
+    "birth_year": 1901,
+    "death_year": 1971,
+    "birth_city": "New Orleans",
+    "birth_country": "United States",
+    "genres": [
+      "jazz",
+      "swing"
+    ],
+    "education": [
+      "New Orleans Colored Waif's Home",
+      "Under King Oliver"
+    ],
+    "id": "artist_0095",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1919,
+    "active_end": 1971,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Count Basie",
+    "birth_year": 1904,
+    "death_year": 1984,
+    "birth_city": "Red Bank",
+    "birth_country": "United States",
+    "genres": [
+      "jazz",
+      "swing",
+      "big band"
+    ],
+    "education": [
+      "Under Fats Waller in Harlem"
+    ],
+    "id": "artist_0096",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1922,
+    "active_end": 1984,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Fats Waller",
+    "birth_year": 1904,
+    "death_year": 1943,
+    "birth_city": "New York City",
+    "birth_country": "United States",
+    "genres": [
+      "jazz",
+      "stride piano"
+    ],
+    "education": [
+      "Under James P. Johnson"
+    ],
+    "id": "artist_0097",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1922,
+    "active_end": 1943,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Dmitri Tiomkin",
+    "birth_year": 1894,
+    "death_year": 1979,
+    "birth_city": "Kremenchug",
+    "birth_country": "Ukraine",
+    "genres": [
+      "film score"
+    ],
+    "education": [
+      "St. Petersburg Conservatory"
+    ],
+    "id": "artist_0098",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1912,
+    "active_end": 1979,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Benny Goodman",
+    "birth_year": 1909,
+    "death_year": 1986,
+    "birth_city": "Chicago",
+    "birth_country": "United States",
+    "genres": [
+      "jazz",
+      "swing"
+    ],
+    "education": [
+      "Hull House, Chicago"
+    ],
+    "id": "artist_0099",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1927,
+    "active_end": 1986,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Django Reinhardt",
+    "birth_year": 1910,
+    "death_year": 1953,
+    "birth_city": "Liberchies",
+    "birth_country": "Belgium",
+    "genres": [
+      "jazz",
+      "gypsy jazz"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0100",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1928,
+    "active_end": 1953,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Robert Johnson",
+    "birth_year": 1911,
+    "death_year": 1938,
+    "birth_city": "Hazlehurst",
+    "birth_country": "United States",
+    "genres": [
+      "delta blues"
+    ],
+    "education": [
+      "Self-taught, mentored by Son House"
+    ],
+    "id": "artist_0101",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1929,
+    "active_end": 1938,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Muddy Waters",
+    "birth_year": 1913,
+    "death_year": 1983,
+    "birth_city": "Issaquena County",
+    "birth_country": "United States",
+    "genres": [
+      "blues",
+      "Chicago blues"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0102",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1931,
+    "active_end": 1983,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Billie Holiday",
+    "birth_year": 1915,
+    "death_year": 1959,
+    "birth_city": "Philadelphia",
+    "birth_country": "United States",
+    "genres": [
+      "jazz",
+      "blues"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0103",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1933,
+    "active_end": 1959,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Dizzy Gillespie",
+    "birth_year": 1917,
+    "death_year": 1993,
+    "birth_city": "Cheraw",
+    "birth_country": "United States",
+    "genres": [
+      "bebop",
+      "jazz"
+    ],
+    "education": [
+      "Laurinburg Institute"
+    ],
+    "id": "artist_0104",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1935,
+    "active_end": 1993,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Ella Fitzgerald",
+    "birth_year": 1917,
+    "death_year": 1996,
+    "birth_city": "Newport News",
+    "birth_country": "United States",
+    "genres": [
+      "jazz",
+      "swing"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0105",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1935,
+    "active_end": 1996,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Thelonious Monk",
+    "birth_year": 1917,
+    "death_year": 1982,
+    "birth_city": "Rocky Mount",
+    "birth_country": "United States",
+    "genres": [
+      "bebop",
+      "jazz"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0106",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1935,
+    "active_end": 1982,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Charlie Parker",
+    "birth_year": 1920,
+    "death_year": 1955,
+    "birth_city": "Kansas City",
+    "birth_country": "United States",
+    "genres": [
+      "bebop",
+      "jazz"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0107",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1938,
+    "active_end": 1955,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Dave Brubeck",
+    "birth_year": 1920,
+    "death_year": 2012,
+    "birth_city": "Concord",
+    "birth_country": "United States",
+    "genres": [
+      "jazz"
+    ],
+    "education": [
+      "University of the Pacific",
+      "Under Milhaud and Schoenberg"
+    ],
+    "id": "artist_0108",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1938,
+    "active_end": 2012,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Art Blakey",
+    "birth_year": 1919,
+    "death_year": 1990,
+    "birth_city": "Pittsburgh",
+    "birth_country": "United States",
+    "genres": [
+      "hard bop",
+      "jazz"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0109",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1937,
+    "active_end": 1990,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Charles Mingus",
+    "birth_year": 1922,
+    "death_year": 1979,
+    "birth_city": "Nogales",
+    "birth_country": "United States",
+    "genres": [
+      "jazz",
+      "post-bop"
+    ],
+    "education": [
+      "Studied with Red Callender and Lloyd Reese"
+    ],
+    "id": "artist_0110",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1940,
+    "active_end": 1979,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Miles Davis",
+    "birth_year": 1926,
+    "death_year": 1991,
+    "birth_city": "Alton",
+    "birth_country": "United States",
+    "genres": [
+      "jazz",
+      "bebop",
+      "cool jazz",
+      "fusion"
+    ],
+    "education": [
+      "Juilliard"
+    ],
+    "id": "artist_0111",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1944,
+    "active_end": 1991,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "John Coltrane",
+    "birth_year": 1926,
+    "death_year": 1967,
+    "birth_city": "Hamlet",
+    "birth_country": "United States",
+    "genres": [
+      "jazz",
+      "free jazz"
+    ],
+    "education": [
+      "Granoff Studios",
+      "Ornstein School of Music"
+    ],
+    "id": "artist_0112",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1944,
+    "active_end": 1967,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Ray Charles",
+    "birth_year": 1930,
+    "death_year": 2004,
+    "birth_city": "Albany",
+    "birth_country": "United States",
+    "genres": [
+      "soul",
+      "R&B",
+      "jazz",
+      "blues"
+    ],
+    "education": [
+      "Florida School for the Deaf and Blind"
+    ],
+    "id": "artist_0113",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1948,
+    "active_end": 2004,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Ornette Coleman",
+    "birth_year": 1930,
+    "death_year": 2015,
+    "birth_city": "Fort Worth",
+    "birth_country": "United States",
+    "genres": [
+      "free jazz",
+      "avant-garde jazz"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0114",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1948,
+    "active_end": 2015,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "B.B. King",
+    "birth_year": 1925,
+    "death_year": 2015,
+    "birth_city": "Itta Bena",
+    "birth_country": "United States",
+    "genres": [
+      "blues"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0115",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1943,
+    "active_end": 2015,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Nina Simone",
+    "birth_year": 1933,
+    "death_year": 2003,
+    "birth_city": "Tryon",
+    "birth_country": "United States",
+    "genres": [
+      "jazz",
+      "soul",
+      "blues",
+      "classical"
+    ],
+    "education": [
+      "Juilliard"
+    ],
+    "id": "artist_0116",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1951,
+    "active_end": 2003,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Herbie Hancock",
+    "birth_year": 1940,
+    "death_year": null,
+    "birth_city": "Chicago",
+    "birth_country": "United States",
+    "genres": [
+      "jazz",
+      "funk",
+      "fusion"
+    ],
+    "education": [
+      "Grinnell College",
+      "Roosevelt University"
+    ],
+    "id": "artist_0117",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1958,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Wayne Shorter",
+    "birth_year": 1933,
+    "death_year": 2023,
+    "birth_city": "Newark",
+    "birth_country": "United States",
+    "genres": [
+      "jazz",
+      "fusion"
+    ],
+    "education": [
+      "New York University"
+    ],
+    "id": "artist_0118",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1951,
+    "active_end": 2023,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Chuck Berry",
+    "birth_year": 1926,
+    "death_year": 2017,
+    "birth_city": "St. Louis",
+    "birth_country": "United States",
+    "genres": [
+      "rock and roll"
+    ],
+    "education": [
+      "Sumner High School"
+    ],
+    "id": "artist_0119",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1944,
+    "active_end": 2017,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Little Richard",
+    "birth_year": 1932,
+    "death_year": 2020,
+    "birth_city": "Macon",
+    "birth_country": "United States",
+    "genres": [
+      "rock and roll"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0120",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1950,
+    "active_end": 2020,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Johnny Cash",
+    "birth_year": 1932,
+    "death_year": 2003,
+    "birth_city": "Kingsland",
+    "birth_country": "United States",
+    "genres": [
+      "country",
+      "rock"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0121",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1950,
+    "active_end": 2003,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "James Brown",
+    "birth_year": 1933,
+    "death_year": 2006,
+    "birth_city": "Barnwell",
+    "birth_country": "United States",
+    "genres": [
+      "funk",
+      "soul",
+      "R&B"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0122",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1951,
+    "active_end": 2006,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Elvis Presley",
+    "birth_year": 1935,
+    "death_year": 1977,
+    "birth_city": "Tupelo",
+    "birth_country": "United States",
+    "genres": [
+      "rock and roll",
+      "pop"
+    ],
+    "education": [
+      "Humes High School"
+    ],
+    "id": "artist_0123",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1953,
+    "active_end": 1977,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Buddy Holly",
+    "birth_year": 1936,
+    "death_year": 1959,
+    "birth_city": "Lubbock",
+    "birth_country": "United States",
+    "genres": [
+      "rock and roll"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0124",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1954,
+    "active_end": 1959,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Roy Orbison",
+    "birth_year": 1936,
+    "death_year": 1988,
+    "birth_city": "Vernon",
+    "birth_country": "United States",
+    "genres": [
+      "rock",
+      "pop"
+    ],
+    "education": [
+      "North Texas State"
+    ],
+    "id": "artist_0125",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1954,
+    "active_end": 1988,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Bob Dylan",
+    "birth_year": 1941,
+    "death_year": null,
+    "birth_city": "Duluth",
+    "birth_country": "United States",
+    "genres": [
+      "folk",
+      "rock",
+      "blues"
+    ],
+    "education": [
+      "University of Minnesota"
+    ],
+    "id": "artist_0126",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1959,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Aretha Franklin",
+    "birth_year": 1942,
+    "death_year": 2018,
+    "birth_city": "Memphis",
+    "birth_country": "United States",
+    "genres": [
+      "soul",
+      "R&B",
+      "gospel"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0127",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1960,
+    "active_end": 2018,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Paul McCartney",
+    "birth_year": 1942,
+    "death_year": null,
+    "birth_city": "Liverpool",
+    "birth_country": "England",
+    "genres": [
+      "rock",
+      "pop"
+    ],
+    "education": [
+      "Liverpool Institute"
+    ],
+    "id": "artist_0128",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1960,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "John Lennon",
+    "birth_year": 1940,
+    "death_year": 1980,
+    "birth_city": "Liverpool",
+    "birth_country": "England",
+    "genres": [
+      "rock",
+      "pop"
+    ],
+    "education": [
+      "Liverpool College of Art"
+    ],
+    "id": "artist_0129",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1958,
+    "active_end": 1980,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "George Harrison",
+    "birth_year": 1943,
+    "death_year": 2001,
+    "birth_city": "Liverpool",
+    "birth_country": "England",
+    "genres": [
+      "rock",
+      "world music"
+    ],
+    "education": [
+      "Liverpool Institute"
+    ],
+    "id": "artist_0130",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1961,
+    "active_end": 2001,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Jimi Hendrix",
+    "birth_year": 1942,
+    "death_year": 1970,
+    "birth_city": "Seattle",
+    "birth_country": "United States",
+    "genres": [
+      "rock",
+      "blues rock"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0131",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1960,
+    "active_end": 1970,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Bob Marley",
+    "birth_year": 1945,
+    "death_year": 1981,
+    "birth_city": "Nine Mile",
+    "birth_country": "Jamaica",
+    "genres": [
+      "reggae",
+      "ska"
+    ],
+    "education": [
+      "Stepney Primary School"
+    ],
+    "id": "artist_0132",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1963,
+    "active_end": 1981,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Mick Jagger",
+    "birth_year": 1943,
+    "death_year": null,
+    "birth_city": "Dartford",
+    "birth_country": "England",
+    "genres": [
+      "rock",
+      "blues rock"
+    ],
+    "education": [
+      "London School of Economics"
+    ],
+    "id": "artist_0133",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1961,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Keith Richards",
+    "birth_year": 1943,
+    "death_year": null,
+    "birth_city": "Dartford",
+    "birth_country": "England",
+    "genres": [
+      "rock",
+      "blues rock"
+    ],
+    "education": [
+      "Sidcup Art College"
+    ],
+    "id": "artist_0134",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1961,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Jimmy Page",
+    "birth_year": 1944,
+    "death_year": null,
+    "birth_city": "Heston",
+    "birth_country": "England",
+    "genres": [
+      "rock",
+      "hard rock",
+      "blues"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0135",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1962,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Eric Clapton",
+    "birth_year": 1945,
+    "death_year": null,
+    "birth_city": "Ripley",
+    "birth_country": "England",
+    "genres": [
+      "rock",
+      "blues"
+    ],
+    "education": [
+      "Kingston College of Art"
+    ],
+    "id": "artist_0136",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1963,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "David Bowie",
+    "birth_year": 1947,
+    "death_year": 2016,
+    "birth_city": "Brixton",
+    "birth_country": "England",
+    "genres": [
+      "rock",
+      "art rock",
+      "glam rock",
+      "electronic"
+    ],
+    "education": [
+      "Bromley Technical High School"
+    ],
+    "id": "artist_0137",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1965,
+    "active_end": 2016,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Stevie Wonder",
+    "birth_year": 1950,
+    "death_year": null,
+    "birth_city": "Saginaw",
+    "birth_country": "United States",
+    "genres": [
+      "soul",
+      "R&B",
+      "pop",
+      "funk"
+    ],
+    "education": [
+      "Michigan School for the Blind"
+    ],
+    "id": "artist_0138",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1968,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Joni Mitchell",
+    "birth_year": 1943,
+    "death_year": null,
+    "birth_city": "Fort Macleod",
+    "birth_country": "Canada",
+    "genres": [
+      "folk",
+      "jazz",
+      "pop"
+    ],
+    "education": [
+      "Alberta College of Art"
+    ],
+    "id": "artist_0139",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1961,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Freddie Mercury",
+    "birth_year": 1946,
+    "death_year": 1991,
+    "birth_city": "Stone Town",
+    "birth_country": "Zanzibar",
+    "genres": [
+      "rock",
+      "glam rock"
+    ],
+    "education": [
+      "Ealing Art College"
+    ],
+    "id": "artist_0140",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1964,
+    "active_end": 1991,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Brian Eno",
+    "birth_year": 1948,
+    "death_year": null,
+    "birth_city": "Woodbridge",
+    "birth_country": "England",
+    "genres": [
+      "ambient",
+      "electronic",
+      "art rock"
+    ],
+    "education": [
+      "Ipswich Art School",
+      "Winchester School of Art"
+    ],
+    "id": "artist_0141",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1966,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Bruce Springsteen",
+    "birth_year": 1949,
+    "death_year": null,
+    "birth_city": "Long Branch",
+    "birth_country": "United States",
+    "genres": [
+      "rock"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0142",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1967,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Sting",
+    "birth_year": 1951,
+    "death_year": null,
+    "birth_city": "Wallsend",
+    "birth_country": "England",
+    "genres": [
+      "rock",
+      "new wave",
+      "jazz"
+    ],
+    "education": [
+      "Northern Counties College of Education"
+    ],
+    "id": "artist_0143",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1969,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Prince",
+    "birth_year": 1958,
+    "death_year": 2016,
+    "birth_city": "Minneapolis",
+    "birth_country": "United States",
+    "genres": [
+      "pop",
+      "funk",
+      "rock",
+      "R&B"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0144",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1976,
+    "active_end": 2016,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Michael Jackson",
+    "birth_year": 1958,
+    "death_year": 2009,
+    "birth_city": "Gary",
+    "birth_country": "United States",
+    "genres": [
+      "pop",
+      "R&B",
+      "dance"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0145",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1976,
+    "active_end": 2009,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Madonna",
+    "birth_year": 1958,
+    "death_year": null,
+    "birth_city": "Bay City",
+    "birth_country": "United States",
+    "genres": [
+      "pop",
+      "dance",
+      "electronic"
+    ],
+    "education": [
+      "University of Michigan"
+    ],
+    "id": "artist_0146",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1976,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Kurt Cobain",
+    "birth_year": 1967,
+    "death_year": 1994,
+    "birth_city": "Aberdeen",
+    "birth_country": "United States",
+    "genres": [
+      "grunge",
+      "alternative rock"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0147",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1985,
+    "active_end": 1994,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Thom Yorke",
+    "birth_year": 1968,
+    "death_year": null,
+    "birth_city": "Wellingborough",
+    "birth_country": "England",
+    "genres": [
+      "alternative rock",
+      "electronic"
+    ],
+    "education": [
+      "University of Exeter"
+    ],
+    "id": "artist_0148",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1986,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Björk",
+    "birth_year": 1965,
+    "death_year": null,
+    "birth_city": "Reykjavík",
+    "birth_country": "Iceland",
+    "genres": [
+      "art pop",
+      "electronic",
+      "experimental"
+    ],
+    "education": [
+      "Reykjavik Music Conservatory"
+    ],
+    "id": "artist_0149",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1983,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Fela Kuti",
+    "birth_year": 1938,
+    "death_year": 1997,
+    "birth_city": "Abeokuta",
+    "birth_country": "Nigeria",
+    "genres": [
+      "afrobeat",
+      "jazz"
+    ],
+    "education": [
+      "Trinity College of Music, London"
+    ],
+    "id": "artist_0150",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1956,
+    "active_end": 1997,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Kraftwerk",
+    "birth_year": 1946,
+    "death_year": null,
+    "birth_city": "Düsseldorf",
+    "birth_country": "Germany",
+    "genres": [
+      "electronic"
+    ],
+    "education": [
+      "Düsseldorf Conservatory"
+    ],
+    "id": "artist_0151",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1964,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Ravi Shankar",
+    "birth_year": 1920,
+    "death_year": 2012,
+    "birth_city": "Varanasi",
+    "birth_country": "India",
+    "genres": [
+      "Indian classical",
+      "world music"
+    ],
+    "education": [
+      "Under Allauddin Khan"
+    ],
+    "id": "artist_0152",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1938,
+    "active_end": 2012,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Youssou N'Dour",
+    "birth_year": 1959,
+    "death_year": null,
+    "birth_city": "Dakar",
+    "birth_country": "Senegal",
+    "genres": [
+      "mbalax",
+      "world music"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0153",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1977,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Nusrat Fateh Ali Khan",
+    "birth_year": 1948,
+    "death_year": 1997,
+    "birth_city": "Faisalabad",
+    "birth_country": "Pakistan",
+    "genres": [
+      "qawwali",
+      "world music"
+    ],
+    "education": [
+      "Under father and uncle"
+    ],
+    "id": "artist_0154",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1966,
+    "active_end": 1997,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Ástor Piazzolla",
+    "birth_year": 1921,
+    "death_year": 1992,
+    "birth_city": "Mar del Plata",
+    "birth_country": "Argentina",
+    "genres": [
+      "tango",
+      "nuevo tango"
+    ],
+    "education": [
+      "Under Nadia Boulanger in Paris"
+    ],
+    "id": "artist_0155",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1939,
+    "active_end": 1992,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "György Ligeti",
+    "birth_year": 1923,
+    "death_year": 2006,
+    "birth_city": "Dicsőszentmárton",
+    "birth_country": "Romania",
+    "genres": [
+      "avant-garde",
+      "orchestral"
+    ],
+    "education": [
+      "Franz Liszt Academy, Budapest"
+    ],
+    "id": "artist_0156",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1941,
+    "active_end": 2006,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Pierre Boulez",
+    "birth_year": 1925,
+    "death_year": 2016,
+    "birth_city": "Montbrison",
+    "birth_country": "France",
+    "genres": [
+      "serial",
+      "electronic",
+      "conducting"
+    ],
+    "education": [
+      "Paris Conservatoire under Messiaen"
+    ],
+    "id": "artist_0157",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1943,
+    "active_end": 2016,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Karlheinz Stockhausen",
+    "birth_year": 1928,
+    "death_year": 2007,
+    "birth_city": "Mödrath",
+    "birth_country": "Germany",
+    "genres": [
+      "electronic",
+      "serial",
+      "avant-garde"
+    ],
+    "education": [
+      "Cologne Conservatory",
+      "Under Messiaen in Paris"
+    ],
+    "id": "artist_0158",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1946,
+    "active_end": 2007,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Steve Reich",
+    "birth_year": 1936,
+    "death_year": null,
+    "birth_city": "New York City",
+    "birth_country": "United States",
+    "genres": [
+      "minimalism"
+    ],
+    "education": [
+      "Juilliard",
+      "Mills College under Milhaud"
+    ],
+    "id": "artist_0159",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1954,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Philip Glass",
+    "birth_year": 1937,
+    "death_year": null,
+    "birth_city": "Baltimore",
+    "birth_country": "United States",
+    "genres": [
+      "minimalism",
+      "opera",
+      "film"
+    ],
+    "education": [
+      "Juilliard",
+      "Under Nadia Boulanger in Paris"
+    ],
+    "id": "artist_0160",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1955,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "John Williams",
+    "birth_year": 1932,
+    "death_year": null,
+    "birth_city": "Floral Park",
+    "birth_country": "United States",
+    "genres": [
+      "film score",
+      "orchestral"
+    ],
+    "education": [
+      "Juilliard",
+      "UCLA"
+    ],
+    "id": "artist_0161",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1950,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Ennio Morricone",
+    "birth_year": 1928,
+    "death_year": 2020,
+    "birth_city": "Rome",
+    "birth_country": "Italy",
+    "genres": [
+      "film score"
+    ],
+    "education": [
+      "Santa Cecilia Conservatory, Rome"
+    ],
+    "id": "artist_0162",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1946,
+    "active_end": 2020,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Hans Zimmer",
+    "birth_year": 1957,
+    "death_year": null,
+    "birth_city": "Frankfurt",
+    "birth_country": "Germany",
+    "genres": [
+      "film score",
+      "electronic"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0163",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1975,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Arvo Pärt",
+    "birth_year": 1935,
+    "death_year": null,
+    "birth_city": "Paide",
+    "birth_country": "Estonia",
+    "genres": [
+      "sacred minimalism"
+    ],
+    "education": [
+      "Tallinn Conservatory"
+    ],
+    "id": "artist_0164",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1953,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Krzysztof Penderecki",
+    "birth_year": 1933,
+    "death_year": 2020,
+    "birth_city": "Dębica",
+    "birth_country": "Poland",
+    "genres": [
+      "avant-garde",
+      "neo-romantic"
+    ],
+    "education": [
+      "Kraków Academy of Music"
+    ],
+    "id": "artist_0165",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1951,
+    "active_end": 2020,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Terry Riley",
+    "birth_year": 1935,
+    "death_year": null,
+    "birth_city": "Colfax",
+    "birth_country": "United States",
+    "genres": [
+      "minimalism"
+    ],
+    "education": [
+      "San Francisco State",
+      "UC Berkeley"
+    ],
+    "id": "artist_0166",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1953,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Ryuichi Sakamoto",
+    "birth_year": 1952,
+    "death_year": 2023,
+    "birth_city": "Tokyo",
+    "birth_country": "Japan",
+    "genres": [
+      "electronic",
+      "film score",
+      "ambient"
+    ],
+    "education": [
+      "Tokyo University of the Arts"
+    ],
+    "id": "artist_0167",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1970,
+    "active_end": 2023,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Grandmaster Flash",
+    "birth_year": 1958,
+    "death_year": null,
+    "birth_city": "Bridgetown",
+    "birth_country": "Barbados",
+    "genres": [
+      "hip-hop"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0168",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1976,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Afrika Bambaataa",
+    "birth_year": 1957,
+    "death_year": null,
+    "birth_city": "Bronx",
+    "birth_country": "United States",
+    "genres": [
+      "hip-hop",
+      "electro"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0169",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1975,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Run-DMC",
+    "birth_year": 1964,
+    "death_year": null,
+    "birth_city": "Hollis, Queens",
+    "birth_country": "United States",
+    "genres": [
+      "hip-hop"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0170",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1982,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Tupac Shakur",
+    "birth_year": 1971,
+    "death_year": 1996,
+    "birth_city": "New York City",
+    "birth_country": "United States",
+    "genres": [
+      "hip-hop"
+    ],
+    "education": [
+      "Baltimore School for the Arts"
+    ],
+    "id": "artist_0171",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1989,
+    "active_end": 1996,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "The Notorious B.I.G.",
+    "birth_year": 1972,
+    "death_year": 1997,
+    "birth_city": "Brooklyn",
+    "birth_country": "United States",
+    "genres": [
+      "hip-hop"
+    ],
+    "education": [
+      "George Westinghouse HS"
+    ],
+    "id": "artist_0172",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1990,
+    "active_end": 1997,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Jay-Z",
+    "birth_year": 1969,
+    "death_year": null,
+    "birth_city": "Brooklyn",
+    "birth_country": "United States",
+    "genres": [
+      "hip-hop"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0173",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1987,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Kanye West",
+    "birth_year": 1977,
+    "death_year": null,
+    "birth_city": "Atlanta",
+    "birth_country": "United States",
+    "genres": [
+      "hip-hop",
+      "pop",
+      "experimental"
+    ],
+    "education": [
+      "American Academy of Art",
+      "Chicago State"
+    ],
+    "id": "artist_0174",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1995,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Kendrick Lamar",
+    "birth_year": 1987,
+    "death_year": null,
+    "birth_city": "Compton",
+    "birth_country": "United States",
+    "genres": [
+      "hip-hop"
+    ],
+    "education": [
+      "Centennial High School"
+    ],
+    "id": "artist_0175",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 2005,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Aphex Twin",
+    "birth_year": 1971,
+    "death_year": null,
+    "birth_city": "Limerick",
+    "birth_country": "Ireland",
+    "genres": [
+      "electronic",
+      "IDM",
+      "ambient"
+    ],
+    "education": [
+      "Kingston Polytechnic"
+    ],
+    "id": "artist_0176",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1989,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Daft Punk",
+    "birth_year": 1974,
+    "death_year": null,
+    "birth_city": "Paris",
+    "birth_country": "France",
+    "genres": [
+      "electronic",
+      "house",
+      "dance"
+    ],
+    "education": [
+      "Self-taught"
+    ],
+    "id": "artist_0177",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1992,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Beyoncé",
+    "birth_year": 1981,
+    "death_year": null,
+    "birth_city": "Houston",
+    "birth_country": "United States",
+    "genres": [
+      "pop",
+      "R&B"
+    ],
+    "education": [
+      "High School for the Performing Arts"
+    ],
+    "id": "artist_0178",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1999,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Radiohead",
+    "birth_year": 1968,
+    "death_year": null,
+    "birth_city": "Abingdon",
+    "birth_country": "England",
+    "genres": [
+      "alternative rock",
+      "electronic"
+    ],
+    "education": [
+      "Abingdon School"
+    ],
+    "id": "artist_0179",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 1986,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  },
+  {
+    "name": "Billie Eilish",
+    "birth_year": 2001,
+    "death_year": null,
+    "birth_city": "Los Angeles",
+    "birth_country": "United States",
+    "genres": [
+      "pop",
+      "electropop"
+    ],
+    "education": [
+      "Homeschooled"
+    ],
+    "id": "artist_0180",
+    "birth_lat": null,
+    "birth_lng": null,
+    "austrian": false,
+    "active_start": 2019,
+    "active_end": 2025,
+    "wikidata_id": null,
+    "musicbrainz_id": null,
+    "wikipedia_url": null,
+    "image_url": null
+  }
+]
