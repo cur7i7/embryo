@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import { Map as MapGL, Source, Layer } from 'react-map-gl/maplibre';
-import { useArtistData } from '../hooks/useArtistData.js';
 import { getGenreBucket } from '../utils/genres.js';
 import GenreLegend from './GenreLegend.jsx';
+import ArtistCount from './ArtistCount.jsx';
 
 const mapStyle = {
   version: 8,
@@ -40,11 +40,9 @@ const circleLayerStyle = {
   },
 };
 
-export default function Map() {
-  const { artists, loading } = useArtistData();
-
+export default function Map({ artists, connectionCounts, rangeStart, rangeEnd }) {
   const geojson = useMemo(() => {
-    const features = artists
+    const features = (artists || [])
       .filter((a) => a.birth_lat != null && a.birth_lng != null)
       .map((a) => {
         const { color } = getGenreBucket(a.genres);
@@ -68,6 +66,8 @@ export default function Map() {
     };
   }, [artists]);
 
+  const visibleCount = geojson.features.length;
+
   return (
     <div style={{ width: '100vw', height: '100vh', backgroundColor: '#FAF3EB', position: 'relative' }}>
       <MapGL
@@ -79,12 +79,17 @@ export default function Map() {
         style={{ width: '100%', height: '100%' }}
         mapStyle={mapStyle}
       >
-        {!loading && geojson.features.length > 0 && (
+        {geojson.features.length > 0 && (
           <Source id="artists" type="geojson" data={geojson}>
             <Layer {...circleLayerStyle} />
           </Source>
         )}
       </MapGL>
+      <ArtistCount
+        count={visibleCount}
+        rangeStart={rangeStart}
+        rangeEnd={rangeEnd}
+      />
       <GenreLegend />
     </div>
   );
