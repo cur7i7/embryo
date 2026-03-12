@@ -6,7 +6,7 @@ export default function GenreLegend() {
     <div
       style={{
         position: 'absolute',
-        bottom: '24px',
+        bottom: '104px',
         left: '24px',
         backgroundColor: 'rgba(250, 243, 235, 0.88)',
         backdropFilter: 'blur(6px)',
