@@ -4,12 +4,13 @@ import {
   GENRE_COLORS,
   preRenderOrbTexture,
   createGrainTexture,
+  drawArc,
 } from '../utils/rendering.js';
 
 // Build a stable mapping from genre bucket color -> pre-rendered texture index
 const BUCKET_COLORS = Object.values(GENRE_BUCKETS).map((b) => b.color);
 
-export default function CanvasOverlay({ mapRef, artists, connectionCounts }) {
+export default function CanvasOverlay({ mapRef, artists, connectionCounts, connections, activeConnectionTypes }) {
   const canvasRef = useRef(null);
 
   // Pre-rendered textures — created once, never recreated
@@ -58,12 +59,49 @@ export default function CanvasOverlay({ mapRef, artists, connectionCounts }) {
     ctx.save();
     ctx.scale(dpr, dpr);
 
-    // --- Orb phase ---
-    ctx.globalCompositeOperation = 'screen';
-
     const validArtists = (artists || []).filter(
       (a) => a.birth_lat != null && a.birth_lng != null
     );
+
+    // --- Arc phase ---
+    ctx.globalCompositeOperation = 'source-over';
+
+    if (connections && connections.length > 0 && activeConnectionTypes && activeConnectionTypes.size > 0) {
+      // Build name -> screen position map for O(1) lookup
+      const posMap = new Map();
+      for (const artist of validArtists) {
+        const point = map.project([artist.birth_lng, artist.birth_lat]);
+        posMap.set(artist.name, point);
+      }
+
+      // Build name -> artist map for genre color lookup
+      const artistMap = new Map();
+      for (const artist of validArtists) {
+        artistMap.set(artist.name, artist);
+      }
+
+      // Build set of visible artist names for O(1) membership test
+      const visibleNames = new Set(posMap.keys());
+
+      for (const conn of connections) {
+        const { source_name, target_name, type, confidence } = conn;
+        if (!visibleNames.has(source_name) || !visibleNames.has(target_name)) continue;
+        if (!activeConnectionTypes.has(type)) continue;
+
+        const srcPos = posMap.get(source_name);
+        const tgtPos = posMap.get(target_name);
+
+        const srcArtist = artistMap.get(source_name);
+        const tgtArtist = artistMap.get(target_name);
+        const { color: srcColor } = getGenreBucket(srcArtist?.genres);
+        const { color: tgtColor } = getGenreBucket(tgtArtist?.genres);
+
+        drawArc(ctx, srcPos.x, srcPos.y, tgtPos.x, tgtPos.y, srcColor, tgtColor, type, confidence ?? 0.5);
+      }
+    }
+
+    // --- Orb phase ---
+    ctx.globalCompositeOperation = 'screen';
 
     for (const artist of validArtists) {
       const point = map.project([artist.birth_lng, artist.birth_lat]);
@@ -79,8 +117,8 @@ export default function CanvasOverlay({ mapRef, artists, connectionCounts }) {
         continue;
       }
 
-      const connections = (connectionCounts && connectionCounts.get(artist.name)) || 0;
-      const radius = 40 + Math.min(connections * 3, 60);
+      const connCount = (connectionCounts && connectionCounts.get(artist.name)) || 0;
+      const radius = 40 + Math.min(connCount * 3, 60);
 
       const { color: genreColor } = getGenreBucket(artist.genres);
       const textureIndex = BUCKET_COLORS.indexOf(genreColor);
@@ -110,7 +148,7 @@ export default function CanvasOverlay({ mapRef, artists, connectionCounts }) {
     }
 
     ctx.restore();
-  }, [artists, connectionCounts, mapRef]);
+  }, [artists, connectionCounts, connections, activeConnectionTypes, mapRef]);
 
   // Attach map event listeners and trigger renders
   useEffect(() => {

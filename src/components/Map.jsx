@@ -28,7 +28,7 @@ const mapStyle = {
   ],
 };
 
-export default function Map({ artists, connectionCounts, rangeStart, rangeEnd }) {
+export default function Map({ artists, connectionCounts, connections, activeConnectionTypes, rangeStart, rangeEnd }) {
   const mapRef = useRef(null);
   const [mapLoaded, setMapLoaded] = useState(false);
 
@@ -58,6 +58,8 @@ export default function Map({ artists, connectionCounts, rangeStart, rangeEnd })
           mapRef={mapRef}
           artists={artists}
           connectionCounts={connectionCounts}
+          connections={connections}
+          activeConnectionTypes={activeConnectionTypes}
         />
       )}
       <ArtistCount

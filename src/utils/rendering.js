@@ -2,6 +2,56 @@ import { GENRE_BUCKETS } from './genres.js';
 
 export const GENRE_COLORS = Object.values(GENRE_BUCKETS).map((b) => b.color);
 
+export function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+export function drawArc(ctx, x1, y1, x2, y2, color1, color2, type, confidence) {
+  const midX = (x1 + x2) / 2;
+  const midY = (y1 + y2) / 2;
+  const dist = Math.hypot(x2 - x1, y2 - y1);
+  const bulge = dist * 0.25; // control point offset for curvature
+  // Perpendicular offset for the control point
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const nx = -dy / dist;
+  const ny = dx / dist;
+  const cpx = midX + nx * bulge;
+  const cpy = midY + ny * bulge;
+
+  // Opacity based on confidence
+  let alpha = 0.06;
+  if (confidence > 0.8) alpha = 0.08;
+  if (confidence < 0.5) alpha = 0.04;
+
+  ctx.save();
+  ctx.lineWidth = 0.8;
+
+  // Dash pattern by type
+  if (type === 'teacher') {
+    ctx.setLineDash([4, 4]);
+  } else if (type === 'peer' || type === 'collaboration') {
+    ctx.setLineDash([8, 4]);
+  } else {
+    ctx.setLineDash([]);
+  }
+
+  // Gradient from source to target genre color
+  const gradient = ctx.createLinearGradient(x1, y1, x2, y2);
+  gradient.addColorStop(0, hexToRgba(color1, alpha));
+  gradient.addColorStop(1, hexToRgba(color2, alpha));
+  ctx.strokeStyle = gradient;
+
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.quadraticCurveTo(cpx, cpy, x2, y2);
+  ctx.stroke();
+  ctx.restore();
+}
+
 export function drawOrb(ctx, x, y, radius, genreColor, peachColor = '#FFAB91') {
   // 1. Primary gradient — genre color dissolving to transparent
   const primary = ctx.createRadialGradient(x, y, 0, x, y, radius);
