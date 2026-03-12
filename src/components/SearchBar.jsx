@@ -1,0 +1,307 @@
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import Fuse from 'fuse.js';
+import { getGenreBucket } from '../utils/genres.js';
+
+const MAX_RESULTS = 8;
+
+export default function SearchBar({ artists, onSelect, mapRef, isMobile = false }) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const inputRef = useRef(null);
+  const dropdownRef = useRef(null);
+  const blurTimeoutRef = useRef(null);
+
+  const fuse = useMemo(() => {
+    if (!artists || artists.length === 0) return null;
+    return new Fuse(artists, {
+      keys: ['name'],
+      threshold: 0.3,
+      minMatchCharLength: 2,
+      includeScore: true,
+    });
+  }, [artists]);
+
+  const handleInputChange = useCallback((e) => {
+    const val = e.target.value;
+    setQuery(val);
+    setActiveIndex(-1);
+
+    if (!val.trim() || !fuse) {
+      setResults([]);
+      setIsOpen(false);
+      return;
+    }
+
+    const matches = fuse.search(val).slice(0, MAX_RESULTS).map((r) => r.item);
+    setResults(matches);
+    setIsOpen(matches.length > 0);
+  }, [fuse]);
+
+  const selectArtist = useCallback((artist) => {
+    setQuery(artist.name);
+    setResults([]);
+    setIsOpen(false);
+    setActiveIndex(-1);
+    onSelect?.(artist);
+    if (mapRef?.current && artist.birth_lng != null && artist.birth_lat != null) {
+      try {
+        mapRef.current.getMap().flyTo({
+          center: [artist.birth_lng, artist.birth_lat],
+          zoom: 6,
+        });
+      } catch (_) {}
+    }
+  }, [onSelect, mapRef]);
+
+  const handleKeyDown = useCallback((e) => {
+    if (!isOpen || results.length === 0) {
+      if (e.key === 'Escape') {
+        setQuery('');
+        setResults([]);
+        setIsOpen(false);
+        inputRef.current?.blur();
+      }
+      return;
+    }
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActiveIndex((prev) => Math.min(prev + 1, results.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActiveIndex((prev) => Math.max(prev - 1, -1));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (activeIndex >= 0 && activeIndex < results.length) {
+        selectArtist(results[activeIndex]);
+      } else if (results.length > 0) {
+        selectArtist(results[0]);
+      }
+    } else if (e.key === 'Escape') {
+      setIsOpen(false);
+      setActiveIndex(-1);
+      inputRef.current?.blur();
+    }
+  }, [isOpen, results, activeIndex, selectArtist]);
+
+  const handleBlur = useCallback(() => {
+    // Delay close to allow result click to register
+    blurTimeoutRef.current = setTimeout(() => {
+      setIsOpen(false);
+      setActiveIndex(-1);
+    }, 150);
+  }, []);
+
+  const handleFocus = useCallback(() => {
+    if (blurTimeoutRef.current) {
+      clearTimeout(blurTimeoutRef.current);
+    }
+    if (query.trim() && results.length > 0) {
+      setIsOpen(true);
+    }
+  }, [query, results]);
+
+  // Scroll active result into view
+  useEffect(() => {
+    if (activeIndex < 0 || !dropdownRef.current) return;
+    const items = dropdownRef.current.querySelectorAll('[data-result-item]');
+    if (items[activeIndex]) {
+      items[activeIndex].scrollIntoView({ block: 'nearest' });
+    }
+  }, [activeIndex]);
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        top: 16,
+        right: 16,
+        left: isMobile ? 16 : 'auto',
+        zIndex: 20,
+        width: isMobile ? 'auto' : 260,
+        fontFamily: '"DM Sans", sans-serif',
+      }}
+      role="search"
+      aria-label="Search for musicians"
+    >
+      {/* Input */}
+      <div style={{ position: 'relative' }}>
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#9A8E85"
+          strokeWidth="2.5"
+          style={{
+            position: 'absolute',
+            left: 12,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            pointerEvents: 'none',
+          }}
+          aria-hidden="true"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input
+          ref={inputRef}
+          type="search"
+          value={query}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          onBlur={handleBlur}
+          onFocus={handleFocus}
+          placeholder="Search musicians…"
+          aria-label="Search musicians"
+          aria-expanded={isOpen}
+          aria-haspopup="listbox"
+          aria-controls="search-results-list"
+          aria-autocomplete="list"
+          role="combobox"
+          style={{
+            width: '100%',
+            boxSizing: 'border-box',
+            padding: '9px 12px 9px 36px',
+            fontSize: 13,
+            fontFamily: '"DM Sans", sans-serif',
+            color: '#3E3530',
+            backgroundColor: 'rgba(250, 243, 235, 0.95)',
+            border: '1px solid rgba(224, 216, 204, 0.8)',
+            borderRadius: isOpen ? '10px 10px 0 0' : 10,
+            outline: 'none',
+            boxShadow: '0 2px 12px rgba(90, 80, 72, 0.10)',
+            backdropFilter: 'blur(8px)',
+            transition: 'border-color 0.15s ease, border-radius 0.15s ease',
+          }}
+          onFocusCapture={e => { e.target.style.borderColor = 'rgba(168, 144, 128, 0.9)'; }}
+          onBlurCapture={e => { e.target.style.borderColor = 'rgba(224, 216, 204, 0.8)'; }}
+        />
+        {query && (
+          <button
+            onClick={() => {
+              setQuery('');
+              setResults([]);
+              setIsOpen(false);
+              inputRef.current?.focus();
+            }}
+            aria-label="Clear search"
+            style={{
+              position: 'absolute',
+              right: 10,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: '#9A8E85',
+              fontSize: 16,
+              padding: '2px 4px',
+              lineHeight: 1,
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            ×
+          </button>
+        )}
+      </div>
+
+      {/* Dropdown */}
+      {isOpen && results.length > 0 && (
+        <ul
+          id="search-results-list"
+          ref={dropdownRef}
+          role="listbox"
+          aria-label="Search results"
+          style={{
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            right: 0,
+            margin: 0,
+            padding: 0,
+            listStyle: 'none',
+            backgroundColor: 'rgba(250, 243, 235, 0.98)',
+            border: '1px solid rgba(224, 216, 204, 0.8)',
+            borderTop: 'none',
+            borderRadius: '0 0 10px 10px',
+            boxShadow: '0 4px 16px rgba(90, 80, 72, 0.14)',
+            backdropFilter: 'blur(8px)',
+            maxHeight: 320,
+            overflowY: 'auto',
+            zIndex: 21,
+          }}
+        >
+          {results.map((artist, i) => {
+            const { color, bucket } = getGenreBucket(artist.genres);
+            const isActive = i === activeIndex;
+            return (
+              <li
+                key={artist.name}
+                data-result-item
+                role="option"
+                aria-selected={isActive}
+                onMouseDown={(e) => {
+                  // Prevent input blur before click fires
+                  e.preventDefault();
+                  selectArtist(artist);
+                }}
+                onMouseEnter={() => setActiveIndex(i)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  padding: '9px 14px',
+                  cursor: 'pointer',
+                  backgroundColor: isActive ? 'rgba(168, 144, 128, 0.10)' : 'transparent',
+                  borderBottom: i < results.length - 1 ? '1px solid rgba(224, 216, 204, 0.4)' : 'none',
+                  transition: 'background-color 0.1s ease',
+                }}
+              >
+                <span
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    backgroundColor: color,
+                    flexShrink: 0,
+                  }}
+                  aria-hidden="true"
+                />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 500,
+                      color: '#3E3530',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {artist.name}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: '#9A8E85',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {[bucket, artist.birth_city].filter(Boolean).join(' · ')}
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}

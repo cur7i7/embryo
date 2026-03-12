@@ -3,7 +3,7 @@ import { GENRE_BUCKETS } from '../utils/genres.js';
 
 const BUCKET_NAMES = Object.keys(GENRE_BUCKETS);
 
-export default function GenreFilters({ activeGenres, onToggleGenre, onSelectAll }) {
+export default function GenreFilters({ activeGenres, onToggleGenre, onSelectAll, isMobile = false }) {
   const allActive = activeGenres.size === BUCKET_NAMES.length;
 
   return (
@@ -11,18 +11,23 @@ export default function GenreFilters({ activeGenres, onToggleGenre, onSelectAll 
       style={{
         position: 'fixed',
         bottom: '88px',
-        left: '50%',
-        transform: 'translateX(-50%)',
+        left: isMobile ? '0' : '50%',
+        right: isMobile ? '0' : 'auto',
+        transform: isMobile ? 'none' : 'translateX(-50%)',
         zIndex: 20,
         display: 'flex',
         alignItems: 'center',
         gap: '6px',
-        padding: '6px 10px',
+        padding: isMobile ? '6px 16px' : '6px 10px',
         backgroundColor: 'rgba(250, 243, 235, 0.90)',
         backdropFilter: 'blur(6px)',
-        borderRadius: '24px',
+        borderRadius: isMobile ? '0' : '24px',
         border: '1px solid rgba(224, 216, 204, 0.7)',
         boxShadow: '0 2px 10px rgba(90, 80, 72, 0.10)',
+        overflowX: isMobile ? 'auto' : 'visible',
+        WebkitOverflowScrolling: 'touch',
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none',
       }}
     >
       {/* All button */}

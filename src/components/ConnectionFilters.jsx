@@ -12,7 +12,7 @@ const ACTIVE_BG = '#5A5048';
 const ACTIVE_TEXT = '#FAF3EB';
 const INACTIVE_TEXT = '#7A6E65';
 
-export default function ConnectionFilters({ activeConnectionTypes, onToggleType, onSelectAll, typeCounts }) {
+export default function ConnectionFilters({ activeConnectionTypes, onToggleType, onSelectAll, typeCounts, isMobile = false }) {
   const allActive = activeConnectionTypes.size === CONNECTION_TYPES.length;
 
   return (
@@ -21,18 +21,23 @@ export default function ConnectionFilters({ activeConnectionTypes, onToggleType,
       aria-label="Filter connections by type"
       style={{
         position: 'fixed',
-        bottom: '88px',
-        left: '16px',
+        bottom: isMobile ? '136px' : '88px',
+        left: isMobile ? '0' : '16px',
+        right: isMobile ? '0' : 'auto',
         zIndex: 20,
         display: 'flex',
         alignItems: 'center',
         gap: '4px',
-        padding: '4px 8px',
+        padding: isMobile ? '4px 16px' : '4px 8px',
         backgroundColor: 'rgba(250, 243, 235, 0.88)',
         backdropFilter: 'blur(6px)',
-        borderRadius: '20px',
+        borderRadius: isMobile ? '0' : '20px',
         border: '1px solid rgba(224, 216, 204, 0.6)',
         boxShadow: '0 1px 6px rgba(90, 80, 72, 0.08)',
+        overflowX: isMobile ? 'auto' : 'visible',
+        WebkitOverflowScrolling: 'touch',
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none',
       }}
     >
       {/* All button */}

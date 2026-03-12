@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Map as MapGL } from 'react-map-gl/maplibre';
 import ArtistCount from './ArtistCount.jsx';
 import CanvasOverlay from './CanvasOverlay.jsx';
@@ -28,8 +28,19 @@ const mapStyle = {
   ],
 };
 
-export default function Map({ artists, connectionCounts, connections, activeConnectionTypes, rangeStart, rangeEnd }) {
-  const mapRef = useRef(null);
+export default function Map({
+  mapRef,
+  artists,
+  connectionCounts,
+  connections,
+  activeConnectionTypes,
+  rangeStart,
+  rangeEnd,
+  hoveredArtist,
+  selectedArtist,
+  onHover,
+  onSelect,
+}) {
   const [mapLoaded, setMapLoaded] = useState(false);
 
   const handleMapLoad = useCallback(() => {
@@ -60,6 +71,10 @@ export default function Map({ artists, connectionCounts, connections, activeConn
           connectionCounts={connectionCounts}
           connections={connections}
           activeConnectionTypes={activeConnectionTypes}
+          hoveredArtist={hoveredArtist}
+          selectedArtist={selectedArtist}
+          onHover={onHover}
+          onSelect={onSelect}
         />
       )}
       <ArtistCount

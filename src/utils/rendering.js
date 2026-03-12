@@ -9,7 +9,7 @@ export function hexToRgba(hex, alpha) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-export function drawArc(ctx, x1, y1, x2, y2, color1, color2, type, confidence) {
+export function drawArc(ctx, x1, y1, x2, y2, color1, color2, type, confidence, dimmed = false) {
   const midX = (x1 + x2) / 2;
   const midY = (y1 + y2) / 2;
   const dist = Math.hypot(x2 - x1, y2 - y1);
@@ -22,10 +22,11 @@ export function drawArc(ctx, x1, y1, x2, y2, color1, color2, type, confidence) {
   const cpx = midX + nx * bulge;
   const cpy = midY + ny * bulge;
 
-  // Opacity based on confidence
+  // Opacity based on confidence; reduce when dimmed (something else is active)
   let alpha = 0.06;
   if (confidence > 0.8) alpha = 0.08;
   if (confidence < 0.5) alpha = 0.04;
+  if (dimmed) alpha *= 0.4;
 
   ctx.save();
   ctx.lineWidth = 0.8;

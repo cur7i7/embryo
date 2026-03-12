@@ -3,6 +3,8 @@ import Map from './components/Map.jsx';
 import Timeline from './components/Timeline.jsx';
 import GenreFilters from './components/GenreFilters.jsx';
 import ConnectionFilters from './components/ConnectionFilters.jsx';
+import DetailPanel from './components/DetailPanel.jsx';
+import SearchBar from './components/SearchBar.jsx';
 import { useArtistData } from './hooks/useArtistData.js';
 import { useConnectionData } from './hooks/useConnectionData.js';
 import { GENRE_BUCKETS, getGenreBucket } from './utils/genres.js';
@@ -13,15 +15,33 @@ const PLAY_STEP = 10; // 1 decade per tick
 
 const ALL_CONNECTION_TYPES = new Set(['teacher', 'influence', 'peer', 'collaboration']);
 
+function useIsMobile(breakpoint = 768) {
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < breakpoint);
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < breakpoint);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, [breakpoint]);
+  return isMobile;
+}
+
 export default function App() {
+  const isMobile = useIsMobile();
   const { artists: allArtists, loading: artistsLoading } = useArtistData();
-  const { connections, connectionCounts, loading: connectionsLoading } = useConnectionData();
+  const { connections, connectionsByArtist, connectionCounts, loading: connectionsLoading } = useConnectionData();
 
   const [rangeStart, setRangeStart] = useState(DEFAULT_RANGE[0]);
   const [rangeEnd, setRangeEnd] = useState(DEFAULT_RANGE[1]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [activeGenres, setActiveGenres] = useState(new Set(Object.keys(GENRE_BUCKETS)));
   const [activeConnectionTypes, setActiveConnectionTypes] = useState(new Set(ALL_CONNECTION_TYPES));
+
+  // Hover and selection state
+  const [hoveredArtist, setHoveredArtist] = useState(null);
+  const [selectedArtist, setSelectedArtist] = useState(null);
+
+  // mapRef lifted to App level so SearchBar and DetailPanel can use flyTo
+  const mapRef = useRef(null);
 
   const windowWidth = useRef(rangeEnd - rangeStart);
 
@@ -101,6 +121,28 @@ export default function App() {
     setActiveConnectionTypes(new Set(ALL_CONNECTION_TYPES));
   }, []);
 
+  const handleHover = useCallback((artist) => {
+    setHoveredArtist(artist);
+  }, []);
+
+  const handleSelect = useCallback((artist) => {
+    setSelectedArtist(artist);
+    if (artist && mapRef.current) {
+      try {
+        mapRef.current.getMap().flyTo({
+          center: [artist.birth_lng, artist.birth_lat],
+          zoom: 6,
+        });
+      } catch (_) {
+        // map not ready
+      }
+    }
+  }, []);
+
+  const handleCloseDetail = useCallback(() => {
+    setSelectedArtist(null);
+  }, []);
+
   // Filter artists by active range and genre.
   // Rule: artist is visible when active_start <= rangeEnd AND active_end >= rangeStart
   const filteredArtists = useMemo(() => {
@@ -127,21 +169,40 @@ export default function App() {
     return counts;
   }, [connections]);
 
+  // Connections for selected artist
+  const selectedArtistConnections = useMemo(() => {
+    if (!selectedArtist) return [];
+    return connectionsByArtist.get(selectedArtist.name) || [];
+  }, [selectedArtist, connectionsByArtist]);
+
   return (
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden' }}>
       <Map
+        mapRef={mapRef}
         artists={filteredArtists}
         connectionCounts={connectionCounts}
         connections={connections}
         activeConnectionTypes={activeConnectionTypes}
         rangeStart={rangeStart}
         rangeEnd={rangeEnd}
+        hoveredArtist={hoveredArtist}
+        selectedArtist={selectedArtist}
+        onHover={handleHover}
+        onSelect={handleSelect}
+      />
+
+      <SearchBar
+        artists={allArtists}
+        onSelect={handleSelect}
+        mapRef={mapRef}
+        isMobile={isMobile}
       />
 
       <GenreFilters
         activeGenres={activeGenres}
         onToggleGenre={handleToggleGenre}
         onSelectAll={handleSelectAllGenres}
+        isMobile={isMobile}
       />
 
       <ConnectionFilters
@@ -149,6 +210,7 @@ export default function App() {
         onToggleType={handleToggleConnectionType}
         onSelectAll={handleSelectAllConnectionTypes}
         typeCounts={connectionTypeCounts}
+        isMobile={isMobile}
       />
 
       <Timeline
@@ -158,6 +220,16 @@ export default function App() {
         onRangeChange={handleRangeChange}
         isPlaying={isPlaying}
         onPlayPause={handlePlayPause}
+      />
+
+      <DetailPanel
+        artist={selectedArtist}
+        connections={selectedArtistConnections}
+        allArtists={allArtists}
+        onSelect={handleSelect}
+        onClose={handleCloseDetail}
+        mapRef={mapRef}
+        isMobile={isMobile}
       />
     </div>
   );
