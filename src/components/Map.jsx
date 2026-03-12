@@ -1,6 +1,5 @@
 import React, { useRef, useState, useCallback } from 'react';
 import { Map as MapGL } from 'react-map-gl/maplibre';
-import GenreLegend from './GenreLegend.jsx';
 import ArtistCount from './ArtistCount.jsx';
 import CanvasOverlay from './CanvasOverlay.jsx';
 
@@ -23,7 +22,7 @@ const mapStyle = {
         'raster-saturation': -1,
         'raster-brightness-min': 0.85,
         'raster-brightness-max': 1,
-        'raster-opacity': 0.3,
+        'raster-opacity': 0.45,
       },
     },
   ],
@@ -66,7 +65,6 @@ export default function Map({ artists, connectionCounts, rangeStart, rangeEnd })
         rangeStart={rangeStart}
         rangeEnd={rangeEnd}
       />
-      <GenreLegend />
     </div>
   );
 }

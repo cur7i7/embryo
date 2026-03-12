@@ -80,6 +80,20 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
     dragging.current = null;
   }, []);
 
+  const handleClick = useCallback((e) => {
+    if (dragging.current || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const clickedYear = xToYear(x, rect.width);
+    const halfWidth = Math.floor((rangeEnd - rangeStart) / 2);
+    let newStart = Math.round((clickedYear - halfWidth) / 10) * 10;
+    let newEnd = newStart + (rangeEnd - rangeStart);
+    // Clamp to bounds
+    if (newStart < 1400) { newStart = 1400; newEnd = newStart + (rangeEnd - rangeStart); }
+    if (newEnd > 2025) { newEnd = 2025; newStart = newEnd - (rangeEnd - rangeStart); }
+    onRangeChange(newStart, newEnd);
+  }, [rangeStart, rangeEnd, onRangeChange, xToYear]);
+
   const padLeft = 40;
   const padRight = 40;
 
@@ -156,6 +170,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
         }}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
+        onClick={handleClick}
       >
         {/* Histogram bars */}
         <div
