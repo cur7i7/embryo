@@ -1,8 +1,8 @@
-import React, { useMemo } from 'react';
-import { Map as MapGL, Source, Layer } from 'react-map-gl/maplibre';
-import { getGenreBucket } from '../utils/genres.js';
+import React, { useRef } from 'react';
+import { Map as MapGL } from 'react-map-gl/maplibre';
 import GenreLegend from './GenreLegend.jsx';
 import ArtistCount from './ArtistCount.jsx';
+import CanvasOverlay from './CanvasOverlay.jsx';
 
 const mapStyle = {
   version: 8,
@@ -29,48 +29,17 @@ const mapStyle = {
   ],
 };
 
-const circleLayerStyle = {
-  id: 'artist-dots',
-  type: 'circle',
-  source: 'artists',
-  paint: {
-    'circle-radius': 3,
-    'circle-color': ['get', 'color'],
-    'circle-opacity': 0.8,
-  },
-};
-
 export default function Map({ artists, connectionCounts, rangeStart, rangeEnd }) {
-  const geojson = useMemo(() => {
-    const features = (artists || [])
-      .filter((a) => a.birth_lat != null && a.birth_lng != null)
-      .map((a) => {
-        const { color } = getGenreBucket(a.genres);
-        return {
-          type: 'Feature',
-          geometry: {
-            type: 'Point',
-            coordinates: [a.birth_lng, a.birth_lat],
-          },
-          properties: {
-            id: a.id,
-            name: a.name,
-            color,
-          },
-        };
-      });
+  const mapRef = useRef(null);
 
-    return {
-      type: 'FeatureCollection',
-      features,
-    };
-  }, [artists]);
-
-  const visibleCount = geojson.features.length;
+  const visibleCount = (artists || []).filter(
+    (a) => a.birth_lat != null && a.birth_lng != null
+  ).length;
 
   return (
     <div style={{ width: '100vw', height: '100vh', backgroundColor: '#FAF3EB', position: 'relative' }}>
       <MapGL
+        ref={mapRef}
         initialViewState={{
           longitude: 10,
           latitude: 30,
@@ -78,13 +47,12 @@ export default function Map({ artists, connectionCounts, rangeStart, rangeEnd })
         }}
         style={{ width: '100%', height: '100%' }}
         mapStyle={mapStyle}
-      >
-        {geojson.features.length > 0 && (
-          <Source id="artists" type="geojson" data={geojson}>
-            <Layer {...circleLayerStyle} />
-          </Source>
-        )}
-      </MapGL>
+      />
+      <CanvasOverlay
+        mapRef={mapRef}
+        artists={artists}
+        connectionCounts={connectionCounts}
+      />
       <ArtistCount
         count={visibleCount}
         rangeStart={rangeStart}
