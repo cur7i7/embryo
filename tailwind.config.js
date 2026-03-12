@@ -4,22 +4,18 @@ export default {
   theme: {
     extend: {
       colors: {
-        burgundy: '#672146',
-        'burgundy-panel': '#562039',
-        mesa: '#AA737D',
-        cream: '#FFF7C7',
+        cream: '#FAF3EB',
+        sand: '#F0E8DC',
+        lavender: '#EDE5F5',
+        'warm-gray': '#E0D8CC',
+        'text-primary': '#1A1512',
+        'text-secondary': '#5A5048',
+        'text-tertiary': '#A89B8E',
+        'text-ghost': '#B5A99C',
       },
       fontFamily: {
-        display: ['Fraunces', 'serif'],
-        accent: ['Cormorant Garamond', 'serif'],
-        body: ['Public Sans', 'sans-serif'],
-      },
-      boxShadow: {
-        exhibit: '0 22px 46px rgba(20, 4, 13, 0.45)',
-        panel: '0 8px 24px rgba(20, 4, 13, 0.4)',
-      },
-      backdropBlur: {
-        xs: '2px',
+        display: ['"Instrument Serif"', 'serif'],
+        body: ['"DM Sans"', 'sans-serif'],
       },
     },
   },
