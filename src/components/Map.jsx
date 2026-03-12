@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useCallback } from 'react';
 import { Map as MapGL } from 'react-map-gl/maplibre';
 import GenreLegend from './GenreLegend.jsx';
 import ArtistCount from './ArtistCount.jsx';
@@ -31,6 +31,11 @@ const mapStyle = {
 
 export default function Map({ artists, connectionCounts, rangeStart, rangeEnd }) {
   const mapRef = useRef(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
+
+  const handleMapLoad = useCallback(() => {
+    setMapLoaded(true);
+  }, []);
 
   const visibleCount = (artists || []).filter(
     (a) => a.birth_lat != null && a.birth_lng != null
@@ -47,12 +52,15 @@ export default function Map({ artists, connectionCounts, rangeStart, rangeEnd })
         }}
         style={{ width: '100%', height: '100%' }}
         mapStyle={mapStyle}
+        onLoad={handleMapLoad}
       />
-      <CanvasOverlay
-        mapRef={mapRef}
-        artists={artists}
-        connectionCounts={connectionCounts}
-      />
+      {mapLoaded && (
+        <CanvasOverlay
+          mapRef={mapRef}
+          artists={artists}
+          connectionCounts={connectionCounts}
+        />
+      )}
       <ArtistCount
         count={visibleCount}
         rangeStart={rangeStart}
