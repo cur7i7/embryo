@@ -296,7 +296,9 @@ export default function App() {
     flyToArtist(mapRef, artist);
   }, []);
 
-  // Auto-expand timeline when artist is selected but outside range
+  // Auto-expand timeline when artist is first selected but outside range.
+  // Only triggers on selectedArtist change — NOT on range changes, so user's
+  // manual year/range adjustments are not overridden.
   useEffect(() => {
     if (!selectedArtist) return;
     const aStart = selectedArtist.active_start ?? selectedArtist.birth_year;
@@ -310,7 +312,8 @@ export default function App() {
         end: Math.min(2025, Math.max(timeline.rangeEnd, aEnd + 10)),
       });
     }
-  }, [selectedArtist, timeline.rangeStart, timeline.rangeEnd]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedArtist]);
 
   const handleCloseDetail = useCallback(() => {
     setSelectedArtist(null);

@@ -299,10 +299,11 @@ export default function DetailPanel({
           right: 12,
           width: 44,
           height: 44,
-          border: 'none',
+          border: '1px solid rgba(224, 216, 204, 0.6)',
           borderRadius: '50%',
-          backgroundColor: 'rgba(122, 110, 101, 0.12)',
-          color: '#5A5048',
+          backgroundColor: 'rgba(250, 243, 235, 0.88)',
+          backdropFilter: 'blur(6px)',
+          color: '#3E3530',
           fontSize: 18,
           cursor: 'pointer',
           display: 'flex',
@@ -310,9 +311,11 @@ export default function DetailPanel({
           justifyContent: 'center',
           transition: 'background-color 0.15s ease',
           flexShrink: 0,
+          zIndex: 2,
+          boxShadow: '0 2px 8px rgba(90, 80, 72, 0.15)',
         }}
-        onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(122, 110, 101, 0.22)'; }}
-        onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(122, 110, 101, 0.12)'; }}
+        onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(250, 243, 235, 1)'; }}
+        onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(250, 243, 235, 0.88)'; }}
         onFocus={e => { e.currentTarget.style.boxShadow = '0 0 0 3px rgba(122, 110, 101, 0.4)'; }}
         onBlur={e => { e.currentTarget.style.boxShadow = 'none'; }}
       >

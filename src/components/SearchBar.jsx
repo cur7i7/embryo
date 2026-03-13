@@ -162,7 +162,7 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false }) {
         <input
           id="search-input"
           ref={inputRef}
-          type="search"
+          type="text"
           value={query}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
