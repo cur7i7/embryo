@@ -158,7 +158,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
         bottom: `calc(0px + env(safe-area-inset-bottom))`,
         left: 0,
         right: 0,
-        height: 'clamp(52px, 7vw, 56px)',
+        height: 'clamp(56px, 8vw, 68px)',
         backgroundColor: 'rgba(250, 243, 235, 0.92)',
         backdropFilter: 'blur(8px)',
         WebkitBackdropFilter: 'blur(8px)',
@@ -377,6 +377,10 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
         >
           {yearLabels.map((year) => {
             const pct = yearToPercent(year);
+            // Hide static label when it overlaps with the editable range endpoint labels
+            const nearStart = Math.abs(year - rangeStart) < 15;
+            const nearEnd = Math.abs(year - rangeEnd) < 15;
+            if (nearStart || nearEnd) return null;
             return (
               <span
                 key={year}
@@ -424,7 +428,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
             aria-label="Set start year"
             style={{
               position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${leftPercent / 100} - 30px)`,
-              bottom: 0, width: 56, height: 24, minHeight: 44, padding: '0 4px',
+              bottom: 16, width: 56, height: 24, minHeight: 44, padding: '0 4px',
               fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
               color: '#C4326B', backgroundColor: 'rgba(250,243,235,0.95)',
               border: '1px solid #C4326B', borderRadius: 4, textAlign: 'center', outline: 'none',
@@ -437,7 +441,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
             aria-label={`Start year: ${rangeStart}. Click to edit`}
             style={{
               position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${leftPercent / 100} - 20px)`,
-              bottom: 0, background: 'none', border: 'none', cursor: 'pointer',
+              bottom: 16, background: 'none', border: 'none', cursor: 'pointer',
               fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
               color: '#C4326B', padding: '2px 4px', minHeight: 44, display: 'flex', alignItems: 'center',
               outline: 'none',
@@ -475,7 +479,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
             aria-label="Set end year"
             style={{
               position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${rightPercent / 100} - 30px)`,
-              bottom: 0, width: 56, height: 24, minHeight: 44, padding: '0 4px',
+              bottom: 16, width: 56, height: 24, minHeight: 44, padding: '0 4px',
               fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
               color: '#C4326B', backgroundColor: 'rgba(250,243,235,0.95)',
               border: '1px solid #C4326B', borderRadius: 4, textAlign: 'center', outline: 'none',
@@ -488,7 +492,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
             aria-label={`End year: ${rangeEnd}. Click to edit`}
             style={{
               position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${rightPercent / 100} - 20px)`,
-              bottom: 0, background: 'none', border: 'none', cursor: 'pointer',
+              bottom: 16, background: 'none', border: 'none', cursor: 'pointer',
               fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
               color: '#C4326B', padding: '2px 4px', minHeight: 44, display: 'flex', alignItems: 'center',
               outline: 'none',

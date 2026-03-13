@@ -15,7 +15,7 @@ export default function ConnectionFilters({ activeConnectionTypes, onToggleType,
   return (
     <div style={{
       position: 'fixed',
-      bottom: isMobile ? `calc(100px + env(safe-area-inset-bottom))` : `calc(56px + env(safe-area-inset-bottom))`,
+      bottom: isMobile ? `calc(108px + env(safe-area-inset-bottom))` : `calc(72px + env(safe-area-inset-bottom))`,
       left: isMobile ? '0' : '16px',
       right: isMobile ? '0' : 'auto',
       zIndex: 20,

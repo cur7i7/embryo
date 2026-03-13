@@ -23,7 +23,7 @@ const ZOOM_INDIVIDUAL = 12;
 const FADE_DURATION = 400;             // ms for opacity 0→1 or 1→0 transition
 const CLUSTER_RADIUS_BASE = 40;        // cluster orb base radius (px)
 const CLUSTER_RADIUS_MAX = 100;        // cluster orb max radius (px)
-const ARTIST_RADIUS = 16;              // individual artist node radius (px)
+const ARTIST_RADIUS = 22;              // individual artist node radius (px)
 const ARTIST_ACTIVE_SCALE = 1.2;       // scale for active artist in individual mode
 const CLUSTER_ACTIVE_SCALE = 1.5;      // scale for active artist in cluster mode
 const ANIMATION_CYCLE_MS = 3000;       // particle / pulse animation cycle period (ms)
@@ -751,7 +751,7 @@ export default function CanvasOverlay({
         const sublabelW = ctx.measureText(sublabel).width;
         const maxW = Math.max(labelW, sublabelW);
         const pillPad = 10;
-        const pillH = 40;
+        const pillH = 50;
         const pillW = maxW + pillPad * 2;
 
         // --- Pill collision avoidance (Task 8a) ---
@@ -826,11 +826,11 @@ export default function CanvasOverlay({
         ctx.font = '600 14px "DM Sans", sans-serif';
         ctx.textAlign = 'center';
         ctx.fillStyle = '#3E3530';
-        ctx.fillText(label, pos.x, pillY + 10);
+        ctx.fillText(label, pos.x, pillY + 20);
 
         ctx.font = '400 11px "DM Sans", sans-serif';
         ctx.fillStyle = '#7A6E65';
-        ctx.fillText(sublabel, pos.x, pillY + 26);
+        ctx.fillText(sublabel, pos.x, pillY + 36);
       }
     }
 

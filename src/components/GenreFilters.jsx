@@ -10,7 +10,7 @@ export default function GenreFilters({ activeGenres, onToggleGenre, onSelectAll,
     <>
     <div style={{
       position: 'fixed',
-      bottom: isMobile ? `calc(132px + env(safe-area-inset-bottom))` : `calc(88px + env(safe-area-inset-bottom))`,
+      bottom: isMobile ? `calc(148px + env(safe-area-inset-bottom))` : `calc(104px + env(safe-area-inset-bottom))`,
       left: isMobile ? '0' : '16px',
       right: isMobile ? '0' : 'auto',
       zIndex: 20,
