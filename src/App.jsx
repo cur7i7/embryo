@@ -30,6 +30,12 @@ function parseHash() {
     const [k, v] = part.split('=');
     if (k && v) params[decodeURIComponent(k)] = decodeURIComponent(v);
   }
+  // E: If 'year' key exists, expand to start=year, end=year
+  if (params.year) {
+    params.start = params.year;
+    params.end = params.year;
+    params._yearMode = true;
+  }
   return params;
 }
 
@@ -162,8 +168,13 @@ export default function App() {
         obj.lng = center.lng.toFixed(2);
       }
       if (zoom != null) obj.z = zoom.toFixed(1);
-      if (timeline.rangeStart !== DEFAULT_RANGE[0]) obj.start = timeline.rangeStart;
-      if (timeline.rangeEnd !== DEFAULT_RANGE[1]) obj.end = timeline.rangeEnd;
+      // E: When start === end (year mode), write year=X instead of start=X&end=X
+      if (timeline.rangeStart === timeline.rangeEnd) {
+        obj.year = timeline.rangeStart;
+      } else {
+        if (timeline.rangeStart !== DEFAULT_RANGE[0]) obj.start = timeline.rangeStart;
+        if (timeline.rangeEnd !== DEFAULT_RANGE[1]) obj.end = timeline.rangeEnd;
+      }
       if (selectedArtist) obj.artist = selectedArtist.id;
       const hash = buildHash(obj);
       if (window.location.hash !== hash) {
@@ -192,7 +203,7 @@ export default function App() {
     const onPop = () => {
       suppressHashSync.current = true;
       const h = parseHash();
-      if (h.start || h.end) {
+      if (h.start || h.end || h.year) {
         dispatch({ type: 'SET_RANGE', start: Number(h.start) || DEFAULT_RANGE[0], end: Number(h.end) || DEFAULT_RANGE[1] });
       } else {
         dispatch({ type: 'SET_RANGE', start: DEFAULT_RANGE[0], end: DEFAULT_RANGE[1] });
@@ -491,6 +502,7 @@ export default function App() {
         isPlaying={timeline.isPlaying}
         onPlayPause={handlePlayPause}
         isMobile={isMobile}
+        initialMode={_initialHash._yearMode ? 'year' : 'range'}
       />
 
       <DetailPanel
