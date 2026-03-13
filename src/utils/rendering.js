@@ -210,13 +210,28 @@ export function drawCityGroup(ctx, x, y, city, count, radius, alpha = 1) {
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // City label + count centered above the boundary circle
-  const label = `${city} (${count})`;
-  ctx.font = '600 13px "DM Sans", sans-serif';
+  // City name centered above the boundary circle
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
+  const labelY = y - radius - 6;
+
+  // Measure city name width to position count after it
+  ctx.font = '600 13px "DM Sans", sans-serif';
+  const cityWidth = ctx.measureText(city).width;
+  ctx.font = '400 11px "DM Sans", sans-serif';
+  const countStr = ` (${count})`;
+  const countWidth = ctx.measureText(countStr).width;
+  const totalWidth = cityWidth + countWidth;
+
+  // Draw city name (bold)
+  ctx.font = '600 13px "DM Sans", sans-serif';
   ctx.fillStyle = '#3E3530';
-  ctx.fillText(label, x, y - radius - 6);
+  ctx.fillText(city, x - totalWidth / 2 + cityWidth / 2, labelY);
+
+  // Draw count (lighter)
+  ctx.font = '400 11px "DM Sans", sans-serif';
+  ctx.fillStyle = '#7A6E65';
+  ctx.fillText(countStr, x - totalWidth / 2 + cityWidth + countWidth / 2, labelY);
 
   ctx.restore();
 }
