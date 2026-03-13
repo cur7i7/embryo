@@ -276,8 +276,8 @@ export default function CanvasOverlay({
     }
 
     // --- Three-tier zoom rendering ---
-    // B02: Rebuild Supercluster index only when artist count changes
-    if (scArtistsRef.current !== validArtists.length) {
+    // B02: Rebuild Supercluster index only when artist array reference changes
+    if (scArtistsRef.current !== artists) {
       const index = new Supercluster({ radius: 60, maxZoom: 16 });
       index.load(
         validArtists.map((a) => ({
@@ -287,7 +287,7 @@ export default function CanvasOverlay({
         }))
       );
       scIndexRef.current = index;
-      scArtistsRef.current = validArtists.length;
+      scArtistsRef.current = artists;
     }
 
     const currentZoom = map.getZoom();
@@ -598,17 +598,16 @@ export default function CanvasOverlay({
     startRaf();
   }, [artists, connectionCounts, connections, activeConnectionTypes, hoveredArtist, selectedArtist, startRaf]);
 
-  // --- P01/P02: Slow pulse timer — skip when tab is hidden ---
+  // Re-render once when tab becomes visible again (no continuous polling)
   useEffect(() => {
     const handleVisibility = () => {
-      if (document.hidden) return;
-      if (!needsAnimRef.current) {
+      if (!document.hidden) {
         needsAnimRef.current = true;
         startRaf();
       }
     };
-    const id = setInterval(handleVisibility, 100);
-    return () => clearInterval(id);
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, [startRaf]);
 
   // Attach map event listeners — fire a single render on map events
