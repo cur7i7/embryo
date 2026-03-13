@@ -73,7 +73,9 @@ function timelineReducer(state, action) {
 // ---------------------------------------------------------------------------
 // Hooks
 // ---------------------------------------------------------------------------
-function useIsMobile(breakpoint = 768) {
+// Fix #56: Raised base breakpoint from 768→900 so tablets in portrait (768px)
+// get the desktop layout. The touch-device check at 1024px remains for landscape tablets.
+function useIsMobile(breakpoint = 900) {
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= breakpoint || (window.innerWidth <= 1024 && navigator.maxTouchPoints > 0));
   useEffect(() => {
     const handler = () => setIsMobile(window.innerWidth <= breakpoint || (window.innerWidth <= 1024 && navigator.maxTouchPoints > 0));
@@ -111,6 +113,9 @@ export default function App() {
   const suppressHashSync = useRef(false);
   const filterPanelRef = useRef(null);
   const [filterPanelHeight, setFilterPanelHeight] = useState(168);
+
+  // Fix #57: Track whether connections warning has been dismissed
+  const [connectionsWarningDismissed, setConnectionsWarningDismissed] = useState(false);
 
   // Progressive loading messages (Fix #34)
   const [loadingMessage, setLoadingMessage] = useState('');
@@ -408,8 +413,8 @@ export default function App() {
     }
   }, []);
 
-  // ---- Loading state ----
-  if (artistsLoading || connectionsLoading) {
+  // ---- Loading state ---- (Fix #57: only artists loading is fatal)
+  if (artistsLoading) {
     return (
       <div role="status" aria-live="polite" style={{ width: '100vw', minHeight: '100vh', height: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FAF3EB', fontFamily: '"DM Sans", sans-serif' }}>
         <style>{`
@@ -439,12 +444,13 @@ export default function App() {
     );
   }
 
-  if (artistsError || connectionsError) {
+  // Fix #57: Only artists error is fatal — connections error is non-fatal
+  if (artistsError) {
     return (
       <div role="alert" style={{ width: '100vw', minHeight: '100vh', height: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FAF3EB', fontFamily: '"DM Sans", sans-serif' }}>
         <div style={{ textAlign: 'center', color: '#5A5048' }}>
           <div style={{ fontSize: 18, fontWeight: 500, marginBottom: 8 }}>Failed to load data</div>
-          <div style={{ fontSize: 13, color: '#7A6E65' }}>{artistsError || connectionsError}</div>
+          <div style={{ fontSize: 13, color: '#7A6E65' }}>{artistsError}</div>
           <button
             onClick={() => window.location.reload()}
             style={{
@@ -480,12 +486,63 @@ export default function App() {
       }}>
         EMBRYO — Interactive Musician Map
       </h1>
+      {/* Fix #57: Non-fatal warning banner when connections fail to load */}
+      {connectionsError && !connectionsWarningDismissed && (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            position: 'fixed',
+            top: 12,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 50,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: '8px 16px',
+            fontSize: 13,
+            fontFamily: '"DM Sans", sans-serif',
+            fontWeight: 500,
+            color: '#5A4030',
+            backgroundColor: 'rgba(255, 243, 220, 0.95)',
+            backdropFilter: 'blur(6px)',
+            border: '1px solid rgba(200, 160, 100, 0.4)',
+            borderRadius: 12,
+            boxShadow: '0 2px 12px rgba(90, 80, 72, 0.12)',
+            maxWidth: 'calc(100vw - 32px)',
+          }}
+        >
+          <span>Connection data unavailable — showing artists only</span>
+          <button
+            onClick={() => setConnectionsWarningDismissed(true)}
+            aria-label="Dismiss warning"
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: 16,
+              color: '#8A7050',
+              padding: '2px 4px',
+              minWidth: 44,
+              minHeight: 44,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       <Map
         mapRef={mapRef}
         artists={filteredArtists}
-        connectionCounts={connectionCounts}
-        connections={connections}
-        connectionsByArtist={connectionsByArtist}
+        connectionCounts={connectionsError ? {} : connectionCounts}
+        connections={connectionsError ? [] : connections}
+        connectionsByArtist={connectionsError ? new Map() : connectionsByArtist}
         activeConnectionTypes={activeConnectionTypes}
         rangeStart={timeline.rangeStart}
         rangeEnd={timeline.rangeEnd}

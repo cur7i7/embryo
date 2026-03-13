@@ -62,7 +62,7 @@ function ConnectionFilters({ activeConnectionTypes, onToggleType, onSelectAll, t
         title="Show all connection types"
         style={{
           fontFamily: '"DM Sans", sans-serif',
-          fontSize: isPointerFine ? 11 : 'clamp(10px, 1.4vw, 12px)',
+          fontSize: isPointerFine ? 12 : 'clamp(10px, 1.4vw, 12px)',
           fontWeight: 600,
           lineHeight: 1.2,
           letterSpacing: '0.03em',
@@ -74,7 +74,7 @@ function ConnectionFilters({ activeConnectionTypes, onToggleType, onSelectAll, t
           minHeight: isPointerFine ? 30 : 44,
           cursor: 'pointer',
           transition: 'all 0.15s ease',
-          outline: 'none',
+          outline: '2px solid transparent',
           whiteSpace: 'nowrap',
           display: 'flex',
           alignItems: 'center',
@@ -110,7 +110,7 @@ function ConnectionFilters({ activeConnectionTypes, onToggleType, onSelectAll, t
             title={`${label} connections (${count.toLocaleString()})`}
             style={{
               fontFamily: '"DM Sans", sans-serif',
-              fontSize: isPointerFine ? 11 : 'clamp(10px, 1.4vw, 12px)',
+              fontSize: isPointerFine ? 12 : 'clamp(10px, 1.4vw, 12px)',
               fontWeight: isActive ? 600 : 400,
               lineHeight: 1.2,
               letterSpacing: '0.02em',
@@ -122,7 +122,7 @@ function ConnectionFilters({ activeConnectionTypes, onToggleType, onSelectAll, t
               minHeight: isPointerFine ? 30 : 44,
               cursor: 'pointer',
               transition: 'all 0.15s ease',
-              outline: 'none',
+              outline: '2px solid transparent',
               whiteSpace: 'nowrap',
               display: 'flex',
               alignItems: 'center',
@@ -151,7 +151,7 @@ function ConnectionFilters({ activeConnectionTypes, onToggleType, onSelectAll, t
               <span
                 aria-hidden="true"
                 style={{
-                  fontSize: 'clamp(11px, 1.2vw, 12px)',
+                  fontSize: 'clamp(10px, 1.2vw, 12px)',
                   fontWeight: 400,
                   color: '#5A5048',
                 }}

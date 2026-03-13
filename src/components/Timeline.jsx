@@ -64,6 +64,14 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
   // Year mode: always-visible input value
   const [yearInputValue, setYearInputValue] = useState(String(rangeEnd));
 
+  // Fix #10: Auto-switch to Range mode when rangeStart ≠ rangeEnd externally
+  // (e.g. auto-expand effect in App.jsx sets a range for selected artist)
+  useEffect(() => {
+    if (mode === 'year' && rangeStart !== rangeEnd) {
+      setMode('range');
+    }
+  }, [rangeStart, rangeEnd, mode]);
+
   // Sync yearInputValue when rangeEnd changes externally (play button, URL, etc.)
   useEffect(() => {
     if (mode === 'year') {

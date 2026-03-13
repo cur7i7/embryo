@@ -1406,6 +1406,7 @@ export default function CanvasOverlay({
   const handleKeyDown = useCallback((e) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
+      e.stopPropagation();
       const mode = renderModeRef.current;
       const map = mapRef.current?.getMap?.();
 
@@ -1440,9 +1441,17 @@ export default function CanvasOverlay({
       return;
     }
 
-    // ArrowLeft/ArrowRight to cycle through visible candidates based on render mode
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    // ArrowLeft/ArrowRight/ArrowUp/ArrowDown to cycle through visible candidates based on render mode.
+    // ArrowUp/ArrowDown are treated as ArrowLeft/ArrowRight respectively (previous/next) so all
+    // four arrow keys are consumed here and do NOT bubble to the MapLibre keyboard handler, which
+    // would otherwise pan the map simultaneously. stopPropagation() is called alongside
+    // preventDefault() to prevent the event from reaching MapLibre's listener at the map container.
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
       e.preventDefault();
+      e.stopPropagation();
+
+      // Normalize: Up/Left = previous, Down/Right = next
+      const isNext = e.key === 'ArrowRight' || e.key === 'ArrowDown';
 
       const canvas = canvasRef.current;
       const cw = canvas ? canvas.clientWidth : window.innerWidth;
@@ -1471,7 +1480,7 @@ export default function CanvasOverlay({
         if (visibleClusters.length === 0) return;
 
         let idx = focusedArtistIndexRef.current;
-        if (e.key === 'ArrowRight') {
+        if (isNext) {
           idx = idx < 0 ? 0 : (idx + 1) % visibleClusters.length;
         } else {
           idx = idx < 0 ? visibleClusters.length - 1 : (idx - 1 + visibleClusters.length) % visibleClusters.length;
@@ -1511,7 +1520,7 @@ export default function CanvasOverlay({
         if (visibleCities.length === 0) return;
 
         let idx = focusedArtistIndexRef.current;
-        if (e.key === 'ArrowRight') {
+        if (isNext) {
           idx = idx < 0 ? 0 : (idx + 1) % visibleCities.length;
         } else {
           idx = idx < 0 ? visibleCities.length - 1 : (idx - 1 + visibleCities.length) % visibleCities.length;
@@ -1541,7 +1550,7 @@ export default function CanvasOverlay({
       if (visibleIds.length === 0) return;
 
       let idx = focusedArtistIndexRef.current;
-      if (e.key === 'ArrowRight') {
+      if (isNext) {
         idx = idx < 0 ? 0 : (idx + 1) % visibleIds.length;
       } else {
         idx = idx < 0 ? visibleIds.length - 1 : (idx - 1 + visibleIds.length) % visibleIds.length;
@@ -1611,7 +1620,7 @@ export default function CanvasOverlay({
         tabIndex={0}
         onKeyDown={handleKeyDown}
         role="region"
-        aria-label="Musician map navigation. Use arrow keys to browse artists, Enter to select."
+        aria-label="Musician map navigation. Use left/right or up/down arrow keys to browse artists, Enter to select."
         aria-roledescription="musician map"
         style={{
           position: 'absolute',

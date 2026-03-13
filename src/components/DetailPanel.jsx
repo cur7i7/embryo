@@ -59,7 +59,7 @@ function ConnectionTypeLabel({ type }) {
   return (
     <span
       style={{
-        fontSize: 11,
+        fontSize: 10,
         fontWeight: 600,
         padding: '2px 6px',
         borderRadius: 4,
@@ -80,7 +80,7 @@ function PipelineBadge({ pipeline }) {
   return (
     <span
       style={{
-        fontSize: 11,
+        fontSize: 10,
         fontWeight: 500,
         padding: '1px 5px',
         borderRadius: 3,
@@ -139,7 +139,7 @@ function ConnectionCard({ conn, artist, artistMap, onClickArtist }) {
             padding: '4px 0',
             minHeight: 44,
             fontFamily: '"DM Sans", sans-serif',
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: 600,
             color: connectedArtist ? '#3E3530' : '#5A5048',
             cursor: connectedArtist ? 'pointer' : 'default',
@@ -163,7 +163,7 @@ function ConnectionCard({ conn, artist, artistMap, onClickArtist }) {
         <p
           style={{
             margin: '4px 0 4px 0',
-            fontSize: 11,
+            fontSize: 12,
             fontStyle: 'italic',
             color: '#5A4F47',
             lineHeight: 1.5,
@@ -663,7 +663,7 @@ export default function DetailPanel({
                   <span
                     key={i}
                     style={{
-                      fontSize: 11,
+                      fontSize: 10,
                       padding: '2px 8px',
                       borderRadius: 20,
                       backgroundColor: 'rgba(250, 243, 235, 0.85)',
@@ -699,7 +699,7 @@ export default function DetailPanel({
               display: 'flex',
               alignItems: 'center',
               gap: 6,
-              fontSize: 13,
+              fontSize: 14,
               color: '#6B5F55',
               marginBottom: 8,
               flexWrap: 'wrap',
@@ -719,7 +719,7 @@ export default function DetailPanel({
           {lifespan && (
             <div
               style={{
-                fontSize: 13,
+                fontSize: 14,
                 color: '#6B5F55',
                 marginBottom: 14,
               }}
@@ -735,7 +735,7 @@ export default function DetailPanel({
             <div style={{ marginBottom: 16 }}>
               <div
                 style={{
-                  fontSize: 11,
+                  fontSize: 10,
                   fontWeight: 700,
                   letterSpacing: '0.08em',
                   textTransform: 'uppercase',
@@ -770,7 +770,7 @@ export default function DetailPanel({
             <div style={{ marginBottom: 16 }}>
               <div
                 style={{
-                  fontSize: 11,
+                  fontSize: 10,
                   fontWeight: 700,
                   letterSpacing: '0.08em',
                   textTransform: 'uppercase',
@@ -801,7 +801,7 @@ export default function DetailPanel({
             <hr style={{ border: 'none', borderTop: '1px solid rgba(224, 216, 204, 0.7)', margin: '0 0 14px 0' }} />
             <div
               style={{
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: 700,
                 letterSpacing: '0.08em',
                 textTransform: 'uppercase',
@@ -821,7 +821,7 @@ export default function DetailPanel({
             ) : (
               <p
                 style={{
-                  fontSize: 13,
+                  fontSize: 14,
                   fontStyle: 'italic',
                   color: '#4A3F37',
                   margin: 0,

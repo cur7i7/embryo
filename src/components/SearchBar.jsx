@@ -159,8 +159,8 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false, artistCoun
       style={{
         position: 'fixed',
         top: `calc(16px + env(safe-area-inset-top))`,
-        right: 16,
-        left: isMobile ? 16 : 'auto',
+        right: `max(16px, env(safe-area-inset-right))`,
+        left: isMobile ? `max(16px, env(safe-area-inset-left))` : 'auto',
         zIndex: 20,
         width: isMobile ? 'auto' : 'clamp(240px, 30vw, 320px)',
         maxWidth: 400,
@@ -211,13 +211,13 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false, artistCoun
             width: '100%',
             boxSizing: 'border-box',
             padding: '9px 12px 9px 36px',
-            fontSize: 13,
+            fontSize: 14,
             fontFamily: '"DM Sans", sans-serif',
             color: '#3E3530',
             backgroundColor: 'rgba(250, 243, 235, 0.95)',
             border: '1px solid rgba(224, 216, 204, 0.8)',
             borderRadius: (isOpen || (hasFocus && query.trim().length >= 2 && results.length === 0)) ? '16px 16px 0 0' : 999,
-            outline: 'none',
+            outline: '2px solid transparent',
             boxShadow: '0 2px 12px rgba(90, 80, 72, 0.10)',
             backdropFilter: 'blur(8px)',
             transition: 'border-color 0.15s ease, border-radius 0.15s ease',
@@ -252,7 +252,7 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false, artistCoun
               justifyContent: 'center',
               minWidth: 44,
               minHeight: 44,
-              outline: 'none',
+              outline: '2px solid transparent',
             }}
             onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 2px rgba(122,110,101,0.4)'; }}
             onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
@@ -329,7 +329,7 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false, artistCoun
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div
                     style={{
-                      fontSize: 13,
+                      fontSize: 14,
                       fontWeight: 500,
                       color: '#3E3530',
                       overflow: 'hidden',
@@ -341,7 +341,7 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false, artistCoun
                   </div>
                   <div
                     style={{
-                      fontSize: 11,
+                      fontSize: 10,
                       color: '#6B5F55',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
@@ -366,7 +366,7 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false, artistCoun
             left: 0,
             right: 0,
             padding: '12px 14px',
-            fontSize: 13,
+            fontSize: 14,
             fontFamily: '"DM Sans", sans-serif',
             color: '#4A3F37',
             backgroundColor: 'rgba(250, 243, 235, 0.98)',
