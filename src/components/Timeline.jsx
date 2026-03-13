@@ -86,7 +86,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
     }
   }, [dragging, rangeStart, rangeEnd, onRangeChange, xToYear]);
 
-  const handlePointerUp = useCallback((e) => {
+  const handlePointerUp = useCallback(() => {
     dragging.current = null;
   }, []);
 

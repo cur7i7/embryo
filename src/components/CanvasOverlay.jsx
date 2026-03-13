@@ -16,7 +16,7 @@ import { buildCityGroups } from '../utils/cityGrouping.js';
 // Build a stable mapping from genre bucket color -> pre-rendered texture index
 const BUCKET_COLORS = Object.values(GENRE_BUCKETS).map((b) => b.color);
 
-// --- Zoom-based rendering mode thresholds ---
+// Zoom-based rendering mode thresholds
 const ZOOM_CITY = 8;
 const ZOOM_INDIVIDUAL = 12;
 
@@ -40,7 +40,7 @@ export default function CanvasOverlay({
   // posMap stored in ref so mousemove handler can access without stale closure
   const posMapRef = useRef(new Map());
 
-  // --- 6.1 Opacity fade map: Map<string, {opacity, target}> ---
+  // Opacity fade map: Map<id, {opacity, target}>
   const opacityMapRef = useRef(new Map());
 
   // rAF handle ref so we can cancel and avoid duplicates
@@ -51,7 +51,7 @@ export default function CanvasOverlay({
   // Track whether an animation loop should be running
   const needsAnimRef = useRef(false);
 
-  // --- A10: prefers-reduced-motion ---
+  // Prefers-reduced-motion
   const prefersReducedMotionRef = useRef(false);
   useEffect(() => {
     const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -61,31 +61,31 @@ export default function CanvasOverlay({
     return () => mql.removeEventListener('change', handler);
   }, []);
 
-  // --- P01: Pre-composited grain canvas ---
+  // Pre-composited grain canvas
   const grainFullRef = useRef(null);
   const grainSizeRef = useRef({ w: 0, h: 0 });
 
-  // --- P05: artistMap ref (rebuilt when artists change) ---
+  // artistMap ref (rebuilt when artists change)
   const artistMapRef = useRef(new Map());
 
-  // --- A05: focused artist index for keyboard navigation ---
+  // Focused artist index for keyboard navigation
   const focusedArtistIndexRef = useRef(-1);
 
-  // --- 6.4 Supercluster index ref ---
+  // Supercluster index ref
   const scIndexRef = useRef(null);
   const scArtistsRef = useRef(null); // the array used to build the last index
 
-  // --- City groups ref (rebuilt when artists change) ---
+  // City groups ref (rebuilt when artists change)
   const cityGroupsRef = useRef(new Map());
   const cityPosMapRef = useRef(new Map()); // projected city positions for hit testing
 
-  // --- Current render mode for hit testing (Task 6 will use) ---
+  // Current render mode for hit testing
   const renderModeRef = useRef('cluster');
 
-  // --- V3: Display offsets for co-located artists ---
+  // Display offsets for co-located artists
   const displayOffsetsRef = useRef(new Map());
 
-  // --- B4: Store latest props in refs to avoid render/startRaf recreation ---
+  // Store latest props in refs to avoid render/startRaf recreation
   const artistsRef = useRef(artists);
   const connectionCountsRef = useRef(connectionCounts);
   const connectionsRef = useRef(connections);
@@ -94,6 +94,14 @@ export default function CanvasOverlay({
   const selectedArtistRef = useRef(selectedArtist);
   const onHoverRef = useRef(onHover);
   const onSelectRef = useRef(onSelect);
+
+  // Cached valid artists and lookup maps (rebuilt only when artists change)
+  const validArtistsRef = useRef([]);
+  const artistByIdRef = useRef(new Map());
+  const artistByNameRef = useRef(new Map());
+
+  // Per-artist metadata cache: Map<id, { genreBucket, genreColor, pulseHash }>
+  const artistMetaRef = useRef(new Map());
 
   // Initialize textures once on mount
   useEffect(() => {
@@ -117,8 +125,7 @@ export default function CanvasOverlay({
     const grainTexture = grainTextureRef.current;
     if (!orbTextures || !grainTexture) return;
 
-    // Read latest props from refs (B4)
-    const artists = artistsRef.current;
+    // Read latest props from refs
     const connectionCounts = connectionCountsRef.current;
     const connections = connectionsRef.current;
     const activeConnectionTypes = activeConnectionTypesRef.current;
@@ -147,11 +154,12 @@ export default function CanvasOverlay({
     ctx.save();
     ctx.scale(dpr, dpr);
 
-    const validArtists = (artists || []).filter(
-      (a) => a.birth_lat != null && a.birth_lng != null
-    );
+    // Use cached valid artists from ref
+    const validArtists = validArtistsRef.current;
+    const artistMeta = artistMetaRef.current;
+    const artistById = artistByIdRef.current;
 
-    // --- 6.1 Update opacity map ---
+    // Update opacity map
     const now = ts ?? performance.now();
     const dt = lastRafTsRef.current != null ? now - lastRafTsRef.current : 16;
     lastRafTsRef.current = now;
@@ -159,21 +167,18 @@ export default function CanvasOverlay({
     const fadeStep = dt / FADE_DURATION;
 
     const opacityMap = opacityMapRef.current;
-    // B06: composite key to avoid name collisions
-    const opacityKey = (a) => a.name + '|' + (a.birth_year || '');
-    const currentKeys = new Set(validArtists.map((a) => opacityKey(a)));
+    const currentIds = new Set(validArtists.map((a) => a.id));
 
     // Mark targets
     for (const artist of validArtists) {
-      const key = opacityKey(artist);
-      if (!opacityMap.has(key)) {
-        opacityMap.set(key, { opacity: 0, target: 1 });
+      if (!opacityMap.has(artist.id)) {
+        opacityMap.set(artist.id, { opacity: 0, target: 1 });
       } else {
-        opacityMap.get(key).target = 1;
+        opacityMap.get(artist.id).target = 1;
       }
     }
-    for (const [key, entry] of opacityMap) {
-      if (!currentKeys.has(key)) {
+    for (const [id, entry] of opacityMap) {
+      if (!currentIds.has(id)) {
         entry.target = 0;
       }
     }
@@ -181,10 +186,10 @@ export default function CanvasOverlay({
     // Lerp and clean up
     const reducedMotion = prefersReducedMotionRef.current;
     let hasActiveTransitions = false;
-    for (const [key, entry] of opacityMap) {
+    for (const [id, entry] of opacityMap) {
       if (entry.opacity !== entry.target) {
         if (reducedMotion) {
-          // A10: instant opacity when reduced motion is active
+          // Instant opacity when reduced motion is active
           entry.opacity = entry.target;
         } else {
           const dir = entry.target > entry.opacity ? 1 : -1;
@@ -196,54 +201,80 @@ export default function CanvasOverlay({
         if (entry.opacity !== entry.target) hasActiveTransitions = true;
       }
       if (entry.opacity === 0 && entry.target === 0) {
-        opacityMap.delete(key);
+        opacityMap.delete(id);
       }
     }
 
-    // B4: Prune stale opacity entries to prevent memory growth
+    // Prune stale opacity entries to prevent memory growth
     if (opacityMap.size > validArtists.length * 2) {
-      for (const [key, entry] of opacityMap) {
-        if (entry.opacity === 0 && entry.target === 0) opacityMap.delete(key);
+      for (const [id, entry] of opacityMap) {
+        if (entry.opacity === 0 && entry.target === 0) opacityMap.delete(id);
       }
     }
 
-    // P01: Only keep rAF running for active transitions or interaction states
-    needsAnimRef.current = hasActiveTransitions || !!hoveredArtistRef.current || !!selectedArtistRef.current;
+    // Only keep rAF running for actual animations; when reduced motion is on
+    // and there are no opacity transitions, a static selection doesn't need rAF
+    needsAnimRef.current = hasActiveTransitions ||
+      (reducedMotion
+        ? false
+        : (!!hoveredArtistRef.current || !!selectedArtistRef.current));
 
     // Determine active interaction target
     const activeArtist = hoveredArtist || selectedArtist;
 
-    // Always build a fresh posMap every frame — eliminates projection cache race condition
+    // Viewport bounds for pre-culling (with ~10% padding)
+    const mapBounds = map.getBounds();
+    const sw = mapBounds.getSouthWest();
+    const ne = mapBounds.getNorthEast();
+    const latRange = ne.lat - sw.lat;
+    const lngRange = ne.lng - sw.lng;
+    const padLat = latRange * 0.1;
+    const padLng = lngRange * 0.1;
+    const cullSouth = sw.lat - padLat;
+    const cullNorth = ne.lat + padLat;
+    const cullWest = sw.lng - padLng;
+    const cullEast = ne.lng + padLng;
+
+    // Build a fresh posMap every frame — only project artists within viewport bounds
     const posMap = new Map();
     const currentZoomForPos = map.getZoom();
     const offsets = displayOffsetsRef.current;
     for (const artist of validArtists) {
+      // Pre-cull by geographic bounds before calling map.project()
+      if (artist.birth_lat < cullSouth || artist.birth_lat > cullNorth ||
+          artist.birth_lng < cullWest || artist.birth_lng > cullEast) {
+        continue;
+      }
+
       let lng = artist.birth_lng;
       let lat = artist.birth_lat;
-      // V3: Apply spiral offsets in individual mode to spread co-located artists
-      if (currentZoomForPos >= ZOOM_INDIVIDUAL && offsets.has(artist.name)) {
-        const o = offsets.get(artist.name);
+      // Apply spiral offsets in individual mode to spread co-located artists
+      if (currentZoomForPos >= ZOOM_INDIVIDUAL && offsets.has(artist.id)) {
+        const o = offsets.get(artist.id);
         lng += o.dlng;
         lat += o.dlat;
       }
       const point = map.project([lng, lat]);
-      posMap.set(artist.name, point);
+      posMap.set(artist.id, point);
     }
     posMapRef.current = posMap;
 
-    // P05: Use artistMap from ref (rebuilt when artists change)
-    const artistMap = artistMapRef.current;
-
-    // Build set of names connected to hovered/selected artist
-    const connectedNames = new Set();
+    // Build set of ids connected to hovered/selected artist
+    const connectedIds = new Set();
     if (activeArtist && connections && connections.length > 0) {
       for (const conn of connections) {
-        if (conn.source_name === activeArtist.name) connectedNames.add(conn.target_name);
-        if (conn.target_name === activeArtist.name) connectedNames.add(conn.source_name);
+        if (conn.source_name === activeArtist.name) {
+          const target = artistByNameRef.current.get(conn.target_name);
+          if (target) connectedIds.add(target.id);
+        }
+        if (conn.target_name === activeArtist.name) {
+          const source = artistByNameRef.current.get(conn.source_name);
+          if (source) connectedIds.add(source.id);
+        }
       }
     }
 
-    // --- Arc phase --- (6.5: only when hovered/selected)
+    // --- Arc phase --- (only when hovered/selected)
     ctx.globalCompositeOperation = 'source-over';
 
     // Track selected arcs for particle drawing
@@ -254,27 +285,36 @@ export default function CanvasOverlay({
       connections && connections.length > 0 &&
       activeConnectionTypes && activeConnectionTypes.size > 0
     ) {
-      const visibleNames = new Set(posMap.keys());
-
       for (const conn of connections) {
         const { source_name, target_name, type, confidence } = conn;
-        if (!visibleNames.has(source_name) || !visibleNames.has(target_name)) continue;
+        // Look up artists by name for arc resolution
+        const srcArtist = artistByNameRef.current.get(source_name);
+        const tgtArtist = artistByNameRef.current.get(target_name);
+        if (!srcArtist || !tgtArtist) continue;
+        const srcPos = posMap.get(srcArtist.id);
+        const tgtPos = posMap.get(tgtArtist.id);
+        if (!srcPos || !tgtPos) continue;
         if (!activeConnectionTypes.has(type)) continue;
 
-        const srcPos = posMap.get(source_name);
-        const tgtPos = posMap.get(target_name);
+        // Arc viewport culling: skip arcs where BOTH endpoints are outside canvas
+        const arcPad = 100;
+        const srcOutside = srcPos.x < -arcPad || srcPos.x > cssWidth + arcPad ||
+                           srcPos.y < -arcPad || srcPos.y > cssHeight + arcPad;
+        const tgtOutside = tgtPos.x < -arcPad || tgtPos.x > cssWidth + arcPad ||
+                           tgtPos.y < -arcPad || tgtPos.y > cssHeight + arcPad;
+        if (srcOutside && tgtOutside) continue;
 
-        const srcArtist = artistMap.get(source_name);
-        const tgtArtist = artistMap.get(target_name);
-        const { color: srcColor } = getGenreBucket(srcArtist?.genres);
-        const { color: tgtColor } = getGenreBucket(tgtArtist?.genres);
+        const srcMeta = artistMeta.get(srcArtist.id);
+        const tgtMeta = artistMeta.get(tgtArtist.id);
+        const srcColor = srcMeta?.genreColor ?? getGenreBucket(srcArtist?.genres).color;
+        const tgtColor = tgtMeta?.genreColor ?? getGenreBucket(tgtArtist?.genres).color;
 
         const isConnected =
           conn.source_name === activeArtist.name || conn.target_name === activeArtist.name;
 
         if (isConnected) {
           drawArcBloomed(ctx, srcPos.x, srcPos.y, tgtPos.x, tgtPos.y, srcColor, tgtColor, type, confidence ?? 0.5);
-          // Collect for particle rendering (6.3)
+          // Collect for particle rendering
           if (selectedArtist) {
             selectedArcs.push({ srcPos, tgtPos, srcColor });
           }
@@ -285,7 +325,7 @@ export default function CanvasOverlay({
       }
     }
 
-    // --- 6.3 Connection particles for selected artist (A10: skip when reduced motion) ---
+    // Connection particles for selected artist (skip when reduced motion)
     if (selectedArtist && selectedArcs.length > 0 && !reducedMotion) {
       const t0 = (performance.now() / 3000) % 1;
       for (let i = 0; i < selectedArcs.length; i++) {
@@ -296,20 +336,6 @@ export default function CanvasOverlay({
     }
 
     // --- Three-tier zoom rendering ---
-    // B02: Rebuild Supercluster index only when artist array reference changes
-    if (scArtistsRef.current !== artists) {
-      const index = new Supercluster({ radius: 60, maxZoom: 16 });
-      index.load(
-        validArtists.map((a) => ({
-          type: 'Feature',
-          properties: { name: a.name, genres: a.genres },
-          geometry: { type: 'Point', coordinates: [a.birth_lng, a.birth_lat] },
-        }))
-      );
-      scIndexRef.current = index;
-      scArtistsRef.current = artists;
-    }
-
     const currentZoom = map.getZoom();
     const bounds = map.getBounds();
     const boundsArray = [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()];
@@ -325,30 +351,29 @@ export default function CanvasOverlay({
     }
     renderModeRef.current = renderMode;
 
-    // Cross-fade alphas (±0.5 zoom units around boundaries)
+    // Cross-fade alphas (+-0.5 zoom units around boundaries)
     // reducedMotion: snap immediately, no cross-fade
     let clusterAlpha = 0;
     let cityAlpha = 0;
     let individualAlpha = 0;
 
     if (reducedMotion) {
-      // Snap — no blending
       if (renderMode === 'cluster') clusterAlpha = 1;
       else if (renderMode === 'city') cityAlpha = 1;
       else individualAlpha = 1;
     } else {
-      // Cluster ↔ City cross-fade around ZOOM_CITY (7.5–8.5)
+      // Cluster <-> City cross-fade around ZOOM_CITY (7.5-8.5)
       if (currentZoom < ZOOM_CITY - 0.5) {
         clusterAlpha = 1;
       } else if (currentZoom < ZOOM_CITY + 0.5) {
-        const t = (currentZoom - (ZOOM_CITY - 0.5));  // 0→1
+        const t = (currentZoom - (ZOOM_CITY - 0.5));  // 0->1
         clusterAlpha = 1 - t;
         cityAlpha = t;
       } else if (currentZoom < ZOOM_INDIVIDUAL - 0.5) {
         cityAlpha = 1;
       } else if (currentZoom < ZOOM_INDIVIDUAL + 0.5) {
-        // City ↔ Individual cross-fade around ZOOM_INDIVIDUAL (11.5–12.5)
-        const t = (currentZoom - (ZOOM_INDIVIDUAL - 0.5));  // 0→1
+        // City <-> Individual cross-fade around ZOOM_INDIVIDUAL (11.5-12.5)
+        const t = (currentZoom - (ZOOM_INDIVIDUAL - 0.5));  // 0->1
         cityAlpha = 1 - t;
         individualAlpha = t;
       } else {
@@ -392,23 +417,23 @@ export default function CanvasOverlay({
             ctx.fillText(count.toString(), x, y);
             ctx.restore();
           } else {
-            const name = cluster.properties.name;
-            const artistData = artistMap.get(name);
+            const artistId = cluster.properties.artistId;
+            const artistData = artistById.get(artistId);
             if (!artistData) continue;
 
-            const artistOpacityKey = name + '|' + (artistData.birth_year || '');
-            const opacity = opacityMap.get(artistOpacityKey)?.opacity ?? 1;
+            const opacity = opacityMap.get(artistId)?.opacity ?? 1;
             if (opacity <= 0) continue;
 
-            const connCount = (connectionCounts && connectionCounts.get(name)) || 0;
+            const connCount = (connectionCounts && connectionCounts.get(artistData.name)) || 0;
             const scaleFactor = validArtists.length > 200 ? 0.5 : 1;
             const baseRadius = (40 + Math.min(connCount * 3, 60)) * scaleFactor;
 
-            const isActive = activeArtist && name === activeArtist.name;
-            const isConnected = connectedNames.has(name);
+            const isActive = activeArtist && artistData.name === activeArtist.name;
+            const isConnected = connectedIds.has(artistId);
             const isPassive = activeArtist && !isActive && !isConnected;
 
-            const { color: genreColor } = getGenreBucket(artistData.genres);
+            const meta = artistMeta.get(artistId);
+            const genreColor = meta?.genreColor ?? getGenreBucket(artistData.genres).color;
             const textureIndex = BUCKET_COLORS.indexOf(genreColor);
             const orbTexture =
               textureIndex >= 0 && textureIndex < orbTextures.length
@@ -419,7 +444,7 @@ export default function CanvasOverlay({
             if (!isActive && !isConnected && !hasActiveTransitions) {
               let pulseFactor = 1;
               if (!reducedMotion) {
-                const hash = name.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+                const hash = meta?.pulseHash ?? 0;
                 const phase = ((performance.now() / 3000) + hash * 0.1) % 1;
                 pulseFactor = 1 + 0.05 * Math.sin(phase * Math.PI * 2);
               }
@@ -439,7 +464,14 @@ export default function CanvasOverlay({
     const cityPosMap = new Map();
     if (cityAlpha > 0) {
       const cityGroups = cityGroupsRef.current;
-      for (const [key, group] of cityGroups) {
+
+      // Sort city groups by artist count (largest first) for label collision priority
+      const sortedCityEntries = [...cityGroups.entries()].sort(
+        (a, b) => b[1].artists.length - a[1].artists.length
+      );
+      const cityOccupiedRects = [];
+
+      for (const [key, group] of sortedCityEntries) {
         const point = map.project([group.lng, group.lat]);
         const { x, y } = point;
 
@@ -448,45 +480,70 @@ export default function CanvasOverlay({
         if (x < -cityRadius || x > cssWidth + cityRadius || y < -cityRadius || y > cssHeight + cityRadius) continue;
 
         cityPosMap.set(key, { x, y, radius: cityRadius, group });
-        drawCityGroup(ctx, x, y, group.city, group.artists.length, cityRadius, cityAlpha);
+
+        // Collision detection for city labels
+        let showLabel = true;
+        ctx.font = '600 12px "DM Sans", sans-serif';
+        const labelW = ctx.measureText(group.city).width;
+        const labelRect = {
+          x: x - labelW / 2 - 4,
+          y: y + cityRadius + 2,
+          w: labelW + 8,
+          h: 16,
+        };
+
+        const overlaps = (r1, r2) =>
+          r1.x < r2.x + r2.w && r1.x + r1.w > r2.x && r1.y < r2.y + r2.h && r1.y + r1.h > r2.y;
+
+        for (const occ of cityOccupiedRects) {
+          if (overlaps(labelRect, occ)) {
+            showLabel = false;
+            break;
+          }
+        }
+        if (showLabel) {
+          cityOccupiedRects.push(labelRect);
+        }
+
+        drawCityGroup(ctx, x, y, showLabel ? group.city : null, group.artists.length, cityRadius, cityAlpha);
       }
     }
     cityPosMapRef.current = cityPosMap;
 
     // --- Individual mode rendering ---
     if (individualAlpha > 0) {
-      // V1: Sort artists for label priority — active first, connected second, then by connection count
+      // Sort artists for label priority — active first, connected second, then by connection count
       const sortedArtists = [...validArtists].sort((a, b) => {
         const aActive = activeArtist && a.name === activeArtist.name ? 1 : 0;
         const bActive = activeArtist && b.name === activeArtist.name ? 1 : 0;
         if (aActive !== bActive) return bActive - aActive;
-        const aConn = connectedNames.has(a.name) ? 1 : 0;
-        const bConn = connectedNames.has(b.name) ? 1 : 0;
+        const aConn = connectedIds.has(a.id) ? 1 : 0;
+        const bConn = connectedIds.has(b.id) ? 1 : 0;
         if (aConn !== bConn) return bConn - aConn;
         const aCount = (connectionCounts && connectionCounts.get(a.name)) || 0;
         const bCount = (connectionCounts && connectionCounts.get(b.name)) || 0;
         return bCount - aCount;
       });
 
-      // V1: Label collision detection — occupied rects for AABB test
+      // Label collision detection — occupied rects for AABB test
       const occupiedRects = [];
 
       for (const artist of sortedArtists) {
-        const point = posMap.get(artist.name);
+        const point = posMap.get(artist.id);
         if (!point) continue;
 
         // Viewport cull
         const margin = 60;
         if (point.x < -margin || point.x > cssWidth + margin || point.y < -margin || point.y > cssHeight + margin) continue;
 
-        const artistOpacityKey = artist.name + '|' + (artist.birth_year || '');
-        const opacity = opacityMap.get(artistOpacityKey)?.opacity ?? 1;
+        const opacity = opacityMap.get(artist.id)?.opacity ?? 1;
         if (opacity <= 0) continue;
 
-        const { color: genreColor } = getGenreBucket(artist.genres);
+        const meta = artistMeta.get(artist.id);
+        const genreColor = meta?.genreColor ?? getGenreBucket(artist.genres).color;
 
         const isActive = activeArtist && artist.name === activeArtist.name;
-        const isConnected = connectedNames.has(artist.name);
+        const isConnected = connectedIds.has(artist.id);
         const isPassive = activeArtist && !isActive && !isConnected;
 
         let state = 'default';
@@ -494,7 +551,7 @@ export default function CanvasOverlay({
         else if (activeArtist && isConnected) state = 'connected';
         else if (isPassive) state = 'dimmed';
 
-        // Format years: "1756–1791" or "1985–" (en-dash)
+        // Format years: "1756-1791" or "1985-" (en-dash)
         let years = '';
         if (artist.birth_year) {
           years = artist.death_year
@@ -504,7 +561,7 @@ export default function CanvasOverlay({
 
         const r = 16 * (state === 'active' ? 1.2 : 1);
 
-        // V1: Always show labels for hovered/active/connected; collision-check the rest
+        // Always show labels for hovered/active/connected; collision-check the rest
         const isImportant = isActive || isConnected;
         let showLabel = true;
 
@@ -559,18 +616,20 @@ export default function CanvasOverlay({
 
     ctx.globalAlpha = 1.0;
 
-    // --- Label phase --- B2: explicitly reset composite and alpha
+    // --- Label phase --- explicitly reset composite and alpha
     ctx.globalCompositeOperation = 'source-over';
     ctx.globalAlpha = 1.0;
 
     if (activeArtist) {
-      const pos = posMapRef.current?.get(activeArtist.name);
+      const pos = posMapRef.current?.get(activeArtist.id);
       if (pos) {
         const connCount = (connectionCounts && connectionCounts.get(activeArtist.name)) || 0;
         const baseRadius = 40 + Math.min(connCount * 3, 60);
         const radius = baseRadius * 1.5;
 
-        const { bucket, color } = getGenreBucket(activeArtist.genres);
+        const meta = artistMeta.get(activeArtist.id);
+        const bucket = meta?.genreBucket ?? getGenreBucket(activeArtist.genres).bucket;
+        const color = meta?.genreColor ?? getGenreBucket(activeArtist.genres).color;
         const label = activeArtist.name;
         const sublabel = `${bucket} · ${activeArtist.birth_city || 'Unknown'}`;
 
@@ -582,7 +641,7 @@ export default function CanvasOverlay({
         const pillPad = 10;
         const pillH = 40;
         const pillX = pos.x - maxW / 2 - pillPad;
-        // V2: Flip pill below if too close to top of viewport
+        // Flip pill below if too close to top of viewport
         let pillY = pos.y - radius - 52;
         if (pos.y - radius - 52 < 10) {
           pillY = pos.y + radius + 12;
@@ -618,14 +677,15 @@ export default function CanvasOverlay({
       }
     }
 
-    // --- P01: Grain phase — pre-composite full-viewport grain canvas ---
+    // --- Grain phase — pre-composite full-viewport grain canvas at device pixel resolution ---
     ctx.globalCompositeOperation = 'source-over';
 
     if (grainSizeRef.current.w !== cssWidth || grainSizeRef.current.h !== cssHeight) {
       const grainFull = document.createElement('canvas');
-      grainFull.width = cssWidth;
-      grainFull.height = cssHeight;
+      grainFull.width = cssWidth * dpr;
+      grainFull.height = cssHeight * dpr;
       const gCtx = grainFull.getContext('2d');
+      gCtx.scale(dpr, dpr);
       const gw = grainTextureRef.current.width;
       const gh = grainTextureRef.current.height;
       for (let gx = 0; gx < cssWidth; gx += gw) {
@@ -637,7 +697,7 @@ export default function CanvasOverlay({
       grainSizeRef.current = { w: cssWidth, h: cssHeight };
     }
     if (grainFullRef.current) {
-      ctx.drawImage(grainFullRef.current, 0, 0);
+      ctx.drawImage(grainFullRef.current, 0, 0, cssWidth, cssHeight);
     }
 
     ctx.restore();
@@ -662,32 +722,57 @@ export default function CanvasOverlay({
     rafRef.current = requestAnimationFrame(loop);
   }, [render]);
 
-  // --- B4: Sync props into refs and trigger re-render ---
+  // -------------------------------------------------------------------
+  // Effect A: Rebuild derived data structures when artists change
+  // -------------------------------------------------------------------
   useEffect(() => {
     artistsRef.current = artists;
-    connectionCountsRef.current = connectionCounts;
-    connectionsRef.current = connections;
-    activeConnectionTypesRef.current = activeConnectionTypes;
-    hoveredArtistRef.current = hoveredArtist;
-    selectedArtistRef.current = selectedArtist;
-    onHoverRef.current = onHover;
-    onSelectRef.current = onSelect;
 
-    // P05: Rebuild artistMap when artists change
-    const newArtistMap = new Map();
+    // Cache valid artists (those with coordinates)
     const valid = (artists || []).filter(a => a.birth_lat != null && a.birth_lng != null);
+    validArtistsRef.current = valid;
+
+    // Build O(1) lookup maps
+    const newArtistMap = new Map();
+    const byId = new Map();
+    const byName = new Map();
     for (const artist of valid) {
       newArtistMap.set(artist.name, artist);
+      byId.set(artist.id, artist);
+      byName.set(artist.name, artist);
     }
     artistMapRef.current = newArtistMap;
+    artistByIdRef.current = byId;
+    artistByNameRef.current = byName;
 
-    // Rebuild city groups when artists change
+    // Rebuild city groups
     cityGroupsRef.current = buildCityGroups(valid);
 
-    // B6: Reset focused artist index when artists change
+    // Rebuild Supercluster index
+    const index = new Supercluster({ radius: 60, maxZoom: 16 });
+    index.load(
+      valid.map((a) => ({
+        type: 'Feature',
+        properties: { artistId: a.id, name: a.name, genres: a.genres },
+        geometry: { type: 'Point', coordinates: [a.birth_lng, a.birth_lat] },
+      }))
+    );
+    scIndexRef.current = index;
+    scArtistsRef.current = artists;
+
+    // Precompute per-artist metadata (genre bucket, color, pulse hash)
+    const newMeta = new Map();
+    for (const artist of valid) {
+      const { bucket: genreBucket, color: genreColor } = getGenreBucket(artist.genres);
+      const pulseHash = artist.name.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+      newMeta.set(artist.id, { genreBucket, genreColor, pulseHash });
+    }
+    artistMetaRef.current = newMeta;
+
+    // Reset focused artist index
     focusedArtistIndexRef.current = -1;
 
-    // V3: Build display offsets for co-located artists
+    // Build display offsets for co-located artists
     const coordGroups = new Map();
     for (const artist of valid) {
       const key = Math.round(artist.birth_lat * 100) + ',' + Math.round(artist.birth_lng * 100);
@@ -700,20 +785,37 @@ export default function CanvasOverlay({
       const count = group.length;
       for (let i = 0; i < count; i++) {
         if (i === 0) {
-          newOffsets.set(group[i].name, { dlat: 0, dlng: 0 });
+          newOffsets.set(group[i].id, { dlat: 0, dlng: 0 });
         } else {
           const angle = i * (2 * Math.PI / count);
           const radius = 0.0008 * Math.ceil(i / 6);
-          newOffsets.set(group[i].name, { dlat: Math.sin(angle) * radius, dlng: Math.cos(angle) * radius });
+          newOffsets.set(group[i].id, { dlat: Math.sin(angle) * radius, dlng: Math.cos(angle) * radius });
         }
       }
     }
     displayOffsetsRef.current = newOffsets;
 
-    // Trigger re-render when props change
+    // Trigger re-render
     needsAnimRef.current = true;
     startRaf();
-  }, [artists, connectionCounts, connections, activeConnectionTypes, hoveredArtist, selectedArtist, startRaf]);
+  }, [artists, startRaf]);
+
+  // -------------------------------------------------------------------
+  // Effect B: Sync volatile props to refs (no expensive rebuilds)
+  // -------------------------------------------------------------------
+  useEffect(() => {
+    connectionCountsRef.current = connectionCounts;
+    connectionsRef.current = connections;
+    activeConnectionTypesRef.current = activeConnectionTypes;
+    hoveredArtistRef.current = hoveredArtist;
+    selectedArtistRef.current = selectedArtist;
+    onHoverRef.current = onHover;
+    onSelectRef.current = onSelect;
+
+    // Trigger re-render for prop changes
+    needsAnimRef.current = true;
+    startRaf();
+  }, [connectionCounts, connections, activeConnectionTypes, hoveredArtist, selectedArtist, onHover, onSelect, startRaf]);
 
   // Re-render once when tab becomes visible again (no continuous polling)
   useEffect(() => {
@@ -726,6 +828,106 @@ export default function CanvasOverlay({
     document.addEventListener('visibilitychange', handleVisibility);
     return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, [startRaf]);
+
+  // -------------------------------------------------------------------
+  // Hit testing: mousemove, mouseleave, click
+  // -------------------------------------------------------------------
+
+  // Helper: find nearest artist in posMap within hit radius
+  // Returns { artist, dist } or null
+  const hitTest = useCallback((mx, my) => {
+    const mode = renderModeRef.current;
+    const posMap = posMapRef.current;
+    if (!posMap || posMap.size === 0) return null;
+
+    let nearestId = null;
+    let nearestDist = Infinity;
+
+    for (const [id, pos] of posMap) {
+      const dx = pos.x - mx;
+      const dy = pos.y - my;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < nearestDist) {
+        nearestDist = dist;
+        nearestId = id;
+      }
+    }
+
+    // Hit radius depends on render mode
+    let hitRadius;
+    if (mode === 'individual') {
+      // 22px radius = 44px touch target per WCAG
+      hitRadius = 22;
+    } else {
+      // Cluster/city mode: dynamic hit radius based on orb size
+      const artist = artistByIdRef.current.get(nearestId);
+      const connCount = (connectionCountsRef.current?.get(artist?.name)) || 0;
+      const scaleFactor = validArtistsRef.current.length > 200 ? 0.5 : 1;
+      const baseRadius = (40 + Math.min(connCount * 3, 60)) * scaleFactor;
+      hitRadius = Math.max(20, baseRadius * 0.4);
+    }
+
+    if (nearestDist <= hitRadius && nearestId != null) {
+      const artist = artistByIdRef.current.get(nearestId);
+      if (artist) return { artist, dist: nearestDist };
+    }
+    return null;
+  }, []);
+
+  // Handle cluster clicks when in cluster mode
+  const handleClusterClick = useCallback((mx, my) => {
+    const map = mapRef.current?.getMap?.();
+    const index = scIndexRef.current;
+    if (!map || !index) return false;
+
+    if (renderModeRef.current !== 'cluster') return false;
+
+    const bounds = map.getBounds();
+    const zoom = Math.floor(map.getZoom());
+    const clusters = index.getClusters(
+      [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()],
+      zoom
+    );
+
+    for (const cluster of clusters) {
+      if (!cluster.properties.cluster) continue;
+      const [lng, lat] = cluster.geometry.coordinates;
+      const pt = map.project([lng, lat]);
+      const dx = pt.x - mx;
+      const dy = pt.y - my;
+      const count = cluster.properties.point_count;
+      const clusterRadius = Math.min(40 + Math.log2(count) * 12, 100);
+      if (Math.sqrt(dx * dx + dy * dy) <= clusterRadius) {
+        try {
+          const expansionZoom = index.getClusterExpansionZoom(cluster.id);
+          map.flyTo({ center: cluster.geometry.coordinates, zoom: expansionZoom });
+        } catch { /* cluster expansion may fail at max zoom */ }
+        return true;
+      }
+    }
+    return false;
+  }, [mapRef]);
+
+  // Handle city group clicks when in city mode -> fly to zoom 13
+  const handleCityClick = useCallback((mx, my) => {
+    const map = mapRef.current?.getMap?.();
+    if (!map) return false;
+
+    if (renderModeRef.current !== 'city') return false;
+
+    const cityPosMap = cityPosMapRef.current;
+    if (!cityPosMap || cityPosMap.size === 0) return false;
+
+    for (const [, { x, y, radius, group }] of cityPosMap) {
+      const dx = x - mx;
+      const dy = y - my;
+      if (Math.sqrt(dx * dx + dy * dy) <= Math.max(radius, 22)) {
+        map.flyTo({ center: [group.lng, group.lat], zoom: 13 });
+        return true;
+      }
+    }
+    return false;
+  }, [mapRef]);
 
   // Attach map event listeners — fire a single render on map events
   useEffect(() => {
@@ -752,7 +954,7 @@ export default function CanvasOverlay({
         }
       }
 
-      // B3: In cluster mode, skip individual artist hit testing
+      // In cluster mode, skip individual artist hit testing
       if (renderModeRef.current === 'cluster') {
         onHoverRef.current?.(null);
         map.getCanvas().style.cursor = '';
@@ -808,112 +1010,9 @@ export default function CanvasOverlay({
         rafRef.current = null;
       }
     };
-  }, [mapRef, startRaf]);
+  }, [mapRef, startRaf, hitTest, handleClusterClick, handleCityClick]);
 
-  // -------------------------------------------------------------------
-  // Hit testing: mousemove, mouseleave, click
-  // -------------------------------------------------------------------
-
-  // Helper: find nearest artist in posMap within hit radius
-  // Returns { artist, dist } or null
-  // B8: reads from artistsRef to avoid stale closure
-  const hitTest = useCallback((mx, my) => {
-    const mode = renderModeRef.current;
-    const posMap = posMapRef.current;
-    if (!posMap || posMap.size === 0) return null;
-
-    let nearest = null;
-    let nearestDist = Infinity;
-
-    for (const [name, pos] of posMap) {
-      const dx = pos.x - mx;
-      const dy = pos.y - my;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < nearestDist) {
-        nearestDist = dist;
-        nearest = name;
-      }
-    }
-
-    // Hit radius depends on render mode
-    let hitRadius;
-    if (mode === 'individual') {
-      // 22px radius = 44px touch target per WCAG
-      hitRadius = 22;
-    } else {
-      // Cluster/city mode: dynamic hit radius based on orb size
-      const connCount = (connectionCountsRef.current?.get(nearest)) || 0;
-      const scaleFactor = (artistsRef.current || []).filter(a => a.birth_lat != null).length > 200 ? 0.5 : 1;
-      const baseRadius = (40 + Math.min(connCount * 3, 60)) * scaleFactor;
-      hitRadius = Math.max(20, baseRadius * 0.4);
-    }
-
-    if (nearestDist <= hitRadius && nearest) {
-      const validArtists = (artistsRef.current || []).filter(
-        (a) => a.birth_lat != null && a.birth_lng != null
-      );
-      const artist = validArtists.find((a) => a.name === nearest);
-      if (artist) return { artist, dist: nearestDist };
-    }
-    return null;
-  }, []);
-
-  // Handle cluster clicks when in cluster mode
-  const handleClusterClick = useCallback((mx, my) => {
-    const map = mapRef.current?.getMap?.();
-    const index = scIndexRef.current;
-    if (!map || !index) return false;
-
-    if (renderModeRef.current !== 'cluster') return false;
-
-    const bounds = map.getBounds();
-    const zoom = Math.floor(map.getZoom());
-    const clusters = index.getClusters(
-      [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()],
-      zoom
-    );
-
-    for (const cluster of clusters) {
-      if (!cluster.properties.cluster) continue;
-      const [lng, lat] = cluster.geometry.coordinates;
-      const pt = map.project([lng, lat]);
-      const dx = pt.x - mx;
-      const dy = pt.y - my;
-      const count = cluster.properties.point_count;
-      const clusterRadius = Math.min(40 + Math.log2(count) * 12, 100);
-      if (Math.sqrt(dx * dx + dy * dy) <= clusterRadius) {
-        try {
-          const expansionZoom = index.getClusterExpansionZoom(cluster.id);
-          map.flyTo({ center: cluster.geometry.coordinates, zoom: expansionZoom });
-        } catch (_) {}
-        return true;
-      }
-    }
-    return false;
-  }, [mapRef]);
-
-  // Handle city group clicks when in city mode → fly to zoom 13
-  const handleCityClick = useCallback((mx, my) => {
-    const map = mapRef.current?.getMap?.();
-    if (!map) return false;
-
-    if (renderModeRef.current !== 'city') return false;
-
-    const cityPosMap = cityPosMapRef.current;
-    if (!cityPosMap || cityPosMap.size === 0) return false;
-
-    for (const [, { x, y, radius, group }] of cityPosMap) {
-      const dx = x - mx;
-      const dy = y - my;
-      if (Math.sqrt(dx * dx + dy * dy) <= Math.max(radius, 22)) {
-        map.flyTo({ center: [group.lng, group.lat], zoom: 13 });
-        return true;
-      }
-    }
-    return false;
-  }, [mapRef]);
-
-  // A09/A05: keyboard handler for canvas — arrow keys to cycle artists, Enter/Space to select
+  // Keyboard handler for canvas — arrow keys to cycle visible artists, Enter/Space to select
   const handleKeyDown = useCallback((e) => {
     if (e.key === 'Enter' || e.key === ' ') {
       const hovered = hoveredArtistRef.current;
@@ -924,27 +1023,35 @@ export default function CanvasOverlay({
       return;
     }
 
-    // A05: ArrowLeft/ArrowRight to cycle through visible artists
+    // ArrowLeft/ArrowRight to cycle through artists visible in the viewport
     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
       e.preventDefault();
       const posMap = posMapRef.current;
       if (!posMap || posMap.size === 0) return;
-      const names = Array.from(posMap.keys());
-      if (names.length === 0) return;
+
+      // Filter to only artists whose projected positions are on screen
+      const canvas = canvasRef.current;
+      const cw = canvas ? canvas.clientWidth : window.innerWidth;
+      const ch = canvas ? canvas.clientHeight : window.innerHeight;
+
+      const visibleIds = [];
+      for (const [id, pos] of posMap) {
+        if (pos.x >= 0 && pos.x <= cw && pos.y >= 0 && pos.y <= ch) {
+          visibleIds.push(id);
+        }
+      }
+      if (visibleIds.length === 0) return;
 
       let idx = focusedArtistIndexRef.current;
       if (e.key === 'ArrowRight') {
-        idx = idx < 0 ? 0 : (idx + 1) % names.length;
+        idx = idx < 0 ? 0 : (idx + 1) % visibleIds.length;
       } else {
-        idx = idx < 0 ? names.length - 1 : (idx - 1 + names.length) % names.length;
+        idx = idx < 0 ? visibleIds.length - 1 : (idx - 1 + visibleIds.length) % visibleIds.length;
       }
       focusedArtistIndexRef.current = idx;
 
-      const artistName = names[idx];
-      const validArtists = (artistsRef.current || []).filter(
-        (a) => a.birth_lat != null && a.birth_lng != null
-      );
-      const artist = validArtists.find((a) => a.name === artistName);
+      const artistId = visibleIds[idx];
+      const artist = artistByIdRef.current.get(artistId);
       if (artist) {
         onHoverRef.current?.(artist);
         // Trigger re-render to show hover state
@@ -954,7 +1061,7 @@ export default function CanvasOverlay({
     }
   }, [startRaf]);
 
-  // A1: ARIA live region text for hovered/selected artist
+  // ARIA live region text for hovered/selected artist
   const liveText = hoveredArtist
     ? `${hoveredArtist.name}, ${hoveredArtist.birth_year || 'unknown year'}${hoveredArtist.birth_city ? ', ' + hoveredArtist.birth_city : ''}`
     : selectedArtist
@@ -975,7 +1082,7 @@ export default function CanvasOverlay({
         }}
         aria-hidden="true"
       />
-      {/* A2: Keyboard-accessible overlay with visible focus indicator */}
+      {/* Keyboard-accessible overlay with visible focus indicator */}
       <div
         tabIndex={0}
         onKeyDown={handleKeyDown}
@@ -1000,7 +1107,7 @@ export default function CanvasOverlay({
           e.currentTarget.style.pointerEvents = 'none';
         }}
       />
-      {/* A1: Screen reader live region for artist announcements */}
+      {/* Screen reader live region for artist announcements */}
       <div
         role="status"
         aria-live="polite"
@@ -1023,11 +1130,10 @@ export default function CanvasOverlay({
 // -------------------------------------------------------------------
 // Bloomed arc for hover/selection state
 // -------------------------------------------------------------------
-function drawArcBloomed(ctx, x1, y1, x2, y2, color1, color2, type, confidence) {
+function drawArcBloomed(ctx, x1, y1, x2, y2, color1, color2, type) {
   const midX = (x1 + x2) / 2;
   const midY = (y1 + y2) / 2;
   const dist = Math.hypot(x2 - x1, y2 - y1);
-  // B3: guard against division by zero
   if (dist < 1) return;
   const bulge = dist * 0.25;
   const dx = x2 - x1;
