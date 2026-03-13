@@ -79,17 +79,16 @@ function useIsMobile(breakpoint = 768) {
 // ---------------------------------------------------------------------------
 // App
 // ---------------------------------------------------------------------------
+const _initialHash = parseHash();
+
 export default function App() {
   const isMobile = useIsMobile();
   const { artists: allArtists, loading: artistsLoading, error: artistsError } = useArtistData();
   const { connections, connectionsByArtist, connectionCounts, loading: connectionsLoading, error: connectionsError } = useConnectionData();
 
-  // Parse hash for initial state
-  const initialHash = useRef(parseHash());
-
   const [timeline, dispatch] = useReducer(timelineReducer, {
-    rangeStart: Number(initialHash.current.start) || DEFAULT_RANGE[0],
-    rangeEnd: Number(initialHash.current.end) || DEFAULT_RANGE[1],
+    rangeStart: Number(_initialHash.start) || DEFAULT_RANGE[0],
+    rangeEnd: Number(_initialHash.end) || DEFAULT_RANGE[1],
     isPlaying: false,
   });
 
@@ -104,30 +103,36 @@ export default function App() {
   const suppressHashSync = useRef(false);
 
   // ---- Hash → state: restore artist selection after data loads ----
-  const pendingArtistId = useRef(initialHash.current.artist || null);
+  const pendingArtistId = useRef(_initialHash.artist || null);
   useEffect(() => {
     if (!pendingArtistId.current || !allArtists.length) return;
     const artist = allArtists.find(a => a.id === pendingArtistId.current);
     if (artist) {
       setSelectedArtist(artist);
       // Fly to artist after map is ready
-      setTimeout(() => {
+      const flyToArtist = () => {
         if (mapRef.current && artist.birth_lng != null && artist.birth_lat != null) {
           try {
-            const z = Number(initialHash.current.z) || 6;
+            const z = Number(_initialHash.z) || 6;
             mapRef.current.getMap().flyTo({ center: [artist.birth_lng, artist.birth_lat], zoom: z });
           } catch { /* map not ready */ }
         }
-      }, 500);
+      };
+      const map = mapRef.current?.getMap?.();
+      if (map?.loaded?.()) {
+        flyToArtist();
+      } else if (map) {
+        map.on('load', flyToArtist);
+      }
     }
     pendingArtistId.current = null;
   }, [allArtists]);
 
   // ---- Hash → state: restore map position after mount ----
   useEffect(() => {
-    const h = initialHash.current;
+    const h = _initialHash;
     if (h.lat && h.lng) {
-      setTimeout(() => {
+      const jumpToPos = () => {
         if (mapRef.current) {
           try {
             mapRef.current.getMap().jumpTo({
@@ -136,12 +141,18 @@ export default function App() {
             });
           } catch { /* map not ready */ }
         }
-      }, 300);
+      };
+      const map = mapRef.current?.getMap?.();
+      if (map?.loaded?.()) {
+        jumpToPos();
+      } else if (map) {
+        map.on('load', jumpToPos);
+      }
     }
   }, []);
 
   // ---- State → hash: debounced sync ----
-  useEffect(() => {
+  const syncHashNow = useCallback(() => {
     if (suppressHashSync.current) return;
     clearTimeout(hashUpdateTimer.current);
     hashUpdateTimer.current = setTimeout(() => {
@@ -162,8 +173,21 @@ export default function App() {
         window.history.replaceState(null, '', hash || window.location.pathname);
       }
     }, 500);
-    return () => clearTimeout(hashUpdateTimer.current);
   }, [timeline.rangeStart, timeline.rangeEnd, selectedArtist]);
+
+  useEffect(() => {
+    syncHashNow();
+    return () => clearTimeout(hashUpdateTimer.current);
+  }, [syncHashNow]);
+
+  // ---- Map moveend → hash sync ----
+  useEffect(() => {
+    const map = mapRef.current?.getMap?.();
+    if (!map) return;
+    const onMoveEnd = () => syncHashNow();
+    map.on('moveend', onMoveEnd);
+    return () => map.off('moveend', onMoveEnd);
+  }, [syncHashNow]);
 
   // ---- Popstate (back/forward) ----
   useEffect(() => {
@@ -241,13 +265,6 @@ export default function App() {
     // Auto-expand timeline to include artist's active period
     const aStart = artist.active_start ?? artist.birth_year;
     const aEnd = artist.active_end ?? artist.death_year ?? 2025;
-    if (aStart != null) {
-      dispatch((prev) => {
-        // useReducer dispatch with function not supported — use SET_RANGE
-        return { type: 'SET_RANGE', start: prev.rangeStart, end: prev.rangeEnd };
-      });
-    }
-
     // We need current timeline state — read from reducer won't work in callback.
     // Instead, do the expand check imperatively via setState pattern.
     // This is handled below via a separate effect.
@@ -282,8 +299,8 @@ export default function App() {
     if (needExpand) {
       dispatch({
         type: 'SET_RANGE',
-        start: Math.min(timeline.rangeStart, aStart - 10),
-        end: Math.max(timeline.rangeEnd, aEnd + 10),
+        start: Math.max(1400, Math.min(timeline.rangeStart, aStart - 10)),
+        end: Math.min(2025, Math.max(timeline.rangeEnd, aEnd + 10)),
       });
     }
   }, [selectedArtist, timeline.rangeStart, timeline.rangeEnd]);
@@ -340,7 +357,7 @@ export default function App() {
   // ---- Loading state ----
   if (artistsLoading || connectionsLoading) {
     return (
-      <div role="status" aria-live="polite" style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FAF3EB', fontFamily: '"DM Sans", sans-serif' }}>
+      <div role="status" aria-live="polite" style={{ width: '100vw', minHeight: '100vh', height: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FAF3EB', fontFamily: '"DM Sans", sans-serif' }}>
         <style>{`
           @keyframes embryo-pulse { 0%,100% { opacity: .4; } 50% { opacity: 1; } }
           @keyframes embryo-bar { 0% { width: 0%; } 100% { width: 100%; } }
@@ -355,7 +372,7 @@ export default function App() {
           <div style={{ width: 180, height: 3, borderRadius: 2, backgroundColor: 'rgba(90,80,72,0.12)', overflow: 'hidden' }}>
             <div style={{ height: '100%', borderRadius: 2, backgroundColor: '#C4326B', animation: 'embryo-bar 2.5s ease-in-out infinite' }} />
           </div>
-          <div style={{ fontSize: 12, color: '#9A8E85', marginTop: 10 }}>
+          <div style={{ fontSize: 12, color: '#7A6E65', marginTop: 10 }}>
             Preparing 31,069 artists
           </div>
         </div>
@@ -365,10 +382,10 @@ export default function App() {
 
   if (artistsError || connectionsError) {
     return (
-      <div role="alert" style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FAF3EB', fontFamily: '"DM Sans", sans-serif' }}>
+      <div role="alert" style={{ width: '100vw', minHeight: '100vh', height: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FAF3EB', fontFamily: '"DM Sans", sans-serif' }}>
         <div style={{ textAlign: 'center', color: '#5A5048' }}>
           <div style={{ fontSize: 18, fontWeight: 500, marginBottom: 8 }}>Failed to load data</div>
-          <div style={{ fontSize: 13, color: '#9A8E85' }}>{artistsError || connectionsError}</div>
+          <div style={{ fontSize: 13, color: '#7A6E65' }}>{artistsError || connectionsError}</div>
         </div>
       </div>
     );

@@ -8,6 +8,7 @@ export default function SearchBar({ artists, onSelect, isMobile = false }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [hasFocus, setHasFocus] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const inputRef = useRef(null);
   const dropdownRef = useRef(null);
@@ -86,6 +87,7 @@ export default function SearchBar({ artists, onSelect, isMobile = false }) {
     // Delay close to allow result click to register
     blurTimeoutRef.current = setTimeout(() => {
       setIsOpen(false);
+      setHasFocus(false);
       setActiveIndex(-1);
     }, 200);
   }, []);
@@ -94,6 +96,7 @@ export default function SearchBar({ artists, onSelect, isMobile = false }) {
     if (blurTimeoutRef.current) {
       clearTimeout(blurTimeoutRef.current);
     }
+    setHasFocus(true);
     if (query.trim() && results.length > 0) {
       setIsOpen(true);
     }
@@ -139,7 +142,7 @@ export default function SearchBar({ artists, onSelect, isMobile = false }) {
           height="14"
           viewBox="0 0 24 24"
           fill="none"
-          stroke="#9A8E85"
+          stroke="#7A6E65"
           strokeWidth="2.5"
           style={{
             position: 'absolute',
@@ -154,6 +157,7 @@ export default function SearchBar({ artists, onSelect, isMobile = false }) {
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
         <input
+          id="search-input"
           ref={inputRef}
           type="search"
           value={query}
@@ -178,7 +182,7 @@ export default function SearchBar({ artists, onSelect, isMobile = false }) {
             color: '#3E3530',
             backgroundColor: 'rgba(250, 243, 235, 0.95)',
             border: '1px solid rgba(224, 216, 204, 0.8)',
-            borderRadius: (isOpen || (query.trim().length >= 2 && results.length === 0)) ? '10px 10px 0 0' : 10,
+            borderRadius: (isOpen || (hasFocus && query.trim().length >= 2 && results.length === 0)) ? '10px 10px 0 0' : 10,
             outline: 'none',
             boxShadow: '0 2px 12px rgba(90, 80, 72, 0.10)',
             backdropFilter: 'blur(8px)',
@@ -205,7 +209,7 @@ export default function SearchBar({ artists, onSelect, isMobile = false }) {
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              color: '#9A8E85',
+              color: '#7A6E65',
               fontSize: 16,
               padding: '8px',
               lineHeight: 1,
@@ -314,7 +318,7 @@ export default function SearchBar({ artists, onSelect, isMobile = false }) {
           })}
         </ul>
       )}
-      {query.trim().length >= 2 && results.length === 0 && (
+      {hasFocus && query.trim().length >= 2 && results.length === 0 && (
         <div
           role="status"
           aria-live="polite"

@@ -1,5 +1,5 @@
 import React from 'react';
-import { GENRE_BUCKETS, getTextColorForBg } from '../utils/genres.js';
+import { GENRE_BUCKETS } from '../utils/genres.js';
 
 const BUCKET_NAMES = Object.keys(GENRE_BUCKETS);
 
@@ -9,24 +9,25 @@ export default function GenreFilters({ activeGenres, onToggleGenre, onSelectAll,
   return (
     <>
     <div
+      id="genre-filters"
       role="group"
       aria-label="Filter by genre"
       style={{
         position: 'fixed',
-        bottom: isMobile ? '172px' : '124px',
-        left: isMobile ? '0' : '50%',
+        bottom: isMobile ? '132px' : '88px',
+        left: isMobile ? '0' : '16px',
         right: isMobile ? '0' : 'auto',
-        transform: isMobile ? 'none' : 'translateX(-50%)',
         zIndex: 20,
         display: 'flex',
         alignItems: 'center',
-        gap: '6px',
-        padding: isMobile ? '6px 16px' : '6px 10px',
-        backgroundColor: 'rgba(250, 243, 235, 0.90)',
-        backdropFilter: 'blur(6px)',
-        borderRadius: isMobile ? '0' : '24px',
-        border: '1px solid rgba(224, 216, 204, 0.7)',
-        boxShadow: '0 2px 10px rgba(90, 80, 72, 0.10)',
+        gap: '4px',
+        padding: isMobile ? '4px 12px' : '4px 6px',
+        backgroundColor: 'rgba(250, 243, 235, 0.88)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        borderRadius: isMobile ? '0' : '12px',
+        border: '1px solid rgba(224, 216, 204, 0.5)',
+        boxShadow: '0 1px 8px rgba(90, 80, 72, 0.08)',
         overflowX: isMobile ? 'auto' : 'visible',
         WebkitOverflowScrolling: 'touch',
         scrollbarWidth: 'none',
@@ -39,17 +40,18 @@ export default function GenreFilters({ activeGenres, onToggleGenre, onSelectAll,
         aria-pressed={allActive}
         style={{
           fontFamily: '"DM Sans", sans-serif',
-          fontSize: '12px',
-          fontWeight: allActive ? 600 : 400,
+          fontSize: '11px',
+          fontWeight: 600,
           lineHeight: 1,
+          letterSpacing: '0.02em',
           color: allActive ? '#FAF3EB' : '#5A5048',
-          backgroundColor: allActive ? '#D83E7F' : 'transparent',
-          border: allActive ? '1px solid #D83E7F' : '1px solid rgba(90,80,72,0.25)',
-          borderRadius: '14px',
-          padding: '8px 14px',
-          minHeight: '44px',
+          backgroundColor: allActive ? '#5A5048' : 'transparent',
+          border: allActive ? '1px solid #5A5048' : '1px solid rgba(90,80,72,0.2)',
+          borderRadius: '8px',
+          padding: '5px 10px',
+          minHeight: '32px',
           cursor: 'pointer',
-          transition: 'background-color 0.15s, color 0.15s, border-color 0.15s',
+          transition: 'all 0.15s ease',
           outline: 'none',
           whiteSpace: 'nowrap',
           display: 'flex',
@@ -57,19 +59,17 @@ export default function GenreFilters({ activeGenres, onToggleGenre, onSelectAll,
         }}
         onMouseEnter={(e) => {
           if (!allActive) {
-            e.currentTarget.style.backgroundColor = 'rgba(216,62,127,0.08)';
-            e.currentTarget.style.borderColor = 'rgba(216,62,127,0.4)';
-            e.currentTarget.style.color = '#D83E7F';
+            e.currentTarget.style.backgroundColor = 'rgba(90,80,72,0.06)';
+            e.currentTarget.style.borderColor = 'rgba(90,80,72,0.35)';
           }
         }}
         onMouseLeave={(e) => {
           if (!allActive) {
             e.currentTarget.style.backgroundColor = 'transparent';
-            e.currentTarget.style.borderColor = 'rgba(90,80,72,0.25)';
-            e.currentTarget.style.color = '#5A5048';
+            e.currentTarget.style.borderColor = 'rgba(90,80,72,0.2)';
           }
         }}
-        onFocus={(e) => { e.currentTarget.style.boxShadow = '0 0 0 3px rgba(216,62,127,0.4)'; }}
+        onFocus={(e) => { e.currentTarget.style.boxShadow = '0 0 0 2px rgba(90,80,72,0.3)'; }}
         onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
       >
         All
@@ -79,7 +79,6 @@ export default function GenreFilters({ activeGenres, onToggleGenre, onSelectAll,
       {BUCKET_NAMES.map((bucketName) => {
         const { color } = GENRE_BUCKETS[bucketName];
         const isActive = activeGenres.has(bucketName);
-        const activeTextColor = getTextColorForBg(color);
 
         return (
           <button
@@ -88,48 +87,49 @@ export default function GenreFilters({ activeGenres, onToggleGenre, onSelectAll,
             aria-pressed={isActive}
             style={{
               fontFamily: '"DM Sans", sans-serif',
-              fontSize: '13px',
+              fontSize: '11px',
               fontWeight: isActive ? 600 : 500,
               lineHeight: 1,
-              color: isActive ? activeTextColor : '#5A5048',
-              backgroundColor: isActive ? color : 'transparent',
-              border: isActive ? `1px solid ${color}` : '1px solid rgba(90,80,72,0.25)',
-              borderRadius: '14px',
-              padding: '8px 14px',
-              minHeight: '44px',
+              letterSpacing: '0.01em',
+              color: isActive ? color : '#6B5F55',
+              backgroundColor: isActive ? `${color}12` : 'transparent',
+              border: isActive ? `1.5px solid ${color}` : '1px solid rgba(90,80,72,0.15)',
+              borderRadius: '8px',
+              padding: '5px 9px',
+              minHeight: '32px',
               cursor: 'pointer',
-              transition: 'background-color 0.15s, color 0.15s, border-color 0.15s',
+              transition: 'all 0.15s ease',
               outline: 'none',
               whiteSpace: 'nowrap',
               display: 'flex',
               alignItems: 'center',
-              gap: '5px',
+              gap: '4px',
             }}
             onMouseEnter={(e) => {
               if (!isActive) {
-                e.currentTarget.style.backgroundColor = `${color}14`;
-                e.currentTarget.style.borderColor = `${color}99`;
+                e.currentTarget.style.backgroundColor = `${color}0A`;
+                e.currentTarget.style.borderColor = `${color}66`;
                 e.currentTarget.style.color = color;
               }
             }}
             onMouseLeave={(e) => {
               if (!isActive) {
                 e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.borderColor = 'rgba(90,80,72,0.25)';
-                e.currentTarget.style.color = '#5A5048';
+                e.currentTarget.style.borderColor = 'rgba(90,80,72,0.15)';
+                e.currentTarget.style.color = '#6B5F55';
               }
             }}
-            onFocus={(e) => { e.currentTarget.style.boxShadow = `0 0 0 3px ${color}66`; }}
+            onFocus={(e) => { e.currentTarget.style.boxShadow = `0 0 0 2px ${color}40`; }}
             onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
           >
             <span
               aria-hidden="true"
               style={{
                 display: 'inline-block',
-                width: '8px',
-                height: '8px',
+                width: '6px',
+                height: '6px',
                 borderRadius: '50%',
-                backgroundColor: isActive ? activeTextColor : color,
+                backgroundColor: color,
                 flexShrink: 0,
               }}
             />

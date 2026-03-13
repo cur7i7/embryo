@@ -97,6 +97,8 @@ export default function CanvasOverlay({
 
   // Cached valid artists and lookup maps (rebuilt only when artists change)
   const validArtistsRef = useRef([]);
+  // Pre-sorted by connection count (descending) — avoids O(n log n) per frame
+  const presortedArtistsRef = useRef([]);
   const artistByIdRef = useRef(new Map());
   const artistByNameRef = useRef(new Map());
 
@@ -252,7 +254,7 @@ export default function CanvasOverlay({
       // Scale offset with zoom so artists visually separate at any zoom level
       if (currentZoomForPos >= ZOOM_INDIVIDUAL && offsets.has(artist.id)) {
         const o = offsets.get(artist.id);
-        const zoomScale = Math.pow(2, Math.max(0, 16 - currentZoomForPos));
+        const zoomScale = Math.max(1, (16 - currentZoomForPos) * 3);
         lng += o.dlng * zoomScale;
         lat += o.dlat * zoomScale;
       }
@@ -410,13 +412,26 @@ export default function CanvasOverlay({
             ctx.globalAlpha = clusterAlpha;
 
             ctx.save();
-            ctx.font = `600 ${Math.min(14, (8 + Math.log2(count)) | 0)}px "DM Sans", sans-serif`;
+            const countStr = count.toString();
+            const isSmall = count < 5;
+            const fontSize = isSmall ? 10 : Math.min(14, (8 + Math.log2(count)) | 0);
+
+            // Background circle for count label
+            const textRadius = isSmall ? 10 : Math.max(14, fontSize * 1.2 + 4);
+            ctx.beginPath();
+            ctx.arc(x, y, textRadius, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(62, 53, 48, 0.75)';
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(250, 243, 235, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // White text on dark circle
+            ctx.font = `700 ${fontSize}px "DM Sans", sans-serif`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillStyle = 'rgba(250, 243, 235, 0.8)';
-            ctx.fillText(count.toString(), x + 1, y + 1);
-            ctx.fillStyle = '#3E3530';
-            ctx.fillText(count.toString(), x, y);
+            ctx.fillStyle = '#FAF3EB';
+            ctx.fillText(countStr, x, y);
             ctx.restore();
           } else {
             const artistId = cluster.properties.artistId;
@@ -483,10 +498,13 @@ export default function CanvasOverlay({
 
         cityPosMap.set(key, { x, y, radius: cityRadius, group });
 
-        // Collision detection for city labels
+        // Collision detection for city labels — include count text in width
         let showLabel = true;
-        ctx.font = '600 12px "DM Sans", sans-serif';
-        const labelW = ctx.measureText(group.city).width;
+        ctx.font = '600 13px "DM Sans", sans-serif';
+        const cityNameW = ctx.measureText(group.city).width;
+        ctx.font = '400 11px "DM Sans", sans-serif';
+        const countStrW = ctx.measureText(` (${group.artists.length})`).width;
+        const labelW = cityNameW + countStrW;
         const textHeight = 16;
         const labelRect = {
           x: x - labelW / 2 - 4,
@@ -515,18 +533,18 @@ export default function CanvasOverlay({
 
     // --- Individual mode rendering ---
     if (individualAlpha > 0) {
-      // Sort artists for label priority — active first, connected second, then by connection count
-      const sortedArtists = [...validArtists].sort((a, b) => {
-        const aActive = activeArtist && a.name === activeArtist.name ? 1 : 0;
-        const bActive = activeArtist && b.name === activeArtist.name ? 1 : 0;
-        if (aActive !== bActive) return bActive - aActive;
-        const aConn = connectedIds.has(a.id) ? 1 : 0;
-        const bConn = connectedIds.has(b.id) ? 1 : 0;
-        if (aConn !== bConn) return bConn - aConn;
-        const aCount = (connectionCounts && connectionCounts.get(a.name)) || 0;
-        const bCount = (connectionCounts && connectionCounts.get(b.name)) || 0;
-        return bCount - aCount;
-      });
+      // Use pre-sorted array (by connection count) and partition active/connected to front.
+      // This avoids an O(n log n) sort every frame for 30K artists.
+      const preSorted = presortedArtistsRef.current;
+      const activeArr = [];
+      const connArr = [];
+      const restArr = [];
+      for (const a of preSorted) {
+        if (activeArtist && a.name === activeArtist.name) activeArr.push(a);
+        else if (connectedIds.has(a.id)) connArr.push(a);
+        else restArr.push(a);
+      }
+      const sortedArtists = activeArr.concat(connArr, restArr);
 
       // Label collision detection — occupied rects for AABB test
       const occupiedRects = [];
@@ -747,6 +765,16 @@ export default function CanvasOverlay({
     artistMapRef.current = newArtistMap;
     artistByIdRef.current = byId;
     artistByNameRef.current = byName;
+
+    // Pre-sort valid artists by connection count (descending) once, not per frame.
+    // Active/connected priority is applied at render time via a cheap partition.
+    const cc = connectionCountsRef.current;
+    const sorted = [...valid].sort((a, b) => {
+      const aCount = (cc && cc.get(a.name)) || 0;
+      const bCount = (cc && cc.get(b.name)) || 0;
+      return bCount - aCount;
+    });
+    presortedArtistsRef.current = sorted;
 
     // Rebuild city groups
     cityGroupsRef.current = buildCityGroups(valid);
