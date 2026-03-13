@@ -131,6 +131,7 @@ export default function ConnectionFilters({ activeConnectionTypes, onToggleType,
             onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 2px rgba(90,80,72,0.4)'; }}
             onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
           >
+            {isActive && <span aria-hidden="true" style={{ marginRight: 2 }}>✓</span>}
             {label}
             {count > 0 && (
               <span
