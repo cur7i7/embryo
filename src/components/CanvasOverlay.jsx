@@ -16,14 +16,14 @@ import { buildCityGroups } from '../utils/cityGrouping.js';
 const BUCKET_COLORS = Object.values(GENRE_BUCKETS).map((b) => b.color);
 
 // Zoom-based rendering mode thresholds
-const ZOOM_CITY = 8;
-const ZOOM_INDIVIDUAL = 12;
+const ZOOM_CITY = 5;
+const ZOOM_INDIVIDUAL = 9;
 
 // Animation & rendering constants
 const FADE_DURATION = 400;             // ms for opacity 0→1 or 1→0 transition
-const CLUSTER_RADIUS_BASE = 40;        // cluster orb base radius (px)
-const CLUSTER_RADIUS_MAX = 100;        // cluster orb max radius (px)
-const ARTIST_RADIUS = 22;              // individual artist node radius (px)
+const CLUSTER_RADIUS_BASE = 20;        // cluster orb base radius (px)
+const CLUSTER_RADIUS_MAX = 55;         // cluster orb max radius (px)
+const ARTIST_RADIUS = 14;              // individual artist node radius (px)
 const ARTIST_ACTIVE_SCALE = 1.2;       // scale for active artist in individual mode
 const CLUSTER_ACTIVE_SCALE = 1.5;      // scale for active artist in cluster mode
 const ANIMATION_CYCLE_MS = 3000;       // particle / pulse animation cycle period (ms)
@@ -470,10 +470,10 @@ export default function CanvasOverlay({
 
           if (cluster.properties.cluster) {
             const count = cluster.properties.point_count;
-            const clusterRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log2(count) * 12, CLUSTER_RADIUS_MAX);
+            const clusterRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log2(count) * 7, CLUSTER_RADIUS_MAX);
 
             const orbTexture = orbTextures[Math.abs(cluster.id) % orbTextures.length];
-            ctx.globalAlpha = 0.85 * clusterAlpha;
+            ctx.globalAlpha = 0.6 * clusterAlpha;
             ctx.drawImage(orbTexture, x - clusterRadius, y - clusterRadius, clusterRadius * 2, clusterRadius * 2);
             ctx.globalAlpha = clusterAlpha;
 
@@ -482,22 +482,15 @@ export default function CanvasOverlay({
             const isSmall = count < 5;
             const fontSize = isSmall ? 10 : Math.min(14, (8 + Math.log2(count)) | 0);
 
-            // Background circle for count label
-            const textRadius = isSmall ? 10 : Math.max(14, fontSize * 1.2 + 4);
-            ctx.beginPath();
-            ctx.arc(x, y, textRadius, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(62, 53, 48, 0.75)';
-            ctx.fill();
-            ctx.strokeStyle = 'rgba(250, 243, 235, 0.3)';
-            ctx.lineWidth = 1;
-            ctx.stroke();
-
-            // White text on dark circle
-            ctx.font = `700 ${fontSize}px "DM Sans", sans-serif`;
+            // Count text with subtle shadow for legibility
+            ctx.shadowColor = 'rgba(0,0,0,0.5)';
+            ctx.shadowBlur = 4;
+            ctx.font = `600 ${fontSize}px "DM Sans", sans-serif`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillStyle = '#FAF3EB';
             ctx.fillText(countStr, x, y);
+            ctx.shadowBlur = 0;
             ctx.restore();
 
             // Track cluster position for pill collision
@@ -1182,7 +1175,7 @@ export default function CanvasOverlay({
       const dx = pt.x - mx;
       const dy = pt.y - my;
       const count = cluster.properties.point_count;
-      const clusterRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log2(count) * 12, CLUSTER_RADIUS_MAX);
+      const clusterRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log2(count) * 7, CLUSTER_RADIUS_MAX);
       if (Math.sqrt(dx * dx + dy * dy) <= clusterRadius) {
         try {
           const expansionZoom = index.getClusterExpansionZoom(cluster.id);

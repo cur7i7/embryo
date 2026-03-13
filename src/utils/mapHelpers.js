@@ -13,7 +13,7 @@ export function flyToArtist(mapRef, artist, opts = {}) {
     const currentZoom = map.getZoom();
     map.flyTo({
       center: [artist.birth_lng, artist.birth_lat],
-      zoom: opts.zoom ?? Math.max(currentZoom, 6),
+      zoom: opts.zoom ?? Math.max(currentZoom, 10),
       ...opts,
     });
   } catch (err) {
