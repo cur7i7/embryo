@@ -24,7 +24,7 @@ const FADE_DURATION = 400;             // ms for opacity 0→1 or 1→0 transiti
 const CLUSTER_RADIUS_BASE = 20;        // cluster orb base radius (px)
 const CLUSTER_RADIUS_MAX = 55;         // cluster orb max radius (px)
 const ARTIST_RADIUS = 14;              // individual artist node radius (px)
-const ARTIST_ACTIVE_SCALE = 1.2;       // scale for active artist in individual mode
+const ARTIST_ACTIVE_SCALE = 1.5;       // scale for active artist in individual mode
 const CLUSTER_ACTIVE_SCALE = 1.5;      // scale for active artist in cluster mode
 const ANIMATION_CYCLE_MS = 3000;       // particle / pulse animation cycle period (ms)
 const HIT_TEST_MIN_RADIUS = 22;        // minimum hit-test radius (44px touch target / 2)
@@ -317,6 +317,20 @@ export default function CanvasOverlay({
       const point = map.project([lng, lat]);
       posMap.set(artist.id, point);
     }
+    // Ensure the selected/hovered artist is always in posMap (even if off-screen)
+    // so their pill and arcs render correctly after flyTo or when panning away.
+    if (activeArtist && activeArtist.birth_lng != null && activeArtist.birth_lat != null && !posMap.has(activeArtist.id)) {
+      let lng = activeArtist.birth_lng;
+      let lat = activeArtist.birth_lat;
+      if (currentZoomForPos >= ZOOM_INDIVIDUAL && offsets.has(activeArtist.id)) {
+        const o = offsets.get(activeArtist.id);
+        const zoomScale = Math.max(1, (16 - currentZoomForPos) * 3);
+        lng += o.dlng * zoomScale;
+        lat += o.dlat * zoomScale;
+      }
+      posMap.set(activeArtist.id, map.project([lng, lat]));
+    }
+
     posMapRef.current = posMap;
 
     // Build set of ids connected to hovered/selected artist using indexed lookup
@@ -346,6 +360,23 @@ export default function CanvasOverlay({
       activeArtistConns.length > 0 &&
       activeConnectionTypes && activeConnectionTypes.size > 0
     ) {
+      // Helper: project an artist into posMap if missing (off-screen connected artists)
+      const projectIfMissing = (artist) => {
+        if (posMap.has(artist.id)) return posMap.get(artist.id);
+        if (artist.birth_lng == null || artist.birth_lat == null) return null;
+        let lng = artist.birth_lng;
+        let lat = artist.birth_lat;
+        if (currentZoomForPos >= ZOOM_INDIVIDUAL && offsets.has(artist.id)) {
+          const o = offsets.get(artist.id);
+          const zoomScale = Math.max(1, (16 - currentZoomForPos) * 3);
+          lng += o.dlng * zoomScale;
+          lat += o.dlat * zoomScale;
+        }
+        const pos = map.project([lng, lat]);
+        posMap.set(artist.id, pos);
+        return pos;
+      };
+
       for (const conn of activeArtistConns) {
         const { source_id, target_id, type, confidence } = conn;
         if (!activeConnectionTypes.has(type)) continue;
@@ -353,8 +384,8 @@ export default function CanvasOverlay({
         const srcArtist = artistByIdRef.current.get(source_id);
         const tgtArtist = artistByIdRef.current.get(target_id);
         if (!srcArtist || !tgtArtist) continue;
-        const srcPos = posMap.get(srcArtist.id);
-        const tgtPos = posMap.get(tgtArtist.id);
+        const srcPos = projectIfMissing(srcArtist);
+        const tgtPos = projectIfMissing(tgtArtist);
         if (!srcPos || !tgtPos) continue;
 
         // Arc viewport culling: skip arcs where BOTH endpoints are outside canvas
@@ -723,7 +754,10 @@ export default function CanvasOverlay({
 
         // Always show labels for hovered/active/connected; collision-check the rest
         const isImportant = isActive || isConnected;
-        let showLabel = !isActive;
+        // Hide canvas label only when artist is being hovered (pill shows near cursor).
+        // Keep label visible for selected-but-not-hovered artists so they're findable on map.
+        const isBeingHovered = hoveredArtist && artist.id === hoveredArtist.id;
+        let showLabel = !isBeingHovered;
         let labelOffset = 0; // vertical offset for collision-adjusted important labels (S1)
 
         if (!isImportant) {
