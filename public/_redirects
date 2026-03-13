@@ -1,1 +1,3 @@
-/* /index.html 200
+# Serve static/system files as-is (Cloudflare Pages does this by default)
+# Only SPA-rewrite paths that are actual app routes (hash-based, so just root)
+# All unknown paths get 404 instead of SPA fallback

@@ -1,0 +1,3 @@
+Contact: https://github.com/embryo-wiki/embryo/issues
+Preferred-Languages: en, es
+Canonical: https://embryo.wiki/.well-known/security.txt

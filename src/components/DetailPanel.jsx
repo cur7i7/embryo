@@ -647,7 +647,7 @@ export default function DetailPanel({
           >
             {artist.image_url && !imageError ? (
               <img
-                src={artist.image_url}
+                src={artist.image_url?.replace(/^http:\/\//, 'https://')}
                 alt={`Portrait of ${artist.name}`}
                 loading="lazy"
                 onError={() => setImageError(true)}
