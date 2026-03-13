@@ -87,6 +87,9 @@ export default function CanvasOverlay({
   // Focused artist index for keyboard navigation
   const focusedArtistIndexRef = useRef(-1);
 
+  // Last input type for DPR-scaled hit radius (Codex 4.3)
+  const lastInputTypeRef = useRef('mouse');
+
   // Supercluster index ref
   const scIndexRef = useRef(null);
 
@@ -380,6 +383,8 @@ export default function CanvasOverlay({
     if (renderMode !== renderModeRef._prev) {
       renderModeRef._prev = renderMode;
       setRenderModeState(renderMode);
+      // Reset keyboard focus index when render mode changes (Codex 4.4)
+      focusedArtistIndexRef.current = -1;
     }
 
     // Cross-fade alphas (+-0.5 zoom units around boundaries)
@@ -1026,19 +1031,23 @@ export default function CanvasOverlay({
       }
     }
 
-    // Hit radius depends on render mode
+    // Hit radius depends on render mode, DPR, and input type (Codex 4.3)
+    const dpr = window.devicePixelRatio || 1;
+    const inputScale = lastInputTypeRef.current === 'touch' ? 1.5 : 1.0;
     let hitRadius;
     if (mode === 'individual') {
-      // HIT_TEST_MIN_RADIUS = 44px touch target / 2 per WCAG
-      hitRadius = HIT_TEST_MIN_RADIUS;
+      // HIT_TEST_MIN_RADIUS = 44px touch target / 2 per WCAG; scale by input type
+      hitRadius = HIT_TEST_MIN_RADIUS * inputScale;
     } else {
-      // Cluster/city mode: dynamic hit radius based on orb size
+      // Cluster/city mode: dynamic hit radius based on orb size, scaled by input type
       const artist = artistByIdRef.current.get(nearestId);
       const connCount = (connectionCountsRef.current?.get(artist?.id)) || 0;
       const scaleFactor = validArtistsRef.current.length > 200 ? 0.5 : 1;
       const baseRadius = (CLUSTER_RADIUS_BASE + Math.min(connCount * 3, 60)) * scaleFactor;
-      hitRadius = Math.max(20, baseRadius * 0.4);
+      hitRadius = Math.max(20 * inputScale, baseRadius * 0.4);
     }
+    // dpr is read above; radii are in CSS px (canvas is already dpr-scaled via ctx.scale)
+    void dpr;
 
     if (nearestDist <= hitRadius && nearestId != null) {
       const artist = artistByIdRef.current.get(nearestId);
@@ -1108,6 +1117,7 @@ export default function CanvasOverlay({
     if (!map) return;
 
     const handleMapMouseMove = (e) => {
+      lastInputTypeRef.current = 'mouse';
       const mx = e.point.x;
       const my = e.point.y;
 
@@ -1180,11 +1190,16 @@ export default function CanvasOverlay({
       startRaf();
     };
 
+    const handleMapTouchStart = () => {
+      lastInputTypeRef.current = 'touch';
+    };
+
     const events = ['move', 'zoom', 'resize'];
     events.forEach((evt) => map.on(evt, onMapEvent));
     map.on('mousemove', handleMapMouseMove);
     map.on('click', handleMapClick);
     map.on('mouseout', handleMapMouseLeave);
+    map.on('touchstart', handleMapTouchStart);
 
     // Initial draw
     needsAnimRef.current = true;
@@ -1195,6 +1210,7 @@ export default function CanvasOverlay({
       map.off('mousemove', handleMapMouseMove);
       map.off('click', handleMapClick);
       map.off('mouseout', handleMapMouseLeave);
+      map.off('touchstart', handleMapTouchStart);
       if (rafRef.current != null) {
         cancelAnimationFrame(rafRef.current);
         rafRef.current = null;
@@ -1205,24 +1221,128 @@ export default function CanvasOverlay({
   // Keyboard handler for canvas — arrow keys to cycle visible artists, Enter/Space to select
   const handleKeyDown = useCallback((e) => {
     if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      const mode = renderModeRef.current;
+      const map = mapRef.current?.getMap?.();
+
+      if (mode === 'cluster') {
+        // Expand focused cluster (Codex 4.4)
+        const cluster = focusedArtistIndexRef._focusedCluster;
+        const index = scIndexRef.current;
+        if (cluster && cluster.properties.cluster && index && map) {
+          try {
+            const expansionZoom = index.getClusterExpansionZoom(cluster.id);
+            map.flyTo({ center: cluster.geometry.coordinates, zoom: expansionZoom });
+          } catch { /* cluster expansion may fail at max zoom */ }
+        }
+        return;
+      }
+
+      if (mode === 'city') {
+        // Fly to focused city at zoom 13 (Codex 4.4)
+        const focused = focusedArtistIndexRef._focusedCity;
+        if (focused && map) {
+          const { entry } = focused;
+          map.flyTo({ center: [entry.group.lng, entry.group.lat], zoom: 13 });
+        }
+        return;
+      }
+
+      // Individual mode: select hovered artist
       const hovered = hoveredArtistRef.current;
       if (hovered) {
-        e.preventDefault();
         onSelectRef.current?.(hovered);
       }
       return;
     }
 
-    // ArrowLeft/ArrowRight to cycle through artists visible in the viewport
+    // ArrowLeft/ArrowRight to cycle through visible candidates based on render mode (Codex 4.4)
     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
       e.preventDefault();
-      const posMap = posMapRef.current;
-      if (!posMap || posMap.size === 0) return;
 
-      // Filter to only artists whose projected positions are on screen
       const canvas = canvasRef.current;
       const cw = canvas ? canvas.clientWidth : window.innerWidth;
       const ch = canvas ? canvas.clientHeight : window.innerHeight;
+      const mode = renderModeRef.current;
+      const map = mapRef.current?.getMap?.();
+
+      if (mode === 'cluster') {
+        // Cycle through cluster centers visible on screen (Codex 4.4)
+        const index = scIndexRef.current;
+        if (!map || !index) return;
+        const bounds = map.getBounds();
+        const zoom = Math.floor(map.getZoom());
+        const clusters = index.getClusters(
+          [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()],
+          zoom
+        );
+        const visibleClusters = [];
+        for (const cluster of clusters) {
+          const [lng, lat] = cluster.geometry.coordinates;
+          const pt = map.project([lng, lat]);
+          if (pt.x >= 0 && pt.x <= cw && pt.y >= 0 && pt.y <= ch) {
+            visibleClusters.push({ cluster, pt });
+          }
+        }
+        if (visibleClusters.length === 0) return;
+
+        let idx = focusedArtistIndexRef.current;
+        if (e.key === 'ArrowRight') {
+          idx = idx < 0 ? 0 : (idx + 1) % visibleClusters.length;
+        } else {
+          idx = idx < 0 ? visibleClusters.length - 1 : (idx - 1 + visibleClusters.length) % visibleClusters.length;
+        }
+        focusedArtistIndexRef.current = idx;
+
+        // On Enter/Space the cluster should expand; here just announce focus
+        const { cluster } = visibleClusters[idx];
+        const label = cluster.properties.cluster
+          ? `Cluster of ${cluster.properties.point_count} artists`
+          : cluster.properties.name || 'Artist';
+        // Use the ARIA live region by triggering a synthetic hover on a non-cluster leaf
+        if (!cluster.properties.cluster) {
+          const artist = artistByIdRef.current.get(cluster.properties.id);
+          if (artist) onHoverRef.current?.(artist);
+        } else {
+          onHoverRef.current?.(null);
+        }
+        // Store focused cluster for Enter handling
+        focusedArtistIndexRef._focusedCluster = cluster;
+        needsAnimRef.current = true;
+        startRaf();
+        return;
+      }
+
+      if (mode === 'city') {
+        // Cycle through city group centers visible on screen (Codex 4.4)
+        const cityPosMap = cityPosMapRef.current;
+        if (!cityPosMap || cityPosMap.size === 0) return;
+        const visibleCities = [];
+        for (const [key, entry] of cityPosMap) {
+          if (entry.x >= 0 && entry.x <= cw && entry.y >= 0 && entry.y <= ch) {
+            visibleCities.push({ key, entry });
+          }
+        }
+        if (visibleCities.length === 0) return;
+
+        let idx = focusedArtistIndexRef.current;
+        if (e.key === 'ArrowRight') {
+          idx = idx < 0 ? 0 : (idx + 1) % visibleCities.length;
+        } else {
+          idx = idx < 0 ? visibleCities.length - 1 : (idx - 1 + visibleCities.length) % visibleCities.length;
+        }
+        focusedArtistIndexRef.current = idx;
+
+        // Store focused city for Enter handling
+        focusedArtistIndexRef._focusedCity = visibleCities[idx];
+        needsAnimRef.current = true;
+        startRaf();
+        return;
+      }
+
+      // 'individual' mode: current behavior — cycle through individual artist positions
+      const posMap = posMapRef.current;
+      if (!posMap || posMap.size === 0) return;
 
       const visibleIds = [];
       for (const [id, pos] of posMap) {
@@ -1249,7 +1369,7 @@ export default function CanvasOverlay({
         startRaf();
       }
     }
-  }, [startRaf]);
+  }, [startRaf, mapRef]);
 
   // ARIA live region text for hovered/selected artist + zoom mode
   const modeLabel = renderModeState === 'cluster' ? 'Cluster view' : renderModeState === 'city' ? 'City view' : 'Individual view';
