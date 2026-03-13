@@ -136,7 +136,7 @@ export function preRenderOrbTexture(genreColor, size = 200) {
  * @param {'default'|'active'|'connected'|'dimmed'} state
  * @param {number} alpha - overall opacity (0–1), used for cross-fade
  */
-export function drawArtistNode(ctx, x, y, radius, genreColor, name, years, state = 'default', alpha = 1, showLabel = true) {
+export function drawArtistNode(ctx, x, y, radius, genreColor, name, years, state = 'default', alpha = 1, showLabel = true, labelOffsetY = 0) {
   if (alpha <= 0) return;
   ctx.save();
   ctx.globalAlpha = alpha;
@@ -182,7 +182,7 @@ export function drawArtistNode(ctx, x, y, radius, genreColor, name, years, state
     const padH = 6;
     const padV = 3;
     const pillX = x - maxW / 2 - padH;
-    const pillY = y + r + 2 - padV;
+    const pillY = y + r + 2 + labelOffsetY - padV;
     const pillW = maxW + padH * 2;
     const pillH = totalH + padV * 2 + 4; // +4 for top offset from circle
     const br = 4;
@@ -206,13 +206,13 @@ export function drawArtistNode(ctx, x, y, radius, genreColor, name, years, state
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
     ctx.fillStyle = '#3E3530';
-    ctx.fillText(displayName, x, y + r + 6);
+    ctx.fillText(displayName, x, y + r + 6 + labelOffsetY);
 
     // Years below name
     if (years) {
       ctx.font = '400 10px "DM Sans", sans-serif';
       ctx.fillStyle = '#7A6E65';
-      ctx.fillText(years, x, y + r + 22);
+      ctx.fillText(years, x, y + r + 22 + labelOffsetY);
     }
   }
 

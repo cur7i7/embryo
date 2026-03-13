@@ -32,6 +32,11 @@ const SUPERCLUSTER_RADIUS = 60;        // Supercluster clustering radius
 const ARC_VIEWPORT_PAD = 100;          // arc viewport culling padding (px)
 const COLOCATION_OFFSET_RADIUS = 0.0008; // co-location spiral offset (degrees)
 
+// AABB overlap helper — hoisted to module scope to avoid per-frame closure allocation
+function overlaps(a, b) {
+  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+}
+
 export default function CanvasOverlay({
   mapRef,
   artists,
@@ -104,6 +109,14 @@ export default function CanvasOverlay({
 
   // Display offsets for co-located artists
   const displayOffsetsRef = useRef(new Map());
+
+  // Cached per-frame allocations (P1, P2, P3)
+  const currentIdsRef = useRef(new Set());
+  const posMapFrameRef = useRef(new Map());
+  const sortedCityGroupsRef = useRef([]);
+
+  // Individual alpha ref for hit-test guard (S2)
+  const individualAlphaRef = useRef(0);
 
   // Store latest props in refs to avoid render/startRaf recreation
   const artistsRef = useRef(artists);
@@ -194,7 +207,7 @@ export default function CanvasOverlay({
     const fadeStep = dt / FADE_DURATION;
 
     const opacityMap = opacityMapRef.current;
-    const currentIds = new Set(validArtists.map((a) => a.id));
+    const currentIds = currentIdsRef.current;
 
     // Mark targets
     for (const artist of validArtists) {
@@ -274,8 +287,9 @@ export default function CanvasOverlay({
     const cullWest = sw.lng - padLng;
     const cullEast = ne.lng + padLng;
 
-    // Build a fresh posMap every frame — only project artists within viewport bounds
-    const posMap = new Map();
+    // Reuse posMap ref every frame — only project artists within viewport bounds (P2)
+    posMapFrameRef.current.clear();
+    const posMap = posMapFrameRef.current;
     const currentZoomForPos = map.getZoom();
     const offsets = displayOffsetsRef.current;
     for (const artist of validArtists) {
@@ -422,6 +436,9 @@ export default function CanvasOverlay({
       }
     }
 
+    // Store individualAlpha for hit-test guard (S2)
+    individualAlphaRef.current = individualAlpha;
+
     // --- Cluster phase --- hard-reset canvas state
     ctx.globalAlpha = 1.0;
     ctx.globalCompositeOperation = 'source-over';
@@ -534,12 +551,8 @@ export default function CanvasOverlay({
     // --- City mode rendering ---
     const cityPosMap = new Map();
     if (cityAlpha > 0) {
-      const cityGroups = cityGroupsRef.current;
-
-      // Sort city groups by artist count (largest first) for label collision priority
-      const sortedCityEntries = [...cityGroups.entries()].sort(
-        (a, b) => b[1].artists.length - a[1].artists.length
-      );
+      // Use pre-sorted city groups from Effect A (P3: avoid per-frame sort)
+      const sortedCityEntries = sortedCityGroupsRef.current;
 
       // Codex 6.2: density-aware label budget — count cities in viewport first
       let citiesInViewport = 0;
@@ -584,9 +597,6 @@ export default function CanvasOverlay({
           w: labelW + 8,
           h: textHeight,
         };
-
-        const overlaps = (r1, r2) =>
-          r1.x < r2.x + r2.w && r1.x + r1.w > r2.x && r1.y < r2.y + r2.h && r1.y + r1.h > r2.y;
 
         // Only run collision check if budget still allows a label (Codex 6.2)
         if (showLabel) {
@@ -714,6 +724,7 @@ export default function CanvasOverlay({
         // Always show labels for hovered/active/connected; collision-check the rest
         const isImportant = isActive || isConnected;
         let showLabel = true;
+        let labelOffset = 0; // vertical offset for collision-adjusted important labels (S1)
 
         if (!isImportant) {
           // Density-aware suppression: skip labels once cap reached (Task 8b)
@@ -733,9 +744,6 @@ export default function CanvasOverlay({
               : null;
 
             // AABB overlap test
-            const overlaps = (r1, r2) =>
-              r1.x < r2.x + r2.w && r1.x + r1.w > r2.x && r1.y < r2.y + r2.h && r1.y + r1.h > r2.y;
-
             let hasOverlap = false;
             for (const occ of occupiedRects) {
               if (overlaps(nameRect, occ) || (yearsRect && overlaps(yearsRect, occ))) {
@@ -753,20 +761,43 @@ export default function CanvasOverlay({
             }
           }
         } else {
-          // Important artists always get labels — register their rects to block others
+          // Important artists: still draw labels, but check collision against each other (S1)
           const displayName = artist.name.length > 20 ? artist.name.slice(0, 19) + '\u2026' : artist.name;
           ctx.font = '600 12px "DM Sans", sans-serif';
           const nameW = ctx.measureText(displayName).width;
           ctx.font = '400 10px "DM Sans", sans-serif';
           const yearsW = years ? ctx.measureText(years).width : 0;
 
-          occupiedRects.push({ x: point.x - nameW / 2 - 4, y: point.y + r + 2, w: nameW + 8, h: 16 });
-          if (years && yearsW > 0) {
-            occupiedRects.push({ x: point.x - yearsW / 2 - 4, y: point.y + r + 18, w: yearsW + 8, h: 14 });
+          let nameRect = { x: point.x - nameW / 2 - 4, y: point.y + r + 2, w: nameW + 8, h: 16 };
+          let yearsRect = (years && yearsW > 0)
+            ? { x: point.x - yearsW / 2 - 4, y: point.y + r + 18, w: yearsW + 8, h: 14 }
+            : null;
+
+          // Check collision against existing occupied rects; offset vertically if needed
+          let collides = true;
+          const maxAttempts = 4;
+          for (let attempt = 0; attempt < maxAttempts && collides; attempt++) {
+            collides = false;
+            for (const occ of occupiedRects) {
+              if (overlaps(nameRect, occ) || (yearsRect && overlaps(yearsRect, occ))) {
+                collides = true;
+                break;
+              }
+            }
+            if (collides) {
+              labelOffset += 20; // label height (16) + 4px gap
+              nameRect = { x: point.x - nameW / 2 - 4, y: point.y + r + 2 + labelOffset, w: nameW + 8, h: 16 };
+              yearsRect = (years && yearsW > 0)
+                ? { x: point.x - yearsW / 2 - 4, y: point.y + r + 18 + labelOffset, w: yearsW + 8, h: 14 }
+                : null;
+            }
           }
+
+          occupiedRects.push(nameRect);
+          if (yearsRect) occupiedRects.push(yearsRect);
         }
 
-        drawArtistNode(ctx, point.x, point.y, ARTIST_RADIUS, genreColor, artist.name, years, state, opacity * individualAlpha, showLabel);
+        drawArtistNode(ctx, point.x, point.y, ARTIST_RADIUS, genreColor, artist.name, years, state, opacity * individualAlpha, showLabel, labelOffset);
       }
     }
 
@@ -939,6 +970,9 @@ export default function CanvasOverlay({
     const valid = (artists || []).filter(a => a.birth_lat != null && a.birth_lng != null);
     validArtistsRef.current = valid;
 
+    // Rebuild cached currentIds set (P1: avoid per-frame allocation)
+    currentIdsRef.current = new Set(valid.map(a => a.id));
+
     // Build O(1) lookup map
     const byId = new Map();
     for (const artist of valid) {
@@ -969,6 +1003,11 @@ export default function CanvasOverlay({
     if (sigChanged) {
       // Rebuild city groups
       cityGroupsRef.current = buildCityGroups(valid);
+
+      // Pre-sort city groups by artist count descending (P3: avoid per-frame sort)
+      sortedCityGroupsRef.current = [...cityGroupsRef.current.entries()].sort(
+        (a, b) => b[1].artists.length - a[1].artists.length
+      );
 
       // Rebuild Supercluster index
       const index = new Supercluster({ radius: SUPERCLUSTER_RADIUS, maxZoom: 16 });
@@ -1202,6 +1241,14 @@ export default function CanvasOverlay({
           map.getCanvas().style.cursor = 'pointer';
           return;
         }
+      }
+
+      // City mode fallthrough guard (S2): don't fall through to individual hit-test
+      // when individual mode isn't visible (alpha === 0)
+      if (renderModeRef.current === 'city' && individualAlphaRef.current === 0) {
+        onHoverRef.current?.(null);
+        map.getCanvas().style.cursor = '';
+        return;
       }
 
       // In cluster mode, skip individual artist hit testing
