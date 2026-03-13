@@ -195,8 +195,8 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
           outline: 'none',
           fontFamily: '"DM Sans", sans-serif',
         }}
-        onFocus={(e) => e.currentTarget.style.boxShadow = '0 0 0 3px rgba(216,62,127,0.3)'}
-        onBlur={(e) => e.currentTarget.style.boxShadow = 'none'}
+        onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 3px rgba(216,62,127,0.4)'; }}
+        onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
       >
         {isPlaying ? (
           // Pause icon
@@ -284,7 +284,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
           aria-valuetext={`Year ${rangeStart}`}
           tabIndex={0}
           onPointerDown={(e) => handlePointerDown(e, 'left')}
-          onFocus={(e) => { e.currentTarget.style.outline = '2px solid #D83E7F'; e.currentTarget.style.outlineOffset = '2px'; }}
+          onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) { e.currentTarget.style.outline = '2px solid #D83E7F'; e.currentTarget.style.outlineOffset = '2px'; } }}
           onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
           onKeyDown={(e) => {
             if (e.key === 'ArrowLeft') onRangeChange(Math.max(MIN_YEAR, rangeStart - 10), rangeEnd);
@@ -329,7 +329,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
           aria-valuetext={`Year ${rangeEnd}`}
           tabIndex={0}
           onPointerDown={(e) => handlePointerDown(e, 'right')}
-          onFocus={(e) => { e.currentTarget.style.outline = '2px solid #D83E7F'; e.currentTarget.style.outlineOffset = '2px'; }}
+          onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) { e.currentTarget.style.outline = '2px solid #D83E7F'; e.currentTarget.style.outlineOffset = '2px'; } }}
           onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
           onKeyDown={(e) => {
             if (e.key === 'ArrowLeft') onRangeChange(rangeStart, Math.max(rangeStart + 10, rangeEnd - 10));
@@ -440,7 +440,10 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
               bottom: 0, background: 'none', border: 'none', cursor: 'pointer',
               fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
               color: '#C4326B', padding: '2px 4px', minHeight: 44, display: 'flex', alignItems: 'center',
+              outline: 'none',
             }}
+            onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 2px rgba(196,50,107,0.4)'; }}
+            onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
           >
             {rangeStart}
           </button>
@@ -488,7 +491,10 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
               bottom: 0, background: 'none', border: 'none', cursor: 'pointer',
               fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
               color: '#C4326B', padding: '2px 4px', minHeight: 44, display: 'flex', alignItems: 'center',
+              outline: 'none',
             }}
+            onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 2px rgba(196,50,107,0.4)'; }}
+            onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
           >
             {rangeEnd}
           </button>

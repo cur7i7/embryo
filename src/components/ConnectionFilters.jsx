@@ -77,7 +77,7 @@ export default function ConnectionFilters({ activeConnectionTypes, onToggleType,
             e.currentTarget.style.borderColor = 'rgba(90,80,72,0.15)';
           }
         }}
-        onFocus={(e) => { e.currentTarget.style.boxShadow = '0 0 0 2px rgba(90,80,72,0.3)'; }}
+        onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 2px rgba(90,80,72,0.4)'; }}
         onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
       >
         All
@@ -128,7 +128,7 @@ export default function ConnectionFilters({ activeConnectionTypes, onToggleType,
                 e.currentTarget.style.color = '#5A5048';
               }
             }}
-            onFocus={(e) => { e.currentTarget.style.boxShadow = '0 0 0 2px rgba(90,80,72,0.3)'; }}
+            onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 2px rgba(90,80,72,0.4)'; }}
             onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
           >
             {label}

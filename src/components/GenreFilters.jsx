@@ -71,7 +71,7 @@ export default function GenreFilters({ activeGenres, onToggleGenre, onSelectAll,
             e.currentTarget.style.borderColor = 'rgba(90,80,72,0.2)';
           }
         }}
-        onFocus={(e) => { e.currentTarget.style.boxShadow = '0 0 0 2px rgba(90,80,72,0.3)'; }}
+        onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 2px rgba(90,80,72,0.4)'; }}
         onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
       >
         All
@@ -122,7 +122,7 @@ export default function GenreFilters({ activeGenres, onToggleGenre, onSelectAll,
                 e.currentTarget.style.color = '#6B5F55';
               }
             }}
-            onFocus={(e) => { e.currentTarget.style.boxShadow = `0 0 0 2px ${color}40`; }}
+            onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = `0 0 0 2px ${color}66`; }}
             onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
           >
             <span

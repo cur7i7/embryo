@@ -189,7 +189,7 @@ export default function SearchBar({ artists, onSelect, isMobile = false }) {
             transition: 'border-color 0.15s ease, border-radius 0.15s ease',
             minHeight: 44,
           }}
-          onFocusCapture={e => { e.target.style.borderColor = 'rgba(168, 144, 128, 0.9)'; e.target.style.boxShadow = '0 0 0 3px rgba(168, 144, 128, 0.4)'; }}
+          onFocusCapture={e => { if (e.target.matches(':focus-visible')) { e.target.style.borderColor = 'rgba(168, 144, 128, 0.9)'; e.target.style.boxShadow = '0 0 0 3px rgba(168, 144, 128, 0.4)'; } }}
           onBlurCapture={e => { e.target.style.borderColor = 'rgba(224, 216, 204, 0.8)'; e.target.style.boxShadow = '0 2px 12px rgba(90, 80, 72, 0.10)'; }}
         />
         {query && (
@@ -218,7 +218,10 @@ export default function SearchBar({ artists, onSelect, isMobile = false }) {
               justifyContent: 'center',
               minWidth: 44,
               minHeight: 44,
+              outline: 'none',
             }}
+            onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 2px rgba(122,110,101,0.4)'; }}
+            onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
           >
             ×
           </button>
