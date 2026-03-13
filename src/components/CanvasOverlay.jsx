@@ -874,8 +874,57 @@ export default function CanvasOverlay({
           if (yearsRect) occupiedRects.push(yearsRect);
         }
 
+        // Selected artist: draw pulsing glow ring for clear visual distinction
+        const isSelected = selectedArtist && artist.id === selectedArtist.id;
+        if (isSelected && !reducedMotion) {
+          const pulseT = (performance.now() / 1200) % 1; // 1.2s cycle
+          const pulseScale = 1 + 0.3 * Math.sin(pulseT * Math.PI * 2);
+          const glowR = r * 1.8 * pulseScale;
+          const glowAlpha = 0.25 + 0.15 * Math.sin(pulseT * Math.PI * 2);
+          ctx.save();
+          ctx.globalAlpha = opacity * individualAlpha * glowAlpha;
+          ctx.beginPath();
+          ctx.arc(point.x, point.y, glowR, 0, Math.PI * 2);
+          ctx.fillStyle = genreColor;
+          ctx.fill();
+          ctx.restore();
+
+          // Outer ring
+          ctx.save();
+          ctx.globalAlpha = opacity * individualAlpha * 0.8;
+          ctx.beginPath();
+          ctx.arc(point.x, point.y, r * 1.6, 0, Math.PI * 2);
+          ctx.lineWidth = 2.5;
+          ctx.strokeStyle = genreColor;
+          ctx.stroke();
+          ctx.restore();
+        } else if (isSelected && reducedMotion) {
+          // Static ring for reduced motion
+          ctx.save();
+          ctx.globalAlpha = opacity * individualAlpha * 0.35;
+          ctx.beginPath();
+          ctx.arc(point.x, point.y, r * 1.8, 0, Math.PI * 2);
+          ctx.fillStyle = genreColor;
+          ctx.fill();
+          ctx.restore();
+
+          ctx.save();
+          ctx.globalAlpha = opacity * individualAlpha * 0.8;
+          ctx.beginPath();
+          ctx.arc(point.x, point.y, r * 1.6, 0, Math.PI * 2);
+          ctx.lineWidth = 2.5;
+          ctx.strokeStyle = genreColor;
+          ctx.stroke();
+          ctx.restore();
+        }
+
         drawArtistNode(ctx, point.x, point.y, ARTIST_RADIUS, genreColor, artist.name, years, state, opacity * individualAlpha, showLabel, labelOffset);
       }
+    }
+
+    // Keep animation running when a selected artist needs pulsing glow
+    if (!reducedMotion && selectedArtist && individualAlpha > 0) {
+      needsAnimRef.current = true;
     }
 
     ctx.globalAlpha = 1.0;

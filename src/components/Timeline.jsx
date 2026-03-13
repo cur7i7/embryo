@@ -474,11 +474,10 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
         {/* Year mode: prominent text input */}
         {isYearMode && (
           <div style={{
-            flex: 1,
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
             gap: 8,
+            flexShrink: 0,
           }}>
             <label
               htmlFor="year-input"
@@ -538,17 +537,18 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
               aria-label="Select year to display"
               aria-invalid={clampedFeedback != null ? 'true' : undefined}
               style={{
-                width: 80,
-                height: 36,
-                minHeight: 44,
-                padding: '0 8px',
-                fontSize: 18,
-                fontFamily: '"Instrument Serif", serif',
-                fontWeight: 400,
+                width: 72,
+                height: 32,
+                minHeight: 32,
+                padding: '0 6px',
+                fontSize: 14,
+                fontFamily: '"DM Sans", sans-serif',
+                fontWeight: 600,
                 color: '#C4326B',
-                backgroundColor: 'rgba(250,243,235,0.95)',
-                border: clampedFeedback != null ? '2px solid #C0392B' : '1px solid rgba(196,50,107,0.3)',
-                borderRadius: 8,
+                backgroundColor: 'transparent',
+                border: 'none',
+                borderBottom: clampedFeedback != null ? '2px solid #C0392B' : '1px dashed rgba(196,50,107,0.4)',
+                borderRadius: 0,
                 textAlign: 'center',
                 outline: 'none',
                 boxSizing: 'border-box',

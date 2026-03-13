@@ -206,7 +206,7 @@ export default function Map({
         aria-label="Map zoom controls"
         style={{
           position: 'absolute',
-          bottom: 32,
+          bottom: 'calc(clamp(44px, 6vw, 52px) + 16px + env(safe-area-inset-bottom, 0px))',
           right: 12,
           display: 'flex',
           flexDirection: 'column',
@@ -262,7 +262,7 @@ export default function Map({
             backgroundColor: '#FAF3EB',
             color: '#2C2420',
             border: '1px solid rgba(44, 36, 32, 0.15)',
-            borderRadius: '2px 2px 10px 10px',
+            borderRadius: '2px 2px 2px 2px',
             cursor: 'pointer',
             fontFamily: '"DM Sans", sans-serif',
             fontSize: 22,
@@ -277,6 +277,41 @@ export default function Map({
           onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
         >
           &minus;
+        </button>
+        <button
+          type="button"
+          aria-label="Zoom to fit all artists"
+          onClick={() => {
+            const map = mapRef.current?.getMap?.();
+            if (map) map.flyTo({ center: [10, 48], zoom: 2, duration: 1500 });
+          }}
+          style={{
+            width: 44,
+            height: 44,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: '#FAF3EB',
+            color: '#2C2420',
+            border: '1px solid rgba(44, 36, 32, 0.15)',
+            borderRadius: '2px 2px 10px 10px',
+            cursor: 'pointer',
+            fontFamily: '"DM Sans", sans-serif',
+            fontSize: 18,
+            fontWeight: 600,
+            lineHeight: 1,
+            padding: 0,
+            boxShadow: '0 2px 6px rgba(44, 36, 32, 0.12)',
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#F0E8DE'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#FAF3EB'; }}
+          onFocus={(e) => { e.currentTarget.style.outline = '2px solid #D83E7F'; e.currentTarget.style.outlineOffset = '2px'; }}
+          onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
+        >
+          {/* Home icon as inline SVG for clarity */}
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true" style={{ display: 'block' }}>
+            <path d="M10 2.5L2.5 9H5V16H8.5V12H11.5V16H15V9H17.5L10 2.5Z" fill="currentColor" />
+          </svg>
         </button>
       </div>
     </div>
