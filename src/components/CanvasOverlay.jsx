@@ -48,6 +48,7 @@ export default function CanvasOverlay({
   selectedArtist,
   onHover,
   onSelect,
+  isFinePointer = true,
 }) {
   const canvasRef = useRef(null);
 
@@ -94,6 +95,11 @@ export default function CanvasOverlay({
 
   // Last input type for DPR-scaled hit radius
   const lastInputTypeRef = useRef('mouse');
+
+  // Derived hit-test radius scaled by pointer type (coarse = 1.5x for touch targets)
+  const hitRadius = HIT_TEST_MIN_RADIUS * (isFinePointer ? 1 : 1.5);
+  const hitRadiusRef = useRef(hitRadius);
+  hitRadiusRef.current = hitRadius;
 
   // Supercluster index ref
   const scIndexRef = useRef(null);
@@ -1126,25 +1132,26 @@ export default function CanvasOverlay({
       }
     }
 
-    // Hit radius depends on render mode, DPR, and input type
+    // Hit radius depends on render mode and pointer type (fine vs coarse)
     const dpr = window.devicePixelRatio || 1;
-    const inputScale = lastInputTypeRef.current === 'touch' ? 1.5 : 1.0;
-    let hitRadius;
+    const scaledHitRadius = hitRadiusRef.current;
+    let effectiveHitRadius;
     if (mode === 'individual') {
-      // HIT_TEST_MIN_RADIUS = 44px touch target / 2 per WCAG; scale by input type
-      hitRadius = HIT_TEST_MIN_RADIUS * inputScale;
+      // hitRadiusRef already accounts for fine/coarse pointer (WCAG 44px touch target)
+      effectiveHitRadius = scaledHitRadius;
     } else {
-      // Cluster/city mode: dynamic hit radius based on orb size, scaled by input type
+      // Cluster/city mode: dynamic hit radius based on orb size, scaled by pointer type
       const artist = artistByIdRef.current.get(nearestId);
       const connCount = (connectionCountsRef.current?.get(artist?.id)) || 0;
       const scaleFactor = validArtistsRef.current.length > 200 ? 0.5 : 1;
+      const inputScale = hitRadiusRef.current / HIT_TEST_MIN_RADIUS;
       const baseRadius = (CLUSTER_RADIUS_BASE + Math.min(connCount * 3, 60)) * scaleFactor;
-      hitRadius = Math.max(20 * inputScale, baseRadius * 0.4);
+      effectiveHitRadius = Math.max(20 * inputScale, baseRadius * 0.4);
     }
     // dpr is read above; radii are in CSS px (canvas is already dpr-scaled via ctx.scale)
     void dpr;
 
-    if (nearestDist <= hitRadius && nearestId != null) {
+    if (nearestDist <= effectiveHitRadius && nearestId != null) {
       const artist = artistByIdRef.current.get(nearestId);
       if (artist) return { artist, dist: nearestDist };
     }
@@ -1198,7 +1205,7 @@ export default function CanvasOverlay({
     for (const [, { x, y, radius, group }] of cityPosMap) {
       const dx = x - mx;
       const dy = y - my;
-      if (Math.sqrt(dx * dx + dy * dy) <= Math.max(radius, HIT_TEST_MIN_RADIUS)) {
+      if (Math.sqrt(dx * dx + dy * dy) <= Math.max(radius, hitRadiusRef.current)) {
         map.flyTo({ center: [group.lng, group.lat], zoom: 13 });
         return true;
       }
@@ -1224,7 +1231,7 @@ export default function CanvasOverlay({
           for (const [key, { x, y, radius }] of cityPosMap) {
             const dx = x - mx;
             const dy = y - my;
-            if (Math.sqrt(dx * dx + dy * dy) <= Math.max(radius, HIT_TEST_MIN_RADIUS)) {
+            if (Math.sqrt(dx * dx + dy * dy) <= Math.max(radius, hitRadiusRef.current)) {
               foundCityKey = key;
               break;
             }
@@ -1523,7 +1530,7 @@ export default function CanvasOverlay({
           zIndex: 1,
           cursor: 'default',
         }}
-        aria-hidden="true"
+        aria-label="Interactive map showing musical artist connections across centuries"
       />
       {/* Keyboard-accessible overlay with visible focus indicator */}
       <div

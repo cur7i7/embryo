@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useIsPointerFine } from '../hooks/useIsPointerFine.js';
 
-export default function ArtistCount({ count, rangeStart, rangeEnd, isPlaying = false }) {
+function ArtistCount({ count, rangeStart, rangeEnd, isPlaying = false }) {
   const isPointerFine = useIsPointerFine();
   const label =
     rangeStart === 1400 && rangeEnd === 2025
@@ -66,3 +66,5 @@ export default function ArtistCount({ count, rangeStart, rangeEnd, isPlaying = f
     </>
   );
 }
+
+export default React.memo(ArtistCount);

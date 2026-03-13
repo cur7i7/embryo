@@ -2,6 +2,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { Map as MapGL } from 'react-map-gl/maplibre';
 import ArtistCount from './ArtistCount.jsx';
 import CanvasOverlay from './CanvasOverlay.jsx';
+import { useIsPointerFine } from '../hooks/useIsPointerFine.js';
 
 const mapStyle = {
   version: 8,
@@ -46,6 +47,7 @@ export default function Map({
   initialZoom = 2,
 }) {
   const [mapLoaded, setMapLoaded] = useState(false);
+  const isFinePointer = useIsPointerFine();
 
   const handleMapLoad = useCallback(() => {
     setMapLoaded(true);
@@ -189,6 +191,7 @@ export default function Map({
           selectedArtist={selectedArtist}
           onHover={onHover}
           onSelect={onSelect}
+          isFinePointer={isFinePointer}
         />
       )}
       <ArtistCount

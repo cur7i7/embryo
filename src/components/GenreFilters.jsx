@@ -27,7 +27,7 @@ const GENRE_SHAPES = {
   'Other':      '✦',
 };
 
-export default function GenreFilters({ activeGenres, onToggleGenre, onSelectAll, isMobile = false }) {
+function GenreFilters({ activeGenres, onToggleGenre, onSelectAll, isMobile = false }) {
   const allActive = activeGenres.size === BUCKET_NAMES.length;
   const isPointerFine = useIsPointerFine();
 
@@ -202,3 +202,5 @@ export default function GenreFilters({ activeGenres, onToggleGenre, onSelectAll,
     </>
   );
 }
+
+export default React.memo(GenreFilters);

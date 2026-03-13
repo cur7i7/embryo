@@ -10,7 +10,7 @@ const CONNECTION_TYPES = [
 
 const ACCENT = '#5A5048';
 
-export default function ConnectionFilters({ activeConnectionTypes, onToggleType, onSelectAll, typeCounts, isMobile = false }) {
+function ConnectionFilters({ activeConnectionTypes, onToggleType, onSelectAll, typeCounts, isMobile = false }) {
   const allActive = activeConnectionTypes.size === CONNECTION_TYPES.length;
   const isPointerFine = useIsPointerFine();
 
@@ -166,3 +166,5 @@ export default function ConnectionFilters({ activeConnectionTypes, onToggleType,
     </div>
   );
 }
+
+export default React.memo(ConnectionFilters);

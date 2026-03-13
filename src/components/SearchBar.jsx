@@ -5,7 +5,7 @@ import { useIsPointerFine } from '../hooks/useIsPointerFine.js';
 
 const MAX_RESULTS = 8;
 
-export default function SearchBar({ artists, allArtists, onSelect, isMobile = false }) {
+function SearchBar({ artists, allArtists, onSelect, isMobile = false }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -131,7 +131,7 @@ export default function SearchBar({ artists, allArtists, onSelect, isMobile = fa
         right: 16,
         left: isMobile ? 16 : 'auto',
         zIndex: 20,
-        width: isMobile ? 'auto' : 260,
+        width: isMobile ? 'auto' : 'clamp(240px, 30vw, 320px)',
         maxWidth: 400,
         fontFamily: '"DM Sans", sans-serif',
       }}
@@ -252,7 +252,7 @@ export default function SearchBar({ artists, allArtists, onSelect, isMobile = fa
             borderRadius: '0 0 16px 16px',
             boxShadow: '0 4px 16px rgba(90, 80, 72, 0.14)',
             backdropFilter: 'blur(8px)',
-            maxHeight: 320,
+            maxHeight: 'clamp(160px, 40vh, 320px)',
             overflowY: 'auto',
             zIndex: 21,
           }}
@@ -353,3 +353,5 @@ export default function SearchBar({ artists, allArtists, onSelect, isMobile = fa
     </div>
   );
 }
+
+export default React.memo(SearchBar);
