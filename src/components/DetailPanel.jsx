@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { getGenreBucket } from '../utils/genres.js';
 import { hexToRgba } from '../utils/rendering.js';
-import { flyToArtist } from '../utils/mapHelpers.js';
 
 const PANEL_WIDTH = 'clamp(320px, 30vw, 420px)';
 
@@ -175,8 +174,7 @@ export default function DetailPanel({
   const handleConnectedArtistClick = useCallback((connArtist) => {
     if (!connArtist) return;
     onSelect?.(connArtist);
-    flyToArtist(mapRef, connArtist, { zoom: 6 });
-  }, [onSelect, mapRef]);
+  }, [onSelect]);
 
   // Build a fast lookup for allArtists
   const artistMap = React.useMemo(() => {

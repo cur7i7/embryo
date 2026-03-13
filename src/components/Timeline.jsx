@@ -184,8 +184,8 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
           height: 'clamp(34px, 5vw, 44px)',
           borderRadius: '10px',
           border: 'none',
-          backgroundColor: isPlaying ? '#D83E7F' : 'rgba(216,62,127,0.1)',
-          color: isPlaying ? '#FAF3EB' : '#D83E7F',
+          backgroundColor: isPlaying ? '#D83E7F' : 'rgba(196,50,107,0.1)',
+          color: isPlaying ? '#FAF3EB' : '#C4326B',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
@@ -195,7 +195,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
           outline: 'none',
           fontFamily: '"DM Sans", sans-serif',
         }}
-        onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 3px rgba(216,62,127,0.4)'; }}
+        onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 3px rgba(196,50,107,0.4)'; }}
         onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
       >
         {isPlaying ? (
@@ -215,6 +215,8 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
       {/* Timeline area */}
       <div
         ref={containerRef}
+        role="group"
+        aria-label="Timeline year range"
         style={{
           flex: 1,
           height: isMobile ? '54px' : '64px',

@@ -167,7 +167,8 @@ export default function App() {
       if (selectedArtist) obj.artist = selectedArtist.id;
       const hash = buildHash(obj);
       if (window.location.hash !== hash) {
-        window.history.replaceState(null, '', hash || window.location.pathname);
+        const method = selectedArtist ? 'pushState' : 'replaceState';
+        window.history[method](null, '', hash || window.location.pathname);
       }
     }, 500);
   }, [timeline.rangeStart, timeline.rangeEnd, selectedArtist]);
@@ -396,6 +397,16 @@ export default function App() {
 
   return (
     <main style={{ width: '100vw', minHeight: '100vh', height: '100dvh', overflow: 'hidden' }}>
+      <h1 style={{
+        position: 'absolute',
+        width: 1,
+        height: 1,
+        overflow: 'hidden',
+        clip: 'rect(0,0,0,0)',
+        whiteSpace: 'nowrap',
+      }}>
+        EMBRYO — Interactive Musician Map
+      </h1>
       <Map
         mapRef={mapRef}
         artists={filteredArtists}
