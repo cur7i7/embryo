@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Map as MapGL } from 'react-map-gl/maplibre';
 import ArtistCount from './ArtistCount.jsx';
 import CanvasOverlay from './CanvasOverlay.jsx';
@@ -42,6 +42,8 @@ export default function Map({
   onHover,
   onSelect,
   isPlaying = false,
+  initialCenter = [10, 48],
+  initialZoom = 2,
 }) {
   const [mapLoaded, setMapLoaded] = useState(false);
 
@@ -49,9 +51,7 @@ export default function Map({
     setMapLoaded(true);
   }, []);
 
-  const visibleCount = (artists || []).filter(
-    (a) => a.birth_lat != null && a.birth_lng != null
-  ).length;
+  const visibleCount = useMemo(() => (artists || []).length, [artists]);
 
   return (
     <div role="application" aria-label="Interactive world map showing musicians from 1400 to 2025. Use search or timeline to explore." style={{ width: '100vw', minHeight: '100vh', height: '100dvh', backgroundColor: '#FAF3EB', position: 'relative' }}>
@@ -169,9 +169,9 @@ export default function Map({
       <MapGL
         ref={mapRef}
         initialViewState={{
-          longitude: 10,
-          latitude: 30,
-          zoom: 2,
+          longitude: initialCenter[0],
+          latitude: initialCenter[1],
+          zoom: initialZoom,
         }}
         style={{ width: '100%', height: '100%' }}
         mapStyle={mapStyle}

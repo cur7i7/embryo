@@ -194,6 +194,8 @@ export default function App() {
       const h = parseHash();
       if (h.start || h.end) {
         dispatch({ type: 'SET_RANGE', start: Number(h.start) || DEFAULT_RANGE[0], end: Number(h.end) || DEFAULT_RANGE[1] });
+      } else {
+        dispatch({ type: 'SET_RANGE', start: DEFAULT_RANGE[0], end: DEFAULT_RANGE[1] });
       }
       if (h.artist && allArtists.length) {
         const a = allArtists.find(x => x.id === h.artist);
@@ -421,6 +423,8 @@ export default function App() {
         onHover={handleHover}
         onSelect={handleSelect}
         isPlaying={timeline.isPlaying}
+        initialCenter={DEFAULT_CENTER}
+        initialZoom={DEFAULT_ZOOM}
       />
 
       <SearchBar
