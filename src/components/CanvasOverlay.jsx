@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback, useState } from 'react';
 import Supercluster from 'supercluster';
 import { GENRE_BUCKETS, getGenreBucket } from '../utils/genres.js';
 import {
@@ -81,6 +81,7 @@ export default function CanvasOverlay({
 
   // Current render mode for hit testing
   const renderModeRef = useRef('cluster');
+  const [renderModeState, setRenderModeState] = useState('cluster');
 
   // Display offsets for co-located artists
   const displayOffsetsRef = useRef(new Map());
@@ -354,6 +355,10 @@ export default function CanvasOverlay({
       renderMode = 'individual';
     }
     renderModeRef.current = renderMode;
+    if (renderMode !== renderModeRef._prev) {
+      renderModeRef._prev = renderMode;
+      setRenderModeState(renderMode);
+    }
 
     // Cross-fade alphas (+-0.5 zoom units around boundaries)
     // reducedMotion: snap immediately, no cross-fade
@@ -1093,8 +1098,7 @@ export default function CanvasOverlay({
   }, [startRaf]);
 
   // ARIA live region text for hovered/selected artist + zoom mode
-  const renderMode = renderModeRef.current;
-  const modeLabel = renderMode === 'cluster' ? 'Cluster view' : renderMode === 'city' ? 'City view' : 'Individual view';
+  const modeLabel = renderModeState === 'cluster' ? 'Cluster view' : renderModeState === 'city' ? 'City view' : 'Individual view';
   const liveText = hoveredArtist
     ? `${hoveredArtist.name}, ${hoveredArtist.birth_year || 'unknown year'}${hoveredArtist.birth_city ? ', ' + hoveredArtist.birth_city : ''}`
     : selectedArtist

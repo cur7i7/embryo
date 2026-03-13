@@ -110,9 +110,11 @@ export default function DetailPanel({
   const [history, setHistory] = useState([]);
   const artistKey = artist?.name;
   const [imageError, setImageError] = useState(false);
-  useEffect(() => {
+  const [prevArtistKey, setPrevArtistKey] = useState(artistKey);
+  if (prevArtistKey !== artistKey) {
+    setPrevArtistKey(artistKey);
     setImageError(false);
-  }, [artistKey]);
+  }
   // A12: prefers-reduced-motion
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(
     () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false

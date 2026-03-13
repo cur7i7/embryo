@@ -262,12 +262,7 @@ export default function App() {
     setSelectedArtist(artist);
     if (!artist) return;
 
-    // Auto-expand timeline to include artist's active period
-    const aStart = artist.active_start ?? artist.birth_year;
-    const aEnd = artist.active_end ?? artist.death_year ?? 2025;
-    // We need current timeline state — read from reducer won't work in callback.
-    // Instead, do the expand check imperatively via setState pattern.
-    // This is handled below via a separate effect.
+    // Auto-expand timeline is handled via a separate effect that reads reducer state.
 
     // Auto-expand genre filter
     const { bucket } = getGenreBucket(artist.genres);
