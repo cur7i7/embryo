@@ -954,6 +954,13 @@ export default function CanvasOverlay({
     }
   }, [startRaf]);
 
+  // A1: ARIA live region text for hovered/selected artist
+  const liveText = hoveredArtist
+    ? `${hoveredArtist.name}, ${hoveredArtist.birth_year || 'unknown year'}${hoveredArtist.birth_city ? ', ' + hoveredArtist.birth_city : ''}`
+    : selectedArtist
+      ? `Selected: ${selectedArtist.name}`
+      : '';
+
   return (
     <>
       <canvas
@@ -966,23 +973,49 @@ export default function CanvasOverlay({
           zIndex: 1,
           cursor: 'default',
         }}
-        aria-label="Interactive musician visualization map"
-        role="img"
+        aria-hidden="true"
       />
+      {/* A2: Keyboard-accessible overlay with visible focus indicator */}
       <div
         tabIndex={0}
         onKeyDown={handleKeyDown}
-        aria-label="Interactive musician visualization map. Use arrow keys to navigate artists, Enter to select."
+        role="application"
+        aria-label="Musician map navigation. Use arrow keys to browse artists, Enter to select."
+        aria-roledescription="musician map"
         style={{
           position: 'absolute',
           top: 0,
           left: 0,
-          width: 1,
-          height: 1,
-          opacity: 0,
-          pointerEvents: 'auto',
+          width: '100%',
+          height: '100%',
+          outline: 'none',
+          pointerEvents: 'none',
+        }}
+        onFocus={(e) => {
+          e.currentTarget.style.boxShadow = 'inset 0 0 0 3px rgba(216,62,127,0.5)';
+          e.currentTarget.style.pointerEvents = 'auto';
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.boxShadow = 'none';
+          e.currentTarget.style.pointerEvents = 'none';
         }}
       />
+      {/* A1: Screen reader live region for artist announcements */}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        style={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          overflow: 'hidden',
+          clip: 'rect(0,0,0,0)',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {liveText}
+      </div>
     </>
   );
 }

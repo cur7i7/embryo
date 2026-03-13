@@ -108,6 +108,16 @@ export default function DetailPanel({
   const closeButtonRef = useRef(null);
   const previousFocusRef = useRef(null);
   const [history, setHistory] = useState([]);
+  // A12: prefers-reduced-motion
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(
+    () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+  );
+  useEffect(() => {
+    const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handler = (e) => setPrefersReducedMotion(e.matches);
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
   const prevArtistRef = useRef(null);
 
   // Focus close button on panel open
@@ -206,9 +216,9 @@ export default function DetailPanel({
         zIndex: 30,
         overflowY: 'auto',
         transform: isOpen ? 'translateY(0)' : 'translateY(100%)',
-        transition: 'transform 0.3s ease',
-        transitionProperty: 'transform, visibility',
-        transitionDelay: isOpen ? '0s' : '0s, 0.3s',
+        transition: prefersReducedMotion ? 'none' : 'transform 0.3s ease',
+        transitionProperty: prefersReducedMotion ? 'none' : 'transform, visibility',
+        transitionDelay: prefersReducedMotion ? '0s' : (isOpen ? '0s' : '0s, 0.3s'),
         visibility: isOpen ? 'visible' : 'hidden',
         pointerEvents: isOpen ? 'auto' : 'none',
         padding: '24px',
@@ -228,9 +238,9 @@ export default function DetailPanel({
         zIndex: 30,
         overflowY: 'auto',
         transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
-        transition: 'transform 0.3s ease',
-        transitionProperty: 'transform, visibility',
-        transitionDelay: isOpen ? '0s' : '0s, 0.3s',
+        transition: prefersReducedMotion ? 'none' : 'transform 0.3s ease',
+        transitionProperty: prefersReducedMotion ? 'none' : 'transform, visibility',
+        transitionDelay: prefersReducedMotion ? '0s' : (isOpen ? '0s' : '0s, 0.3s'),
         visibility: isOpen ? 'visible' : 'hidden',
         pointerEvents: isOpen ? 'auto' : 'none',
         padding: '24px',
