@@ -49,15 +49,7 @@ export default function SearchBar({ artists, onSelect, mapRef, isMobile = false 
     setIsOpen(false);
     setActiveIndex(-1);
     onSelect?.(artist);
-    if (mapRef?.current && artist.birth_lng != null && artist.birth_lat != null) {
-      try {
-        mapRef.current.getMap().flyTo({
-          center: [artist.birth_lng, artist.birth_lat],
-          zoom: 6,
-        });
-      } catch (_) {}
-    }
-  }, [onSelect, mapRef]);
+  }, [onSelect]);
 
   const handleKeyDown = useCallback((e) => {
     if (!isOpen || results.length === 0) {
