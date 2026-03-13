@@ -6,7 +6,8 @@ export function useArtistData() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('/data/artists_final.json')
+    const controller = new AbortController();
+    fetch('/data/artists_final.json', { signal: controller.signal })
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
@@ -20,10 +21,12 @@ export function useArtistData() {
         setLoading(false);
       })
       .catch((err) => {
+        if (err.name === 'AbortError') return;
         console.error('Failed to load artist data:', err);
         setError(err.message);
         setLoading(false);
       });
+    return () => controller.abort();
   }, []);
 
   return { artists, loading, error };

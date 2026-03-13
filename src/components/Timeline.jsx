@@ -129,7 +129,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
       newEnd = newStart + currentWidth;
     }
     // Clamp to bounds
-    if (newStart < MIN_YEAR) { newStart = MIN_YEAR; newEnd = newStart + (newEnd - newStart); }
+    if (newStart < MIN_YEAR) { const desiredWidth = newEnd - newStart; newStart = MIN_YEAR; newEnd = MIN_YEAR + desiredWidth; }
     if (newEnd > MAX_YEAR) { newEnd = MAX_YEAR; newStart = Math.max(MIN_YEAR, newEnd - (currentWidth >= fullRange ? 100 : currentWidth)); }
     onRangeChange(newStart, newEnd);
   }, [rangeStart, rangeEnd, onRangeChange, xToYear]);
@@ -167,6 +167,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
       <button
         onClick={onPlayPause}
         aria-label={isPlaying ? 'Pause playback' : 'Play timeline'}
+        aria-pressed={isPlaying}
         style={{
           width: '44px',
           height: '44px',

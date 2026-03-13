@@ -123,8 +123,8 @@ export default function App() {
           center: [artist.birth_lng, artist.birth_lat],
           zoom: Math.max(mapRef.current?.getMap?.()?.getZoom?.() || 6, 6),
         });
-      } catch (_) {
-        // map not ready
+      } catch (_err) {
+        /* flyTo — map not ready */
       }
     }
   }, []);
@@ -162,7 +162,7 @@ export default function App() {
   // Connections for selected artist
   const selectedArtistConnections = useMemo(() => {
     if (!selectedArtist) return [];
-    return connectionsByArtist.get(selectedArtist.name) || [];
+    return connectionsByArtist.get(selectedArtist.id) || [];
   }, [selectedArtist, connectionsByArtist]);
 
   if (artistsLoading || connectionsLoading) {

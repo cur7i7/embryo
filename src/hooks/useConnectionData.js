@@ -8,7 +8,8 @@ export function useConnectionData() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('/data/connections_final.json')
+    const controller = new AbortController();
+    fetch('/data/connections_final.json', { signal: controller.signal })
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
@@ -17,24 +18,32 @@ export function useConnectionData() {
         // Filter out rivalry connections
         const filtered = data.filter((c) => c.type !== 'rivalry');
 
-        // Build connectionsByArtist: each artist maps to all connections they appear in
-        // TODO: connectionsByArtist is keyed by artist name which may not be unique
-        // across 31K records. Should migrate to artist.id-based keying.
+        // Build connectionsByArtist keyed by artist ID for uniqueness
         const byArtist = new Map();
         for (const conn of filtered) {
-          const { source_name, target_name } = conn;
+          const { source_id, target_id } = conn;
 
-          if (!byArtist.has(source_name)) byArtist.set(source_name, []);
-          byArtist.get(source_name).push(conn);
+          if (!byArtist.has(source_id)) byArtist.set(source_id, []);
+          byArtist.get(source_id).push(conn);
 
-          if (!byArtist.has(target_name)) byArtist.set(target_name, []);
-          byArtist.get(target_name).push(conn);
+          if (!byArtist.has(target_id)) byArtist.set(target_id, []);
+          byArtist.get(target_id).push(conn);
         }
 
-        // Build connectionCounts from byArtist
+        // Build connectionCounts keyed by both ID and name for backward
+        // compatibility (CanvasOverlay looks up counts by artist name).
         const counts = new Map();
-        for (const [name, conns] of byArtist) {
-          counts.set(name, conns.length);
+        for (const [id, conns] of byArtist) {
+          counts.set(id, conns.length);
+        }
+        for (const conn of filtered) {
+          const { source_id, source_name, target_id, target_name } = conn;
+          if (source_name && !counts.has(source_name)) {
+            counts.set(source_name, counts.get(source_id) || 0);
+          }
+          if (target_name && !counts.has(target_name)) {
+            counts.set(target_name, counts.get(target_id) || 0);
+          }
         }
 
         console.log(
@@ -48,10 +57,12 @@ export function useConnectionData() {
         setLoading(false);
       })
       .catch((err) => {
+        if (err.name === 'AbortError') return;
         console.error('Failed to load connection data:', err);
         setError(err.message);
         setLoading(false);
       });
+    return () => controller.abort();
   }, []);
 
   return { connections, connectionsByArtist, connectionCounts, loading, error };
