@@ -589,7 +589,9 @@ export default function CanvasOverlay({
     ctx.setLineDash([]);
 
     // --- City mode rendering ---
-    const cityPosMap = new Map();
+    // Fix #35: reuse ref-backed Map to avoid per-frame GC allocation
+    cityPosMapRef.current.clear();
+    const cityPosMap = cityPosMapRef.current;
     if (cityAlpha > 0) {
       // Use pre-sorted city groups from Effect A (P3: avoid per-frame sort)
       const sortedCityEntries = sortedCityGroupsRef.current;
@@ -688,8 +690,6 @@ export default function CanvasOverlay({
         drawCityGroup(ctx, x, y, showLabel ? group.city : null, group.artists.length, cityRadius, cityAlpha);
       }
     }
-    cityPosMapRef.current = cityPosMap;
-
     // --- Individual phase --- hard-reset canvas state
     ctx.globalAlpha = 1.0;
     ctx.globalCompositeOperation = 'source-over';
@@ -1167,7 +1167,8 @@ export default function CanvasOverlay({
     // Trigger re-render for prop changes
     needsAnimRef.current = true;
     startRaf();
-  }, [connectionCounts, connections, connectionsByArtist, activeConnectionTypes, hoveredArtist, selectedArtist, onHover, onSelect, startRaf]);
+  // Fix #36: `connections` is not read inside this effect body — removed to avoid spurious re-runs
+  }, [connectionCounts, connectionsByArtist, activeConnectionTypes, hoveredArtist, selectedArtist, onHover, onSelect, startRaf]);
 
   // Re-render once when tab becomes visible again (no continuous polling)
   useEffect(() => {

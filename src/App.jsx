@@ -109,6 +109,17 @@ export default function App() {
   const mapRef = useRef(null);
   const hashUpdateTimer = useRef(null);
   const suppressHashSync = useRef(false);
+  const filterPanelRef = useRef(null);
+  const [filterPanelHeight, setFilterPanelHeight] = useState(168);
+
+  // Progressive loading messages (Fix #34)
+  const [loadingMessage, setLoadingMessage] = useState('');
+  useEffect(() => {
+    if (!artistsLoading && !connectionsLoading) return;
+    const t1 = setTimeout(() => setLoadingMessage('Loading artist data…'), 3000);
+    const t2 = setTimeout(() => setLoadingMessage('Almost there — loading 30,000+ musicians…'), 8000);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [artistsLoading, connectionsLoading]);
 
   // ---- Hash → state: restore artist selection after data loads ----
   const pendingArtistId = useRef(_initialHash.artist || null);
@@ -365,6 +376,19 @@ export default function App() {
     return connectionsByArtist.get(selectedArtist.id) || [];
   }, [selectedArtist, connectionsByArtist]);
 
+  // ---- Measure filter panel height for toggle button positioning (Fix #54) ----
+  useEffect(() => {
+    const el = filterPanelRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        setFilterPanelHeight(entry.contentRect.height);
+      }
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [filtersExpanded]);
+
   // ---- Reset view: detect non-default state ----
   const isDefault = timeline.rangeStart === DEFAULT_RANGE[0]
     && timeline.rangeEnd === DEFAULT_RANGE[1]
@@ -405,6 +429,11 @@ export default function App() {
           <div style={{ fontSize: 12, color: '#7A6E65', marginTop: 10 }}>
             Preparing 31,069 artists
           </div>
+          {loadingMessage && (
+            <div style={{ fontSize: 12, color: '#7A6E65', marginTop: 8, maxWidth: 220 }}>
+              {loadingMessage}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -515,10 +544,9 @@ export default function App() {
         <button
           onClick={() => setFiltersExpanded(prev => !prev)}
           aria-expanded={filtersExpanded}
-          aria-controls="filter-panels"
           style={{
             position: 'fixed',
-            bottom: filtersExpanded ? `calc(168px + env(safe-area-inset-bottom))` : `calc(56px + env(safe-area-inset-bottom))`,
+            bottom: filtersExpanded ? `calc(${filterPanelHeight}px + env(safe-area-inset-bottom))` : `calc(56px + env(safe-area-inset-bottom))`,
             left: 12,
             zIndex: 21,
             display: 'flex',
@@ -551,7 +579,7 @@ export default function App() {
 
       {/* Filters — always visible on desktop, collapsible on mobile */}
       {(!isMobile || filtersExpanded) && (
-        <div id="filter-panels" style={{
+        <div id="filter-panels" ref={filterPanelRef} style={{
           maxHeight: 'min(60vh, 200px)',
           overflowY: 'auto',
         }}>

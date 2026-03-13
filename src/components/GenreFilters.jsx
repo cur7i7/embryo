@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { GENRE_BUCKETS } from '../utils/genres.js';
 import { useIsPointerFine } from '../hooks/useIsPointerFine.js';
 
@@ -30,6 +30,14 @@ const GENRE_SHAPES = {
 function GenreFilters({ activeGenres, onToggleGenre, onSelectAll, isMobile = false }) {
   const allActive = activeGenres.size === BUCKET_NAMES.length;
   const isPointerFine = useIsPointerFine();
+  const [showLeftFade, setShowLeftFade] = useState(false);
+  const scrollRef = useRef(null);
+
+  const handleScroll = () => {
+    if (scrollRef.current) {
+      setShowLeftFade(scrollRef.current.scrollLeft > 0);
+    }
+  };
 
   return (
     <>
@@ -44,6 +52,8 @@ function GenreFilters({ activeGenres, onToggleGenre, onSelectAll, isMobile = fal
       id="genre-filters"
       role="group"
       aria-label="Filter by genre"
+      ref={isMobile ? scrollRef : null}
+      onScroll={isMobile ? handleScroll : undefined}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -68,7 +78,7 @@ function GenreFilters({ activeGenres, onToggleGenre, onSelectAll, isMobile = fal
           fontFamily: '"DM Sans", sans-serif',
           fontSize: isPointerFine ? 12 : 'clamp(11px, 1.5vw, 13px)',
           fontWeight: 600,
-          lineHeight: 1,
+          lineHeight: 1.2,
           letterSpacing: '0.02em',
           color: allActive ? '#FAF3EB' : '#5A5048',
           backgroundColor: allActive ? '#5A5048' : 'transparent',
@@ -115,7 +125,7 @@ function GenreFilters({ activeGenres, onToggleGenre, onSelectAll, isMobile = fal
               fontFamily: '"DM Sans", sans-serif',
               fontSize: isPointerFine ? 12 : 'clamp(11px, 1.5vw, 13px)',
               fontWeight: isActive ? 600 : 500,
-              lineHeight: 1,
+              lineHeight: 1.2,
               letterSpacing: '0.01em',
               color: isActive ? '#3E3530' : '#4A3F37',
               backgroundColor: isActive ? `${color}1F` : 'transparent',
@@ -169,6 +179,20 @@ function GenreFilters({ activeGenres, onToggleGenre, onSelectAll, isMobile = fal
         );
       })}
     </div>
+    {isMobile && showLeftFade && (
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          bottom: 0,
+          width: 24,
+          background: 'linear-gradient(to left, rgba(250,243,235,0), rgba(250,243,235,0.88))',
+          pointerEvents: 'none',
+        }}
+      />
+    )}
     {isMobile && (
       <div
         aria-hidden="true"

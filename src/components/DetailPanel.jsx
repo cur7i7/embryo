@@ -95,6 +95,203 @@ function PipelineBadge({ pipeline }) {
   );
 }
 
+const CONNECTION_TYPE_ORDER = ['teacher', 'influence', 'peer', 'collaboration'];
+const CONNECTION_TYPE_LABELS = {
+  teacher: 'Teachers',
+  influence: 'Influences',
+  peer: 'Peers',
+  collaboration: 'Collaborations',
+};
+const GROUP_COLLAPSE_THRESHOLD = 5;
+
+function ConnectionCard({ conn, artist, artistMap, onClickArtist }) {
+  const connectedId =
+    conn.source_id === artist.id ? conn.target_id : conn.source_id;
+  const connectedName =
+    conn.source_id === artist.id ? conn.target_name : conn.source_name;
+  const connectedArtist = artistMap.get(connectedId);
+  const { color: connColor } = getGenreBucket(connectedArtist?.genres);
+
+  return (
+    <div
+      style={{
+        backgroundColor: 'rgba(255, 255, 255, 0.5)',
+        borderRadius: 8,
+        padding: '10px 12px',
+        border: '1px solid rgba(224, 216, 204, 0.5)',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          marginBottom: 4,
+          flexWrap: 'wrap',
+        }}
+      >
+        <GenreDot color={connColor} size={7} />
+        <button
+          onClick={() => onClickArtist(connectedArtist)}
+          style={{
+            background: 'none',
+            border: 'none',
+            padding: '4px 0',
+            minHeight: 44,
+            fontFamily: '"DM Sans", sans-serif',
+            fontSize: 13,
+            fontWeight: 600,
+            color: connectedArtist ? '#3E3530' : '#5A5048',
+            cursor: connectedArtist ? 'pointer' : 'default',
+            textDecoration: connectedArtist ? 'underline' : 'none',
+            textDecorationColor: hexToRgba(connColor, 0.4),
+            textUnderlineOffset: 2,
+          }}
+          disabled={!connectedArtist}
+          aria-label={`View ${connectedName}`}
+          onFocus={e => { e.currentTarget.style.outline = '2px solid #5A5048'; e.currentTarget.style.outlineOffset = '2px'; }}
+          onBlur={e => { e.currentTarget.style.outline = 'none'; }}
+        >
+          {connectedName}
+        </button>
+        <ConnectionTypeLabel type={conn.type} />
+        {conn.source_pipeline && (
+          <PipelineBadge pipeline={conn.source_pipeline} />
+        )}
+      </div>
+      {conn.evidence && (
+        <p
+          style={{
+            margin: '4px 0 4px 0',
+            fontSize: 11,
+            fontStyle: 'italic',
+            color: '#5A4F47',
+            lineHeight: 1.5,
+          }}
+        >
+          {conn.evidence}
+        </p>
+      )}
+      {conn.confidence != null && (
+        <ConfidenceBar confidence={conn.confidence} />
+      )}
+    </div>
+  );
+}
+
+function ConnectionsList({ connections, artist, artistMap, onClickArtist }) {
+  const [expandedGroups, setExpandedGroups] = useState({});
+
+  // Group connections by type
+  const groups = React.useMemo(() => {
+    const grouped = {};
+    for (const conn of connections) {
+      const type = conn.type || 'other';
+      if (!grouped[type]) grouped[type] = [];
+      grouped[type].push(conn);
+    }
+    // Sort by defined order, then unknowns at end
+    const ordered = [];
+    for (const t of CONNECTION_TYPE_ORDER) {
+      if (grouped[t]) ordered.push({ type: t, items: grouped[t] });
+    }
+    for (const t of Object.keys(grouped)) {
+      if (!CONNECTION_TYPE_ORDER.includes(t)) {
+        ordered.push({ type: t, items: grouped[t] });
+      }
+    }
+    return ordered;
+  }, [connections]);
+
+  const toggleGroup = useCallback((type) => {
+    setExpandedGroups(prev => ({ ...prev, [type]: !prev[type] }));
+  }, []);
+
+  // Reset expanded state when artist changes
+  useEffect(() => {
+    setExpandedGroups({});
+  }, [artist?.id]);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {groups.map(({ type, items }) => {
+        const isExpanded = !!expandedGroups[type];
+        const needsCollapse = items.length > GROUP_COLLAPSE_THRESHOLD;
+        const visible = needsCollapse && !isExpanded ? items.slice(0, GROUP_COLLAPSE_THRESHOLD) : items;
+        const hiddenCount = items.length - GROUP_COLLAPSE_THRESHOLD;
+        const label = CONNECTION_TYPE_LABELS[type] || (type.charAt(0).toUpperCase() + type.slice(1));
+
+        return (
+          <div key={type}>
+            <div
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                color: '#5A5048',
+                marginBottom: 8,
+                letterSpacing: '0.02em',
+              }}
+            >
+              {label}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {visible.map((conn, i) => (
+                <ConnectionCard
+                  key={i}
+                  conn={conn}
+                  artist={artist}
+                  artistMap={artistMap}
+                  onClickArtist={onClickArtist}
+                />
+              ))}
+            </div>
+            {needsCollapse && !isExpanded && (
+              <button
+                onClick={() => toggleGroup(type)}
+                style={{
+                  background: 'none',
+                  border: '1px solid rgba(224, 216, 204, 0.6)',
+                  borderRadius: 6,
+                  padding: '6px 12px',
+                  marginTop: 8,
+                  fontSize: 12,
+                  fontFamily: '"DM Sans", sans-serif',
+                  color: '#5A5048',
+                  cursor: 'pointer',
+                  minHeight: 36,
+                }}
+                aria-label={`Show ${hiddenCount} more ${label.toLowerCase()}`}
+              >
+                Show {hiddenCount} more
+              </button>
+            )}
+            {needsCollapse && isExpanded && (
+              <button
+                onClick={() => toggleGroup(type)}
+                style={{
+                  background: 'none',
+                  border: '1px solid rgba(224, 216, 204, 0.6)',
+                  borderRadius: 6,
+                  padding: '6px 12px',
+                  marginTop: 8,
+                  fontSize: 12,
+                  fontFamily: '"DM Sans", sans-serif',
+                  color: '#5A5048',
+                  cursor: 'pointer',
+                  minHeight: 36,
+                }}
+                aria-label={`Show fewer ${label.toLowerCase()}`}
+              >
+                Show fewer
+              </button>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function DetailPanel({
   artist,
   connections,
@@ -104,6 +301,7 @@ export default function DetailPanel({
   isMobile = false,
 }) {
   const isOpen = !!artist;
+  const panelRef = useRef(null);
   const closeButtonRef = useRef(null);
   const previousFocusRef = useRef(null);
   const [history, setHistory] = useState([]);
@@ -122,6 +320,64 @@ export default function DetailPanel({
     return () => mql.removeEventListener('change', handler);
   }, []);
   const prevArtistRef = useRef(null);
+
+  // Fix #32: Swipe-to-dismiss state for mobile
+  const touchStartYRef = useRef(null);
+  const [dragDeltaY, setDragDeltaY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleTouchStart = useCallback((e) => {
+    touchStartYRef.current = e.touches[0].clientY;
+    setIsDragging(true);
+  }, []);
+
+  const handleTouchMove = useCallback((e) => {
+    if (touchStartYRef.current == null) return;
+    const delta = e.touches[0].clientY - touchStartYRef.current;
+    // Only allow downward drag
+    if (delta > 0) {
+      setDragDeltaY(delta);
+    }
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    setIsDragging(false);
+    if (dragDeltaY > 100) {
+      if (prefersReducedMotion) {
+        setDragDeltaY(0);
+        onClose?.();
+      } else {
+        // Animate out then close
+        setDragDeltaY(window.innerHeight);
+        setTimeout(() => {
+          setDragDeltaY(0);
+          onClose?.();
+        }, 200);
+      }
+    } else {
+      setDragDeltaY(0);
+    }
+    touchStartYRef.current = null;
+  }, [dragDeltaY, onClose, prefersReducedMotion]);
+
+  // Reset drag state when panel closes
+  useEffect(() => {
+    if (!isOpen) {
+      setDragDeltaY(0);
+      setIsDragging(false);
+      touchStartYRef.current = null;
+    }
+  }, [isOpen]);
+
+  // Fix #24: Reliably toggle inert attribute via useEffect
+  useEffect(() => {
+    if (!panelRef.current) return;
+    if (isOpen) {
+      panelRef.current.removeAttribute('inert');
+    } else {
+      panelRef.current.setAttribute('inert', '');
+    }
+  }, [isOpen]);
 
   // Focus close button on panel open
   useEffect(() => {
@@ -144,7 +400,11 @@ export default function DetailPanel({
     if (!isOpen) return;
     const handleKey = (e) => {
       if (e.key === 'Escape') {
-        previousFocusRef.current?.focus();
+        if (previousFocusRef.current && document.contains(previousFocusRef.current)) {
+          previousFocusRef.current.focus();
+        } else {
+          document.body.focus();
+        }
         onClose?.();
       }
     };
@@ -217,10 +477,19 @@ export default function DetailPanel({
         boxShadow: '0 -4px 24px rgba(90, 80, 72, 0.12)',
         zIndex: 30,
         overflowY: 'auto',
-        transform: isOpen ? 'translateY(0)' : 'translateY(100%)',
-        transition: prefersReducedMotion ? 'none' : 'transform 0.3s ease',
-        transitionProperty: prefersReducedMotion ? 'none' : 'transform, visibility',
-        transitionDelay: prefersReducedMotion ? '0s' : (isOpen ? '0s' : '0s, 0.3s'),
+        transform: isOpen
+          ? (dragDeltaY > 0 ? `translateY(${dragDeltaY}px)` : 'translateY(0)')
+          : 'translateY(100%)',
+        transition: isDragging
+          ? 'none'
+          : (prefersReducedMotion ? 'none' : 'transform 0.3s ease'),
+        transitionProperty: isDragging
+          ? 'none'
+          : (prefersReducedMotion ? 'none' : 'transform, visibility'),
+        transitionDelay: isDragging
+          ? '0s'
+          : (prefersReducedMotion ? '0s' : (isOpen ? '0s' : '0s, 0.3s')),
+        willChange: isDragging ? 'transform' : 'auto',
         visibility: isOpen ? 'visible' : 'hidden',
         pointerEvents: isOpen ? 'auto' : 'none',
         padding: '24px',
@@ -232,7 +501,7 @@ export default function DetailPanel({
         top: 0,
         right: 0,
         width: PANEL_WIDTH,
-        height: '100vh',
+        height: '100dvh',
         backgroundColor: 'rgba(250, 243, 235, 0.96)',
         backdropFilter: 'blur(12px)',
         borderLeft: '1px solid rgba(224, 216, 204, 0.8)',
@@ -255,13 +524,16 @@ export default function DetailPanel({
       role="complementary"
       aria-label={artist ? `Details for ${artist.name}` : 'Artist details'}
       aria-hidden={!isOpen}
-      ref={(el) => { if (el) { isOpen ? el.removeAttribute('inert') : el.setAttribute('inert', ''); } }}
+      ref={panelRef}
       onKeyDown={handleTrapKeyDown}
     >
       {/* Mobile drag handle indicator */}
       {isMobile && (
         <div
           aria-hidden="true"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
           style={{
             width: '100%',
             display: 'flex',
@@ -269,6 +541,8 @@ export default function DetailPanel({
             paddingTop: 4,
             paddingBottom: 8,
             marginBottom: -8,
+            touchAction: 'none',
+            cursor: 'grab',
           }}
         >
           <div style={{
@@ -313,7 +587,7 @@ export default function DetailPanel({
       {/* Close button */}
       <button
         ref={closeButtonRef}
-        onClick={() => { previousFocusRef.current?.focus(); onClose?.(); }}
+        onClick={() => { if (previousFocusRef.current && document.contains(previousFocusRef.current)) { previousFocusRef.current.focus(); } else { document.body.focus(); } onClose?.(); }}
         aria-label="Close detail panel"
         style={{
           position: 'absolute',
@@ -358,7 +632,7 @@ export default function DetailPanel({
               ...(artist.image_url && !imageError
                 ? { display: 'flex', justifyContent: 'center', backgroundColor: hexToRgba(color, 0.08) }
                 : {
-                    height: 120,
+                    height: 'clamp(80px, 20vw, 120px)',
                     background: `linear-gradient(135deg, ${hexToRgba(color, 0.2)} 0%, ${hexToRgba(color, 0.4)} 50%, ${hexToRgba(color, 0.13)} 100%)`,
                     border: `1px solid ${hexToRgba(color, 0.27)}`,
                     display: 'flex',
@@ -523,100 +797,40 @@ export default function DetailPanel({
           )}
 
           {/* Connections */}
-          {connections && connections.length > 0 && (
-            <div style={{ marginBottom: 16 }}>
-              <hr style={{ border: 'none', borderTop: '1px solid rgba(224, 216, 204, 0.7)', margin: '0 0 14px 0' }} />
-              <div
+          <div style={{ marginBottom: 16 }}>
+            <hr style={{ border: 'none', borderTop: '1px solid rgba(224, 216, 204, 0.7)', margin: '0 0 14px 0' }} />
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: '#6B5F55',
+                marginBottom: 10,
+              }}
+            >
+              Connections {connections && connections.length > 0 ? `(${connections.length})` : ''}
+            </div>
+            {connections && connections.length > 0 ? (
+              <ConnectionsList
+                connections={connections}
+                artist={artist}
+                artistMap={artistMap}
+                onClickArtist={handleConnectedArtistClick}
+              />
+            ) : (
+              <p
                 style={{
-                  fontSize: 11,
-                  fontWeight: 700,
-                  letterSpacing: '0.08em',
-                  textTransform: 'uppercase',
-                  color: '#6B5F55',
-                  marginBottom: 10,
+                  fontSize: 13,
+                  fontStyle: 'italic',
+                  color: '#4A3F37',
+                  margin: 0,
                 }}
               >
-                Connections ({connections.length})
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {connections.map((conn, i) => {
-                  const connectedId =
-                    conn.source_id === artist.id ? conn.target_id : conn.source_id;
-                  const connectedName =
-                    conn.source_id === artist.id ? conn.target_name : conn.source_name;
-                  const connectedArtist = artistMap.get(connectedId);
-                  const { color: connColor } = getGenreBucket(connectedArtist?.genres);
-
-                  return (
-                    <div
-                      key={i}
-                      style={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.5)',
-                        borderRadius: 8,
-                        padding: '10px 12px',
-                        border: '1px solid rgba(224, 216, 204, 0.5)',
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 8,
-                          marginBottom: 4,
-                          flexWrap: 'wrap',
-                        }}
-                      >
-                        <GenreDot color={connColor} size={7} />
-                        <button
-                          onClick={() => handleConnectedArtistClick(connectedArtist)}
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            padding: '4px 0',
-                            minHeight: 44,
-                            fontFamily: '"DM Sans", sans-serif',
-                            fontSize: 13,
-                            fontWeight: 600,
-                            color: connectedArtist ? '#3E3530' : '#5A5048',
-                            cursor: connectedArtist ? 'pointer' : 'default',
-                            textDecoration: connectedArtist ? 'underline' : 'none',
-                            textDecorationColor: hexToRgba(connColor, 0.4),
-                            textUnderlineOffset: 2,
-                          }}
-                          disabled={!connectedArtist}
-                          aria-label={`View ${connectedName}`}
-                          onFocus={e => { e.currentTarget.style.outline = '2px solid #5A5048'; e.currentTarget.style.outlineOffset = '2px'; }}
-                          onBlur={e => { e.currentTarget.style.outline = 'none'; }}
-                        >
-                          {connectedName}
-                        </button>
-                        <ConnectionTypeLabel type={conn.type} />
-                        {conn.source_pipeline && (
-                          <PipelineBadge pipeline={conn.source_pipeline} />
-                        )}
-                      </div>
-                      {conn.evidence && (
-                        <p
-                          style={{
-                            margin: '4px 0 4px 0',
-                            fontSize: 11,
-                            fontStyle: 'italic',
-                            color: '#5A4F47',
-                            lineHeight: 1.5,
-                          }}
-                        >
-                          {conn.evidence}
-                        </p>
-                      )}
-                      {conn.confidence != null && (
-                        <ConfidenceBar confidence={conn.confidence} />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+                No documented connections
+              </p>
+            )}
+          </div>
 
           {/* Wikipedia link */}
           {artist.wikipedia_url && (

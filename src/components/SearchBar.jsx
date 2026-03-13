@@ -5,7 +5,7 @@ import { useIsPointerFine } from '../hooks/useIsPointerFine.js';
 
 const MAX_RESULTS = 8;
 
-function SearchBar({ artists, allArtists, onSelect, isMobile = false }) {
+function SearchBar({ artists, allArtists, onSelect, isMobile = false, artistCount }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -15,6 +15,15 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false }) {
   const inputRef = useRef(null);
   const dropdownRef = useRef(null);
   const blurTimeoutRef = useRef(null);
+
+  // Fix #49: Derive total artist count for the placeholder.
+  // Prefer the explicit `artistCount` prop; fall back to allArtists/artists length.
+  // NOTE: parent (App.jsx) can pass `artistCount={allArtists.length}` to make this
+  // reflect the full dataset rather than the currently-filtered slice.
+  const totalCount = artistCount ?? (allArtists?.length || artists?.length) ?? 0;
+  const searchPlaceholder = totalCount > 0
+    ? `Search ${totalCount.toLocaleString()} musicians…`
+    : 'Search musicians…';
 
   // Use the full unfiltered dataset for indexing so the Fuse index is not
   // rebuilt on every timeline drag (which changes the filtered artists list
@@ -113,6 +122,29 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false }) {
     };
   }, []);
 
+  // Fix #46: Global keyboard shortcut to focus search (/ or Ctrl/Cmd+K)
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      // Ctrl+K (Windows/Linux) or Cmd+K (Mac)
+      if (e.key === 'k' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        inputRef.current?.focus();
+        inputRef.current?.select();
+        return;
+      }
+      // "/" only when no text input is focused
+      if (e.key === '/') {
+        const tag = document.activeElement?.tagName?.toLowerCase();
+        const isEditable = document.activeElement?.isContentEditable;
+        if (tag === 'input' || tag === 'textarea' || isEditable) return;
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, []);
+
   // Scroll active result into view
   useEffect(() => {
     if (activeIndex < 0 || !dropdownRef.current) return;
@@ -167,7 +199,7 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false }) {
           onKeyDown={handleKeyDown}
           onBlur={handleBlur}
           onFocus={handleFocus}
-          placeholder="Search musicians…"
+          placeholder={searchPlaceholder}
           aria-label="Search musicians"
           aria-expanded={isOpen}
           aria-haspopup="listbox"

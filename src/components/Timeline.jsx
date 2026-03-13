@@ -57,6 +57,10 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
   const [startInput, setStartInput] = useState('');
   const [endInput, setEndInput] = useState('');
 
+  // Fix #47: Clamped-feedback state for year-mode input
+  const [clampedFeedback, setClampedFeedback] = useState(null);
+  const clampedFeedbackTimerRef = useRef(null);
+
   // Year mode: always-visible input value
   const [yearInputValue, setYearInputValue] = useState(String(rangeEnd));
 
@@ -163,17 +167,10 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
     e.stopPropagation();
     dragging.current = handle;
     didDrag.current = false;
+    // setPointerCapture routes all future pointermove/pointerup events to this
+    // element even when the pointer leaves it, making window listeners redundant.
     e.currentTarget.setPointerCapture(e.pointerId);
-    // Use ref so the window listener always calls the latest handlePointerMove
-    const onMove = (ev) => handlePointerMoveRef.current(ev);
-    const onUp = (ev) => {
-      handlePointerUp(ev);
-      window.removeEventListener('pointermove', onMove);
-      window.removeEventListener('pointerup', onUp);
-    };
-    window.addEventListener('pointermove', onMove);
-    window.addEventListener('pointerup', onUp);
-  }, [handlePointerUp]);
+  }, []);
 
   const handleClick = useCallback((e) => {
     if (didDrag.current) { didDrag.current = false; return; }
@@ -441,23 +438,42 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
               onChange={(e) => setYearInputValue(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
-                  const val = parseInt(yearInputValue);
-                  if (!isNaN(val)) {
+                  const val = parseInt(yearInputValue, 10);
+                  if (isNaN(val)) {
+                    // Fix #25: revert to previous valid value on NaN
+                    setYearInputValue(String(rangeEnd));
+                  } else {
                     const clamped = Math.max(MIN_YEAR, Math.min(MAX_YEAR, Math.round(val / 10) * 10));
                     onRangeChange(clamped, clamped);
                     setYearInputValue(String(clamped));
+                    // Fix #47: show feedback if value was clamped
+                    if (clamped !== val) {
+                      clearTimeout(clampedFeedbackTimerRef.current);
+                      setClampedFeedback(clamped);
+                      clampedFeedbackTimerRef.current = setTimeout(() => setClampedFeedback(null), 2000);
+                    }
                   }
                 }
               }}
               onBlur={() => {
-                const val = parseInt(yearInputValue);
-                if (!isNaN(val)) {
+                const val = parseInt(yearInputValue, 10);
+                if (isNaN(val)) {
+                  // Fix #25: revert to previous valid value on NaN
+                  setYearInputValue(String(rangeEnd));
+                } else {
                   const clamped = Math.max(MIN_YEAR, Math.min(MAX_YEAR, Math.round(val / 10) * 10));
                   onRangeChange(clamped, clamped);
                   setYearInputValue(String(clamped));
+                  // Fix #47: show feedback if value was clamped
+                  if (clamped !== val) {
+                    clearTimeout(clampedFeedbackTimerRef.current);
+                    setClampedFeedback(clamped);
+                    clampedFeedbackTimerRef.current = setTimeout(() => setClampedFeedback(null), 2000);
+                  }
                 }
               }}
               aria-label="Select year to display"
+              aria-invalid={clampedFeedback != null ? 'true' : undefined}
               style={{
                 width: 80,
                 height: 36,
@@ -468,11 +484,12 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                 fontWeight: 400,
                 color: '#C4326B',
                 backgroundColor: 'rgba(250,243,235,0.95)',
-                border: '1px solid rgba(196,50,107,0.3)',
+                border: clampedFeedback != null ? '2px solid #C0392B' : '1px solid rgba(196,50,107,0.3)',
                 borderRadius: 8,
                 textAlign: 'center',
                 outline: 'none',
                 boxSizing: 'border-box',
+                transition: 'border-color 0.2s',
               }}
             />
             <span style={{
@@ -481,6 +498,21 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
               color: '#8A7F75',
             }}>
               {MIN_YEAR}–{MAX_YEAR}
+            </span>
+            {/* Fix #47: screen-reader announcement when year is clamped */}
+            <span
+              role="status"
+              aria-live="polite"
+              style={{
+                position: 'absolute',
+                width: 1,
+                height: 1,
+                overflow: 'hidden',
+                clip: 'rect(0,0,0,0)',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {clampedFeedback != null ? `Year adjusted to ${clampedFeedback}` : ''}
             </span>
           </div>
         )}
@@ -558,6 +590,8 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
               aria-valuetext={`Year ${rangeStart}`}
               tabIndex={0}
               onPointerDown={(e) => handlePointerDown(e, 'left')}
+              onPointerMove={(e) => handlePointerMoveRef.current(e)}
+              onPointerUp={handlePointerUp}
               onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) { e.currentTarget.style.outline = '2px solid #D83E7F'; e.currentTarget.style.outlineOffset = '2px'; } }}
               onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
               onKeyDown={(e) => {
@@ -603,6 +637,8 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
               aria-valuetext={`Year ${rangeEnd}`}
               tabIndex={0}
               onPointerDown={(e) => handlePointerDown(e, 'right')}
+              onPointerMove={(e) => handlePointerMoveRef.current(e)}
+              onPointerUp={handlePointerUp}
               onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) { e.currentTarget.style.outline = '2px solid #D83E7F'; e.currentTarget.style.outlineOffset = '2px'; } }}
               onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
               onKeyDown={(e) => {
@@ -687,15 +723,21 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                 onChange={(e) => setStartInput(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    const val = Math.max(MIN_YEAR, Math.min(rangeEnd - 10, Math.round(parseInt(startInput) / 10) * 10));
-                    if (!isNaN(val)) onRangeChange(val, rangeEnd);
+                    const parsed = parseInt(startInput, 10);
+                    if (!isNaN(parsed)) {
+                      const val = Math.max(MIN_YEAR, Math.min(rangeEnd - 10, Math.round(parsed / 10) * 10));
+                      onRangeChange(val, rangeEnd);
+                    }
                     setEditingStart(false);
                   }
                   if (e.key === 'Escape') setEditingStart(false);
                 }}
                 onBlur={() => {
-                  const val = Math.max(MIN_YEAR, Math.min(rangeEnd - 10, Math.round(parseInt(startInput) / 10) * 10));
-                  if (!isNaN(val)) onRangeChange(val, rangeEnd);
+                  const parsed = parseInt(startInput, 10);
+                  if (!isNaN(parsed)) {
+                    const val = Math.max(MIN_YEAR, Math.min(rangeEnd - 10, Math.round(parsed / 10) * 10));
+                    onRangeChange(val, rangeEnd);
+                  }
                   setEditingStart(false);
                 }}
                 autoFocus
@@ -738,15 +780,21 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                 onChange={(e) => setEndInput(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    const val = Math.min(MAX_YEAR, Math.max(rangeStart + 10, Math.round(parseInt(endInput) / 10) * 10));
-                    if (!isNaN(val)) onRangeChange(rangeStart, val);
+                    const parsed = parseInt(endInput, 10);
+                    if (!isNaN(parsed)) {
+                      const val = Math.min(MAX_YEAR, Math.max(rangeStart + 10, Math.round(parsed / 10) * 10));
+                      onRangeChange(rangeStart, val);
+                    }
                     setEditingEnd(false);
                   }
                   if (e.key === 'Escape') setEditingEnd(false);
                 }}
                 onBlur={() => {
-                  const val = Math.min(MAX_YEAR, Math.max(rangeStart + 10, Math.round(parseInt(endInput) / 10) * 10));
-                  if (!isNaN(val)) onRangeChange(rangeStart, val);
+                  const parsed = parseInt(endInput, 10);
+                  if (!isNaN(parsed)) {
+                    const val = Math.min(MAX_YEAR, Math.max(rangeStart + 10, Math.round(parsed / 10) * 10));
+                    onRangeChange(rangeStart, val);
+                  }
                   setEditingEnd(false);
                 }}
                 autoFocus

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useIsPointerFine } from '../hooks/useIsPointerFine.js';
 
 const CONNECTION_TYPES = [
@@ -13,8 +13,22 @@ const ACCENT = '#5A5048';
 function ConnectionFilters({ activeConnectionTypes, onToggleType, onSelectAll, typeCounts, isMobile = false }) {
   const allActive = activeConnectionTypes.size === CONNECTION_TYPES.length;
   const isPointerFine = useIsPointerFine();
+  const [announcement, setAnnouncement] = useState('');
+
+  const handleToggleType = (key) => {
+    onToggleType(key);
+    const label = CONNECTION_TYPES.find(t => t.key === key)?.label ?? key;
+    const isCurrentlyActive = activeConnectionTypes.has(key);
+    setAnnouncement(`${label} connections ${isCurrentlyActive ? 'removed' : 'added'}`);
+  };
+
+  const handleSelectAll = () => {
+    onSelectAll();
+    setAnnouncement('All connection types selected');
+  };
 
   return (
+    <>
     <div style={{
       position: 'fixed',
       bottom: isMobile ? `calc(108px + env(safe-area-inset-bottom))` : `calc(72px + env(safe-area-inset-bottom))`,
@@ -43,14 +57,14 @@ function ConnectionFilters({ activeConnectionTypes, onToggleType, onSelectAll, t
     >
       {/* All button */}
       <button
-        onClick={onSelectAll}
+        onClick={handleSelectAll}
         aria-pressed={allActive}
         title="Show all connection types"
         style={{
           fontFamily: '"DM Sans", sans-serif',
           fontSize: isPointerFine ? 11 : 'clamp(10px, 1.4vw, 12px)',
           fontWeight: 600,
-          lineHeight: 1,
+          lineHeight: 1.2,
           letterSpacing: '0.03em',
           color: allActive ? '#FAF3EB' : '#6B5F55',
           backgroundColor: allActive ? ACCENT : 'transparent',
@@ -91,14 +105,14 @@ function ConnectionFilters({ activeConnectionTypes, onToggleType, onSelectAll, t
         return (
           <button
             key={key}
-            onClick={() => onToggleType(key)}
+            onClick={() => handleToggleType(key)}
             aria-pressed={isActive}
             title={`${label} connections (${count.toLocaleString()})`}
             style={{
               fontFamily: '"DM Sans", sans-serif',
               fontSize: isPointerFine ? 11 : 'clamp(10px, 1.4vw, 12px)',
               fontWeight: isActive ? 600 : 400,
-              lineHeight: 1,
+              lineHeight: 1.2,
               letterSpacing: '0.02em',
               color: isActive ? ACCENT : '#4A3F37',
               backgroundColor: isActive ? 'rgba(90,80,72,0.08)' : 'transparent',
@@ -164,6 +178,21 @@ function ConnectionFilters({ activeConnectionTypes, onToggleType, onSelectAll, t
       />
     )}
     </div>
+    <div
+      role="status"
+      aria-live="polite"
+      style={{
+        position: 'absolute',
+        width: 1,
+        height: 1,
+        overflow: 'hidden',
+        clip: 'rect(0,0,0,0)',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {announcement}
+    </div>
+    </>
   );
 }
 

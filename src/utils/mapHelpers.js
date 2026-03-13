@@ -11,10 +11,11 @@ export function flyToArtist(mapRef, artist, opts = {}) {
   try {
     const map = mapRef.current.getMap();
     const currentZoom = map.getZoom();
+    const { zoom: _zoom, ...restOpts } = opts;
     map.flyTo({
       center: [artist.birth_lng, artist.birth_lat],
-      zoom: opts.zoom ?? Math.max(currentZoom, 10),
-      ...opts,
+      zoom: opts.zoom != null ? opts.zoom : Math.max(currentZoom, 10),
+      ...restOpts,
     });
   } catch (err) {
     if (import.meta.env.DEV) console.warn('flyTo failed:', err);
