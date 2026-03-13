@@ -123,7 +123,7 @@ export default function App() {
           center: [artist.birth_lng, artist.birth_lat],
           zoom: Math.max(mapRef.current?.getMap?.()?.getZoom?.() || 6, 6),
         });
-      } catch (_err) {
+      } catch {
         /* flyTo — map not ready */
       }
     }

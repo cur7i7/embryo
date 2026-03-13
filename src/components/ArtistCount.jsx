@@ -38,7 +38,7 @@ export default function ArtistCount({ count, rangeStart, rangeEnd }) {
         userSelect: 'none',
       }}
     >
-      <span style={{ fontWeight: 600, color: '#D83E7F' }}>
+      <span style={{ fontWeight: 600, color: '#C4326B' }}>
         {count.toLocaleString()}
       </span>
       <span style={{ color: '#5A5048' }}>

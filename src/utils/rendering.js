@@ -124,10 +124,6 @@ export function preRenderOrbTexture(genreColor, size = 200) {
 }
 
 /**
- * Draw a small glowing particle at position t (0–1) along the quadratic
- * Bézier that matches the arc drawn by drawArc / drawArcBloomed.
- */
-/**
  * Draw an individual artist node: outlined circle + name + years.
  *
  * @param {CanvasRenderingContext2D} ctx

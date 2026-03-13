@@ -4,7 +4,7 @@ import { getGenreBucket } from '../utils/genres.js';
 
 const MAX_RESULTS = 8;
 
-export default function SearchBar({ artists, onSelect, mapRef, isMobile = false }) {
+export default function SearchBar({ artists, onSelect, isMobile = false }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -252,7 +252,7 @@ export default function SearchBar({ artists, onSelect, mapRef, isMobile = false 
             const isActive = i === activeIndex;
             return (
               <li
-                key={artist.name}
+                key={artist.id}
                 id={`search-result-${i}`}
                 data-result-item
                 role="option"

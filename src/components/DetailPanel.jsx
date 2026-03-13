@@ -385,7 +385,7 @@ export default function DetailPanel({
             <span>{bucket}</span>
             {location && (
               <>
-                <span style={{ color: '#9A8E85' }}>·</span>
+                <span style={{ color: '#8A7E75' }} aria-hidden="true">·</span>
                 <span>{location}</span>
               </>
             )}
@@ -527,7 +527,7 @@ export default function DetailPanel({
                             fontFamily: '"DM Sans", sans-serif',
                             fontSize: 13,
                             fontWeight: 600,
-                            color: connectedArtist ? '#3E3530' : '#9A8E85',
+                            color: connectedArtist ? '#3E3530' : '#7A6E65',
                             cursor: connectedArtist ? 'pointer' : 'default',
                             textDecoration: connectedArtist ? 'underline' : 'none',
                             textDecorationColor: hexToRgba(connColor, 0.4),
