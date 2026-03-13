@@ -419,16 +419,14 @@ export default function CanvasOverlay({
         clusterAlpha = 1;
       } else if (currentZoom < ZOOM_CITY + 0.5) {
         const t = (currentZoom - (ZOOM_CITY - 0.5));  // 0->1
-        // Quadratic ease-out on the fading mode reduces double-draw overlap artifacts
-        clusterAlpha = (1 - t) * (1 - t);
+        clusterAlpha = 1 - t;
         cityAlpha = 1 - clusterAlpha;
       } else if (currentZoom < ZOOM_INDIVIDUAL - 0.5) {
         cityAlpha = 1;
       } else if (currentZoom < ZOOM_INDIVIDUAL + 0.5) {
         // City <-> Individual cross-fade around ZOOM_INDIVIDUAL (11.5-12.5)
         const t = (currentZoom - (ZOOM_INDIVIDUAL - 0.5));  // 0->1
-        // Quadratic ease-out on the fading mode reduces double-draw overlap artifacts
-        cityAlpha = (1 - t) * (1 - t);
+        cityAlpha = 1 - t;
         individualAlpha = 1 - cityAlpha;
       } else {
         individualAlpha = 1;
@@ -473,7 +471,7 @@ export default function CanvasOverlay({
             const clusterRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log2(count) * 7, CLUSTER_RADIUS_MAX);
 
             const orbTexture = orbTextures[Math.abs(cluster.id) % orbTextures.length];
-            ctx.globalAlpha = 0.6 * clusterAlpha;
+            ctx.globalAlpha = clusterAlpha;
             ctx.drawImage(orbTexture, x - clusterRadius, y - clusterRadius, clusterRadius * 2, clusterRadius * 2);
             ctx.globalAlpha = clusterAlpha;
 

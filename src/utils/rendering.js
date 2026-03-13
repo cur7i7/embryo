@@ -13,9 +13,9 @@ export function hexToRgba(hex, alpha) {
 export function drawOrb(ctx, x, y, radius, genreColor, peachColor = '#EEC1A2') {
   // 1. Primary gradient — genre color dissolving to transparent
   const primary = ctx.createRadialGradient(x, y, 0, x, y, radius);
-  primary.addColorStop(0, genreColor + '47');   // ~28% opacity
-  primary.addColorStop(0.4, genreColor + '2B'); // ~17% opacity
-  primary.addColorStop(0.7, genreColor + '0F'); // ~6% opacity
+  primary.addColorStop(0, genreColor + '99');   // ~60% opacity
+  primary.addColorStop(0.4, genreColor + '66'); // ~40% opacity
+  primary.addColorStop(0.7, genreColor + '33'); // ~20% opacity
   primary.addColorStop(1, genreColor + '00');    // transparent
   ctx.fillStyle = primary;
   ctx.beginPath();
@@ -30,8 +30,8 @@ export function drawOrb(ctx, x, y, radius, genreColor, peachColor = '#EEC1A2') {
     x + offsetX, y + offsetY, 0,
     x + offsetX, y + offsetY, bleedRadius
   );
-  bleed.addColorStop(0, peachColor + '20'); // ~12% opacity
-  bleed.addColorStop(0.5, peachColor + '10');
+  bleed.addColorStop(0, peachColor + '40'); // ~25% opacity
+  bleed.addColorStop(0.5, peachColor + '20');
   bleed.addColorStop(1, peachColor + '00');
   ctx.fillStyle = bleed;
   ctx.beginPath();

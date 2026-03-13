@@ -209,8 +209,8 @@ export default function DetailPanel({
         right: 0,
         width: '100%',
         height: supportsDvh
-          ? 'clamp(200px, calc(60dvh - 80px), 70dvh)'
-          : 'clamp(200px, calc(60vh - 80px), 70vh)',
+          ? 'clamp(120px, calc(45dvh - 60px), 55dvh)'
+          : 'clamp(120px, calc(45vh - 60px), 55vh)',
         backgroundColor: 'rgba(250, 243, 235, 0.98)',
         backdropFilter: 'blur(12px)',
         borderTop: '1px solid rgba(224, 216, 204, 0.8)',

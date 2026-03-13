@@ -23,11 +23,7 @@ export default function SearchBar({ artists, allArtists, onSelect, isMobile = fa
   const fuse = useMemo(() => {
     if (!indexSource || indexSource.length === 0) return null;
     return new Fuse(indexSource, {
-      keys: [
-        { name: 'name', weight: 0.7 },
-        { name: 'birth_city', weight: 0.2 },
-        { name: 'birth_country', weight: 0.1 },
-      ],
+      keys: ['name'],
       threshold: 0.3,
       minMatchCharLength: 2,
       includeScore: true,
@@ -189,7 +185,7 @@ export default function SearchBar({ artists, allArtists, onSelect, isMobile = fa
             color: '#3E3530',
             backgroundColor: 'rgba(250, 243, 235, 0.95)',
             border: '1px solid rgba(224, 216, 204, 0.8)',
-            borderRadius: (isOpen || (hasFocus && query.trim().length >= 2 && results.length === 0)) ? '999px 999px 0 0' : 999,
+            borderRadius: (isOpen || (hasFocus && query.trim().length >= 2 && results.length === 0)) ? '16px 16px 0 0' : 999,
             outline: 'none',
             boxShadow: '0 2px 12px rgba(90, 80, 72, 0.10)',
             backdropFilter: 'blur(8px)',
@@ -253,7 +249,7 @@ export default function SearchBar({ artists, allArtists, onSelect, isMobile = fa
             backgroundColor: 'rgba(250, 243, 235, 0.98)',
             border: '1px solid rgba(224, 216, 204, 0.8)',
             borderTop: 'none',
-            borderRadius: '0 0 999px 999px',
+            borderRadius: '0 0 16px 16px',
             boxShadow: '0 4px 16px rgba(90, 80, 72, 0.14)',
             backdropFilter: 'blur(8px)',
             maxHeight: 320,
@@ -345,7 +341,7 @@ export default function SearchBar({ artists, allArtists, onSelect, isMobile = fa
             backgroundColor: 'rgba(250, 243, 235, 0.98)',
             border: '1px solid rgba(224, 216, 204, 0.8)',
             borderTop: 'none',
-            borderRadius: '0 0 999px 999px',
+            borderRadius: '0 0 16px 16px',
             boxShadow: '0 4px 16px rgba(90, 80, 72, 0.14)',
             backdropFilter: 'blur(8px)',
             zIndex: 21,

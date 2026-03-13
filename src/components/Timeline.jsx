@@ -278,34 +278,86 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
         </span>
       </button>
 
-      {/* Mode toggle button */}
-      <button
-        onClick={handleModeToggle}
-        aria-label={isYearMode ? 'Switch to range mode' : 'Switch to year mode'}
+      {/* Mode toggle — segmented control */}
+      <div
+        role="radiogroup"
+        aria-label="Timeline mode"
         style={{
-          fontSize: 10,
-          padding: '2px 8px',
-          borderRadius: 999,
-          border: '1px solid rgba(150, 140, 130, 0.4)',
-          backgroundColor: 'transparent',
-          color: '#6B5F55',
-          cursor: 'pointer',
-          fontFamily: '"DM Sans", sans-serif',
-          fontWeight: 500,
-          flexShrink: 0,
-          minHeight: 44,
-          minWidth: 44,
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          outline: 'none',
-          transition: 'border-color 0.15s',
+          borderRadius: 8,
+          border: '1px solid rgba(150, 140, 130, 0.3)',
+          overflow: 'hidden',
+          flexShrink: 0,
+          height: 36,
         }}
-        onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 3px rgba(196,50,107,0.4)'; }}
-        onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
       >
-        {isYearMode ? String(selectedYear) : 'Range'}
-      </button>
+        <button
+          role="radio"
+          aria-checked={isYearMode}
+          aria-label="Single year mode"
+          onClick={() => { if (!isYearMode) handleModeToggle(); }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 4,
+            padding: '0 10px',
+            minWidth: 44,
+            minHeight: 44,
+            border: 'none',
+            cursor: 'pointer',
+            fontFamily: '"DM Sans", sans-serif',
+            fontSize: 11,
+            fontWeight: 600,
+            backgroundColor: isYearMode ? 'rgba(196,50,107,0.12)' : 'transparent',
+            color: isYearMode ? '#C4326B' : '#6B5F55',
+            transition: 'background-color 0.15s, color 0.15s',
+            outline: 'none',
+          }}
+          onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 3px rgba(196,50,107,0.4)'; }}
+          onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">
+            <circle cx="7" cy="3" r="2.5" />
+            <rect x="6" y="5" width="2" height="7" rx="1" />
+          </svg>
+          Year
+        </button>
+        <div style={{ width: 1, backgroundColor: 'rgba(150, 140, 130, 0.3)' }} />
+        <button
+          role="radio"
+          aria-checked={!isYearMode}
+          aria-label="Year range mode"
+          onClick={() => { if (isYearMode) handleModeToggle(); }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 4,
+            padding: '0 10px',
+            minWidth: 44,
+            minHeight: 44,
+            border: 'none',
+            cursor: 'pointer',
+            fontFamily: '"DM Sans", sans-serif',
+            fontSize: 11,
+            fontWeight: 600,
+            backgroundColor: !isYearMode ? 'rgba(196,50,107,0.12)' : 'transparent',
+            color: !isYearMode ? '#C4326B' : '#6B5F55',
+            transition: 'background-color 0.15s, color 0.15s',
+            outline: 'none',
+          }}
+          onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 3px rgba(196,50,107,0.4)'; }}
+          onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">
+            <rect x="2" y="2" width="2" height="10" rx="1" />
+            <rect x="10" y="2" width="2" height="10" rx="1" />
+            <rect x="5" y="6" width="4" height="2" rx="0.5" />
+          </svg>
+          Range
+        </button>
+      </div>
 
       {/* Timeline area */}
       <div
@@ -464,11 +516,11 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
         >
           <div
             style={{
-              width: '4px',
-              height: '100%',
+              width: isYearMode ? 12 : 4,
+              height: isYearMode ? 12 : '100%',
               backgroundColor: '#D4295E',
-              borderRadius: '2px',
-              boxShadow: '0 0 8px rgba(212, 41, 94, 0.6)',
+              borderRadius: isYearMode ? '50%' : '2px',
+              boxShadow: isYearMode ? '0 0 12px rgba(212, 41, 94, 0.7)' : '0 0 8px rgba(212, 41, 94, 0.6)',
             }}
           />
         </div>
