@@ -158,7 +158,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
         bottom: 0,
         left: 0,
         right: 0,
-        height: isMobile ? '48px' : '52px',
+        height: isMobile ? '56px' : '52px',
         backgroundColor: 'rgba(250, 243, 235, 0.92)',
         backdropFilter: 'blur(8px)',
         WebkitBackdropFilter: 'blur(8px)',
@@ -180,8 +180,8 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
         aria-label={isPlaying ? 'Pause playback' : 'Play timeline'}
         aria-pressed={isPlaying}
         style={{
-          width: '34px',
-          height: '34px',
+          width: isMobile ? '44px' : '34px',
+          height: isMobile ? '44px' : '34px',
           borderRadius: '10px',
           border: 'none',
           backgroundColor: isPlaying ? '#D83E7F' : 'rgba(216,62,127,0.1)',
@@ -217,7 +217,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
         ref={containerRef}
         style={{
           flex: 1,
-          height: '64px',
+          height: isMobile ? '54px' : '64px',
           position: 'relative',
           cursor: 'pointer',
         }}

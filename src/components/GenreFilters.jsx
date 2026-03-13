@@ -40,7 +40,7 @@ export default function GenreFilters({ activeGenres, onToggleGenre, onSelectAll,
         aria-pressed={allActive}
         style={{
           fontFamily: '"DM Sans", sans-serif',
-          fontSize: '11px',
+          fontSize: isMobile ? '13px' : '11px',
           fontWeight: 600,
           lineHeight: 1,
           letterSpacing: '0.02em',
@@ -48,8 +48,8 @@ export default function GenreFilters({ activeGenres, onToggleGenre, onSelectAll,
           backgroundColor: allActive ? '#5A5048' : 'transparent',
           border: allActive ? '1px solid #5A5048' : '1px solid rgba(90,80,72,0.2)',
           borderRadius: '8px',
-          padding: '5px 10px',
-          minHeight: '32px',
+          padding: isMobile ? '6px 12px' : '5px 10px',
+          minHeight: isMobile ? '44px' : '32px',
           cursor: 'pointer',
           transition: 'all 0.15s ease',
           outline: 'none',
@@ -87,16 +87,17 @@ export default function GenreFilters({ activeGenres, onToggleGenre, onSelectAll,
             aria-pressed={isActive}
             style={{
               fontFamily: '"DM Sans", sans-serif',
-              fontSize: '11px',
+              fontSize: isMobile ? '13px' : '11px',
               fontWeight: isActive ? 600 : 500,
               lineHeight: 1,
               letterSpacing: '0.01em',
-              color: isActive ? color : '#6B5F55',
+              color: isActive ? '#3E3530' : '#6B5F55',
               backgroundColor: isActive ? `${color}12` : 'transparent',
               border: isActive ? `1.5px solid ${color}` : '1px solid rgba(90,80,72,0.15)',
+              borderLeft: isActive ? `3px solid ${color}` : undefined,
               borderRadius: '8px',
-              padding: '5px 9px',
-              minHeight: '32px',
+              padding: isMobile ? '6px 11px' : '5px 9px',
+              minHeight: isMobile ? '44px' : '32px',
               cursor: 'pointer',
               transition: 'all 0.15s ease',
               outline: 'none',
@@ -109,7 +110,7 @@ export default function GenreFilters({ activeGenres, onToggleGenre, onSelectAll,
               if (!isActive) {
                 e.currentTarget.style.backgroundColor = `${color}0A`;
                 e.currentTarget.style.borderColor = `${color}66`;
-                e.currentTarget.style.color = color;
+                e.currentTarget.style.color = '#3E3530';
               }
             }}
             onMouseLeave={(e) => {
