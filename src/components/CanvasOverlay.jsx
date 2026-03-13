@@ -249,10 +249,12 @@ export default function CanvasOverlay({
       let lng = artist.birth_lng;
       let lat = artist.birth_lat;
       // Apply spiral offsets in individual mode to spread co-located artists
+      // Scale offset with zoom so artists visually separate at any zoom level
       if (currentZoomForPos >= ZOOM_INDIVIDUAL && offsets.has(artist.id)) {
         const o = offsets.get(artist.id);
-        lng += o.dlng;
-        lat += o.dlat;
+        const zoomScale = Math.pow(2, Math.max(0, 16 - currentZoomForPos));
+        lng += o.dlng * zoomScale;
+        lat += o.dlat * zoomScale;
       }
       const point = map.project([lng, lat]);
       posMap.set(artist.id, point);

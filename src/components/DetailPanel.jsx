@@ -108,12 +108,14 @@ export default function DetailPanel({
   const closeButtonRef = useRef(null);
   const previousFocusRef = useRef(null);
   const [history, setHistory] = useState([]);
+  // Derive image error reset from artist identity — no effect needed
+  const artistKey = artist?.name;
+  const prevArtistKeyRef = useRef(artistKey);
   const [imageError, setImageError] = useState(false);
-
-  // Reset image error state when artist changes
-  useEffect(() => {
-    setImageError(false);
-  }, [artist?.name]);
+  if (prevArtistKeyRef.current !== artistKey) {
+    prevArtistKeyRef.current = artistKey;
+    if (imageError) setImageError(false);
+  }
   // A12: prefers-reduced-motion
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(
     () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
