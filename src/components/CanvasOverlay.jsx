@@ -64,6 +64,9 @@ export default function CanvasOverlay({
   // Track whether an animation loop should be running
   const needsAnimRef = useRef(false);
 
+  // Track whether the map is currently moving (pan/zoom/resize)
+  const mapMovingRef = useRef(false);
+
   // Frame counter for periodic opacityMap cleanup
   const frameCountRef = useRef(0);
 
@@ -241,11 +244,13 @@ export default function CanvasOverlay({
     }
 
     // Only keep rAF running for actual animations; when reduced motion is on
-    // and there are no opacity transitions, a static selection doesn't need rAF
-    needsAnimRef.current = hasActiveTransitions ||
-      (reducedMotion
-        ? false
-        : (!!hoveredArtistRef.current || !!selectedArtistRef.current));
+    // and there are no opacity transitions, a static selection doesn't need rAF.
+    // Also keep running while the map is moving (pan/zoom/resize).
+    needsAnimRef.current = hasActiveTransitions || mapMovingRef.current ||
+      (!reducedMotion && (!!hoveredArtistRef.current || !!selectedArtistRef.current));
+    // Clear the map-moving flag after this frame; onMapEvent will re-set it if
+    // another move event fires before the next rAF callback.
+    mapMovingRef.current = false;
 
     // Determine active interaction target
     const activeArtist = hoveredArtist || selectedArtist;
@@ -303,7 +308,10 @@ export default function CanvasOverlay({
     }
 
     // --- Arc phase --- (only when hovered/selected)
+    // Hard-reset canvas state to prevent leakage from prior operations
+    ctx.globalAlpha = 1.0;
     ctx.globalCompositeOperation = 'source-over';
+    ctx.setLineDash([]);
 
     // Track selected arcs for particle drawing
     const selectedArcs = [];
@@ -404,7 +412,10 @@ export default function CanvasOverlay({
       }
     }
 
+    // --- Cluster phase --- hard-reset canvas state
+    ctx.globalAlpha = 1.0;
     ctx.globalCompositeOperation = 'source-over';
+    ctx.setLineDash([]);
 
     // --- Cluster mode rendering ---
     // Collect cluster positions/radii for pill collision avoidance (Task 8a)
@@ -505,6 +516,11 @@ export default function CanvasOverlay({
       ctx.globalAlpha = 1.0;
     }
 
+    // --- City phase --- hard-reset canvas state
+    ctx.globalAlpha = 1.0;
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.setLineDash([]);
+
     // --- City mode rendering ---
     const cityPosMap = new Map();
     if (cityAlpha > 0) {
@@ -570,6 +586,11 @@ export default function CanvasOverlay({
       }
     }
     cityPosMapRef.current = cityPosMap;
+
+    // --- Individual phase --- hard-reset canvas state
+    ctx.globalAlpha = 1.0;
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.setLineDash([]);
 
     // --- Individual mode rendering ---
     if (individualAlpha > 0) {
@@ -700,9 +721,10 @@ export default function CanvasOverlay({
 
     ctx.globalAlpha = 1.0;
 
-    // --- Label phase --- explicitly reset composite and alpha
-    ctx.globalCompositeOperation = 'source-over';
+    // --- Label phase --- hard-reset canvas state
     ctx.globalAlpha = 1.0;
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.setLineDash([]);
 
     if (activeArtist) {
       const pos = posMapRef.current?.get(activeArtist.id);
@@ -807,10 +829,14 @@ export default function CanvasOverlay({
       }
     }
 
-    // --- Grain phase — pre-composite full-viewport grain canvas at device pixel resolution ---
+    // --- Grain phase --- hard-reset canvas state
+    ctx.globalAlpha = 1.0;
     ctx.globalCompositeOperation = 'source-over';
+    ctx.setLineDash([]);
 
     if (grainSizeRef.current.w !== cssWidth || grainSizeRef.current.h !== cssHeight) {
+      // Release old grain buffer so GC can collect it before allocating a new one
+      grainFullRef.current = null;
       const grainFull = document.createElement('canvas');
       grainFull.width = cssWidth * dpr;
       grainFull.height = cssHeight * dpr;
@@ -1149,6 +1175,7 @@ export default function CanvasOverlay({
     };
 
     const onMapEvent = () => {
+      mapMovingRef.current = true;
       needsAnimRef.current = true;
       startRaf();
     };
