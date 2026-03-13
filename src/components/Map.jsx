@@ -40,6 +40,7 @@ export default function Map({
   selectedArtist,
   onHover,
   onSelect,
+  isPlaying = false,
 }) {
   const [mapLoaded, setMapLoaded] = useState(false);
 
@@ -192,6 +193,7 @@ export default function Map({
         count={visibleCount}
         rangeStart={rangeStart}
         rangeEnd={rangeEnd}
+        isPlaying={isPlaying}
       />
     </div>
   );

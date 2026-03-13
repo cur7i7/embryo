@@ -1064,12 +1064,14 @@ export default function CanvasOverlay({
     }
   }, [startRaf]);
 
-  // ARIA live region text for hovered/selected artist
+  // ARIA live region text for hovered/selected artist + zoom mode
+  const renderMode = renderModeRef.current;
+  const modeLabel = renderMode === 'cluster' ? 'Cluster view' : renderMode === 'city' ? 'City view' : 'Individual view';
   const liveText = hoveredArtist
     ? `${hoveredArtist.name}, ${hoveredArtist.birth_year || 'unknown year'}${hoveredArtist.birth_city ? ', ' + hoveredArtist.birth_city : ''}`
     : selectedArtist
       ? `Selected: ${selectedArtist.name}`
-      : '';
+      : modeLabel;
 
   return (
     <>

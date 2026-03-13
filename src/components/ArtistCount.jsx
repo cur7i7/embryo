@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export default function ArtistCount({ count, rangeStart, rangeEnd }) {
+export default function ArtistCount({ count, rangeStart, rangeEnd, isPlaying = false }) {
   const label =
     rangeStart === 1400 && rangeEnd === 2025
       ? 'All years'
@@ -57,7 +57,7 @@ export default function ArtistCount({ count, rangeStart, rangeEnd }) {
       </span>
     </div>
     <div role="status" aria-live="polite" style={{position:'absolute',width:1,height:1,overflow:'hidden',clip:'rect(0,0,0,0)',whiteSpace:'nowrap'}}>
-      {`${announced.count.toLocaleString()} artists, ${announced.label}`}
+      {isPlaying ? '' : `${announced.count.toLocaleString()} artists, ${announced.label}`}
     </div>
     </>
   );

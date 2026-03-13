@@ -4,8 +4,8 @@ const GENRE_BUCKETS = {
   Rock: { genres: ['rock', 'metal', 'punk', 'alternative', 'grunge', 'hard rock'], color: '#F4762D' },
   Electronic: { genres: ['electronic', 'ambient', 'idm', 'house', 'techno', 'dance'], color: '#DB608F' },
   'Hip-hop': { genres: ['hip-hop', 'rap'], color: '#FFBA52' },
-  'Pop/Soul': { genres: ['pop', 'disco', 'r&b', 'gospel', 'soul'], color: '#FF7276' },
-  Other: { genres: [], color: '#E8A99B' },
+  'Pop/Soul': { genres: ['pop', 'disco', 'r&b', 'gospel', 'soul'], color: '#E05262' },
+  Other: { genres: [], color: '#C48272' },
 };
 
 export function getGenreBucket(genres) {

@@ -388,6 +388,7 @@ export default function App() {
         selectedArtist={selectedArtist}
         onHover={handleHover}
         onSelect={handleSelect}
+        isPlaying={timeline.isPlaying}
       />
 
       <SearchBar
