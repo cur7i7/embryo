@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Embryo — Color Reference</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: #FAF3EB;
+      color: #3E3530;
+      padding: 48px 40px 80px;
+      max-width: 1000px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: #7A6E65;
+      margin-bottom: 48px;
+    }
+
+    h2 {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: #6B5F55;
+      margin-bottom: 20px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #C4B8AE;
+    }
+
+    section {
+      margin-bottom: 56px;
+    }
+
+    /* ---- Palette grid ---- */
+    .palette-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 16px;
+    }
+
+    .palette-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .palette-swatch {
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
+      border: 1px solid rgba(62, 53, 48, 0.12);
+      flex-shrink: 0;
+    }
+
+    .palette-hex {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: #3E3530;
+      text-align: center;
+    }
+
+    /* ---- Genre table ---- */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    table th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #9A8E85;
+      padding: 0 12px 8px;
+    }
+
+    table td {
+      padding: 10px 12px;
+      vertical-align: middle;
+      border-top: 1px solid rgba(196, 184, 174, 0.4);
+    }
+
+    table tr:last-child td {
+      border-bottom: 1px solid rgba(196, 184, 174, 0.4);
+    }
+
+    .table-swatch {
+      width: 48px;
+      height: 28px;
+      border-radius: 4px;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+    }
+
+    .hex {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      font-weight: 400;
+      color: #3E3530;
+      white-space: nowrap;
+    }
+
+    .color-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: #3E3530;
+    }
+
+    /* ---- UI Accents grid ---- */
+    .accent-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 16px;
+    }
+
+    .accent-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .accent-swatch {
+      width: 100%;
+      height: 48px;
+      border-radius: 8px;
+      border: 1px solid rgba(62, 53, 48, 0.12);
+    }
+
+    .accent-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #3E3530;
+    }
+
+    .accent-hex {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: #6B5F55;
+    }
+
+    /* ---- Badge rows ---- */
+    .badge-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 0;
+      border-top: 1px solid rgba(196, 184, 174, 0.4);
+      flex-wrap: wrap;
+    }
+
+    .badge-row:last-child {
+      border-bottom: 1px solid rgba(196, 184, 174, 0.4);
+    }
+
+    .badge-label {
+      width: 120px;
+      font-size: 14px;
+      font-weight: 500;
+      flex-shrink: 0;
+      color: #3E3530;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .badge-hex-group {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .badge-hex-pair {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #7A6E65;
+    }
+
+    .badge-hex-pair .hex {
+      font-size: 12px;
+    }
+
+    .mini-swatch {
+      width: 28px;
+      height: 20px;
+      border-radius: 3px;
+      border: 1px solid rgba(0,0,0,0.1);
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Embryo Color Reference</h1>
+  <p class="subtitle">New palette (albers.ink) — updated 2026-03-13</p>
+
+  <!-- ============ SECTION 1: NEW PALETTE ============ -->
+  <section>
+    <h2>New Palette — 19 Colors</h2>
+    <div class="palette-grid">
+      <div class="palette-item">
+        <div class="palette-swatch" style="background:#F8F1E0"></div>
+        <span class="palette-hex">#F8F1E0</span>
+      </div>
+      <div class="palette-item">
+        <div class="palette-swatch" style="background:#F3DFD5"></div>
+        <span class="palette-hex">#F3DFD5</span>
+      </div>
+      <div class="palette-item">
+        <div class="palette-swatch" style="background:#F3DBC6"></div>
+        <span class="palette-hex">#F3DBC6</span>
+      </div>
+      <div class="palette-item">
+        <div class="palette-swatch" style="background:#EECACA"></div>
+        <span class="palette-hex">#EECACA</span>
+      </div>
+      <div class="palette-item">
+        <div class="palette-swatch" style="background:#E9ADBE"></div>
+        <span class="palette-hex">#E9ADBE</span>
+      </div>
+      <div class="palette-item">
+        <div class="palette-swatch" style="background:#E8A99B"></div>
+        <span class="palette-hex">#E8A99B</span>
+      </div>
+      <div class="palette-item">
+        <div class="palette-swatch" style="background:#EEC1A2"></div>
+        <span class="palette-hex">#EEC1A2</span>
+      </div>
+      <div class="palette-item">
+        <div class="palette-swatch" style="background:#FFCB78"></div>
+        <span class="palette-hex">#FFCB78</span>
+      </div>
+      <div class="palette-item">
+        <div class="palette-swatch" style="background:#FFBA52"></div>
+        <span class="palette-hex">#FFBA52</span>
+      </div>
+      <div class="palette-item">
+        <div class="palette-swatch" style="background:#FF8F6C"></div>
+        <span class="palette-hex">#FF8F6C</span>
+      </div>
+      <div class="palette-item">
+        <div class="palette-swatch" style="background:#F4762D"></div>
+        <span class="palette-hex">#F4762D</span>
+      </div>
+      <div class="palette-item">
+        <div class="palette-swatch" style="background:#FF7276"></div>
+        <span class="palette-hex">#FF7276</span>
+      </div>
+      <div class="palette-item">
+        <div class="palette-swatch" style="background:#E5938D"></div>
+        <span class="palette-hex">#E5938D</span>
+      </div>
+      <div class="palette-item">
+        <div class="palette-swatch" style="background:#DE7487"></div>
+        <span class="palette-hex">#DE7487</span>
+      </div>
+      <div class="palette-item">
+        <div class="palette-swatch" style="background:#DB608F"></div>
+        <span class="palette-hex">#DB608F</span>
+      </div>
+      <div class="palette-item">
+        <div class="palette-swatch" style="background:#D83E7F"></div>
+        <span class="palette-hex">#D83E7F</span>
+      </div>
+      <div class="palette-item">
+        <div class="palette-swatch" style="background:#D4295E"></div>
+        <span class="palette-hex">#D4295E</span>
+      </div>
+      <div class="palette-item">
+        <div class="palette-swatch" style="background:#912761"></div>
+        <span class="palette-hex">#912761</span>
+      </div>
+      <div class="palette-item">
+        <div class="palette-swatch" style="background:#930054"></div>
+        <span class="palette-hex">#930054</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SECTION 2: GENRE ASSIGNMENTS ============ -->
+  <section>
+    <h2>Genre Assignments</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:64px">Swatch</th>
+          <th style="width:110px">Hex</th>
+          <th>Genre</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="table-swatch" style="background:#912761"></div></td>
+          <td><span class="hex">#912761</span></td>
+          <td><span class="color-name">Classical</span></td>
+        </tr>
+        <tr>
+          <td><div class="table-swatch" style="background:#D4295E"></div></td>
+          <td><span class="hex">#D4295E</span></td>
+          <td><span class="color-name">Jazz / Blues</span></td>
+        </tr>
+        <tr>
+          <td><div class="table-swatch" style="background:#F4762D"></div></td>
+          <td><span class="hex">#F4762D</span></td>
+          <td><span class="color-name">Rock</span></td>
+        </tr>
+        <tr>
+          <td><div class="table-swatch" style="background:#DB608F"></div></td>
+          <td><span class="hex">#DB608F</span></td>
+          <td><span class="color-name">Electronic</span></td>
+        </tr>
+        <tr>
+          <td><div class="table-swatch" style="background:#FFBA52"></div></td>
+          <td><span class="hex">#FFBA52</span></td>
+          <td><span class="color-name">Hip-hop</span></td>
+        </tr>
+        <tr>
+          <td><div class="table-swatch" style="background:#FF7276"></div></td>
+          <td><span class="hex">#FF7276</span></td>
+          <td><span class="color-name">Pop / Soul</span></td>
+        </tr>
+        <tr>
+          <td><div class="table-swatch" style="background:#E8A99B"></div></td>
+          <td><span class="hex">#E8A99B</span></td>
+          <td><span class="color-name">Other</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ============ SECTION 3: UI ACCENTS ============ -->
+  <section>
+    <h2>UI Accents</h2>
+    <div class="accent-grid">
+      <div class="accent-item">
+        <div class="accent-swatch" style="background:#D83E7F"></div>
+        <span class="accent-label">Primary accent</span>
+        <span class="accent-hex">#D83E7F</span>
+      </div>
+      <div class="accent-item">
+        <div class="accent-swatch" style="background:#D4295E"></div>
+        <span class="accent-label">Secondary accent</span>
+        <span class="accent-hex">#D4295E</span>
+      </div>
+      <div class="accent-item">
+        <div class="accent-swatch" style="background:#FFBA52"></div>
+        <span class="accent-label">Histogram amber</span>
+        <span class="accent-hex">#FFBA52</span>
+      </div>
+      <div class="accent-item">
+        <div class="accent-swatch" style="background:#EEC1A2"></div>
+        <span class="accent-label">Orb bleed</span>
+        <span class="accent-hex">#EEC1A2</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SECTION 4: BADGE COLORS ============ -->
+  <section>
+    <h2>Badge Colors</h2>
+    <p style="font-size:13px; color:#7A6E65; margin-bottom:16px">All badge text uses <span style="font-family:'DM Mono',monospace">#3E3530</span>.</p>
+    <div>
+      <div class="badge-row">
+        <span class="badge-label">Teacher</span>
+        <span class="badge" style="background:#F3DFD5; color:#3E3530">TEACHER</span>
+        <div class="badge-hex-group">
+          <div class="badge-hex-pair">
+            <div class="mini-swatch" style="background:#F3DFD5"></div>
+            <span>bg</span>
+            <span class="hex">#F3DFD5</span>
+          </div>
+          <div class="badge-hex-pair">
+            <div class="mini-swatch" style="background:#3E3530"></div>
+            <span>text</span>
+            <span class="hex">#3E3530</span>
+          </div>
+        </div>
+      </div>
+      <div class="badge-row">
+        <span class="badge-label">Influence</span>
+        <span class="badge" style="background:#F3DBC6; color:#3E3530">INFLUENCE</span>
+        <div class="badge-hex-group">
+          <div class="badge-hex-pair">
+            <div class="mini-swatch" style="background:#F3DBC6"></div>
+            <span>bg</span>
+            <span class="hex">#F3DBC6</span>
+          </div>
+          <div class="badge-hex-pair">
+            <div class="mini-swatch" style="background:#3E3530"></div>
+            <span>text</span>
+            <span class="hex">#3E3530</span>
+          </div>
+        </div>
+      </div>
+      <div class="badge-row">
+        <span class="badge-label">Peer</span>
+        <span class="badge" style="background:#F8F1E0; color:#3E3530">PEER</span>
+        <div class="badge-hex-group">
+          <div class="badge-hex-pair">
+            <div class="mini-swatch" style="background:#F8F1E0"></div>
+            <span>bg</span>
+            <span class="hex">#F8F1E0</span>
+          </div>
+          <div class="badge-hex-pair">
+            <div class="mini-swatch" style="background:#3E3530"></div>
+            <span>text</span>
+            <span class="hex">#3E3530</span>
+          </div>
+        </div>
+      </div>
+      <div class="badge-row">
+        <span class="badge-label">Collaboration</span>
+        <span class="badge" style="background:#EECACA; color:#3E3530">COLLAB</span>
+        <div class="badge-hex-group">
+          <div class="badge-hex-pair">
+            <div class="mini-swatch" style="background:#EECACA"></div>
+            <span>bg</span>
+            <span class="hex">#EECACA</span>
+          </div>
+          <div class="badge-hex-pair">
+            <div class="mini-swatch" style="background:#3E3530"></div>
+            <span>text</span>
+            <span class="hex">#3E3530</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer style="margin-top:64px; padding-top:16px; border-top:1px solid #C4B8AE; font-size:12px; color:#9A8E85">
+    Embryo Color Reference &middot; Updated 2026-03-13
+  </footer>
+
+</body>
+</html>

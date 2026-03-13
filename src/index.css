@@ -14,3 +14,8 @@ body {
 * {
   box-sizing: border-box;
 }
+
+input::placeholder {
+  color: #6B5F55;
+  opacity: 1;
+}

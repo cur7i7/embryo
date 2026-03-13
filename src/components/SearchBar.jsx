@@ -16,7 +16,11 @@ export default function SearchBar({ artists, onSelect, mapRef, isMobile = false 
   const fuse = useMemo(() => {
     if (!artists || artists.length === 0) return null;
     return new Fuse(artists, {
-      keys: ['name'],
+      keys: [
+        { name: 'name', weight: 0.7 },
+        { name: 'birth_city', weight: 0.2 },
+        { name: 'birth_country', weight: 0.1 },
+      ],
       threshold: 0.3,
       minMatchCharLength: 2,
       includeScore: true,
@@ -91,7 +95,7 @@ export default function SearchBar({ artists, onSelect, mapRef, isMobile = false 
     blurTimeoutRef.current = setTimeout(() => {
       setIsOpen(false);
       setActiveIndex(-1);
-    }, 150);
+    }, 200);
   }, []);
 
   const handleFocus = useCallback(() => {
@@ -102,6 +106,15 @@ export default function SearchBar({ artists, onSelect, mapRef, isMobile = false 
       setIsOpen(true);
     }
   }, [query, results]);
+
+  // Clean up blur timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (blurTimeoutRef.current) {
+        clearTimeout(blurTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Scroll active result into view
   useEffect(() => {
@@ -121,6 +134,7 @@ export default function SearchBar({ artists, onSelect, mapRef, isMobile = false 
         left: isMobile ? 16 : 'auto',
         zIndex: 20,
         width: isMobile ? 'auto' : 260,
+        maxWidth: 400,
         fontFamily: '"DM Sans", sans-serif',
       }}
       role="search"
@@ -161,6 +175,7 @@ export default function SearchBar({ artists, onSelect, mapRef, isMobile = false 
           aria-haspopup="listbox"
           aria-controls="search-results-list"
           aria-autocomplete="list"
+          aria-activedescendant={activeIndex >= 0 ? `search-result-${activeIndex}` : undefined}
           role="combobox"
           style={{
             width: '100%',
@@ -176,9 +191,10 @@ export default function SearchBar({ artists, onSelect, mapRef, isMobile = false 
             boxShadow: '0 2px 12px rgba(90, 80, 72, 0.10)',
             backdropFilter: 'blur(8px)',
             transition: 'border-color 0.15s ease, border-radius 0.15s ease',
+            minHeight: 44,
           }}
-          onFocusCapture={e => { e.target.style.borderColor = 'rgba(168, 144, 128, 0.9)'; }}
-          onBlurCapture={e => { e.target.style.borderColor = 'rgba(224, 216, 204, 0.8)'; }}
+          onFocusCapture={e => { e.target.style.borderColor = 'rgba(168, 144, 128, 0.9)'; e.target.style.boxShadow = '0 0 0 3px rgba(168, 144, 128, 0.4)'; }}
+          onBlurCapture={e => { e.target.style.borderColor = 'rgba(224, 216, 204, 0.8)'; e.target.style.boxShadow = '0 2px 12px rgba(90, 80, 72, 0.10)'; }}
         />
         {query && (
           <button
@@ -199,10 +215,13 @@ export default function SearchBar({ artists, onSelect, mapRef, isMobile = false 
               cursor: 'pointer',
               color: '#9A8E85',
               fontSize: 16,
-              padding: '2px 4px',
+              padding: '8px',
               lineHeight: 1,
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'center',
+              minWidth: 44,
+              minHeight: 44,
             }}
           >
             ×
@@ -242,6 +261,7 @@ export default function SearchBar({ artists, onSelect, mapRef, isMobile = false 
             return (
               <li
                 key={artist.name}
+                id={`search-result-${i}`}
                 data-result-item
                 role="option"
                 aria-selected={isActive}
@@ -288,7 +308,7 @@ export default function SearchBar({ artists, onSelect, mapRef, isMobile = false 
                   <div
                     style={{
                       fontSize: 11,
-                      color: '#9A8E85',
+                      color: '#6B5F55',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',

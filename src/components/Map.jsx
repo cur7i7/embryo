@@ -19,10 +19,10 @@ const mapStyle = {
       type: 'raster',
       source: 'osm',
       paint: {
-        'raster-saturation': -1,
-        'raster-brightness-min': 0.85,
+        'raster-saturation': -0.35,
+        'raster-brightness-min': 0.55,
         'raster-brightness-max': 1,
-        'raster-opacity': 0.45,
+        'raster-opacity': 0.75,
       },
     },
   ],
@@ -53,6 +53,43 @@ export default function Map({
 
   return (
     <div style={{ width: '100vw', height: '100vh', backgroundColor: '#FAF3EB', position: 'relative' }}>
+      <a
+        href="#timeline-controls"
+        onClick={(e) => {
+          e.preventDefault();
+          document.querySelector('[role="slider"]')?.focus();
+        }}
+        style={{
+          position: 'absolute',
+          left: '-9999px',
+          top: 'auto',
+          width: '1px',
+          height: '1px',
+          overflow: 'hidden',
+          zIndex: 100,
+        }}
+        onFocus={(e) => {
+          e.currentTarget.style.left = '16px';
+          e.currentTarget.style.top = '16px';
+          e.currentTarget.style.width = 'auto';
+          e.currentTarget.style.height = 'auto';
+          e.currentTarget.style.padding = '8px 16px';
+          e.currentTarget.style.backgroundColor = '#FAF3EB';
+          e.currentTarget.style.border = '2px solid #D83E7F';
+          e.currentTarget.style.borderRadius = '8px';
+          e.currentTarget.style.color = '#3E3530';
+          e.currentTarget.style.fontFamily = '"DM Sans", sans-serif';
+          e.currentTarget.style.fontSize = '14px';
+          e.currentTarget.style.textDecoration = 'none';
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.left = '-9999px';
+          e.currentTarget.style.width = '1px';
+          e.currentTarget.style.height = '1px';
+        }}
+      >
+        Skip to timeline controls
+      </a>
       <MapGL
         ref={mapRef}
         initialViewState={{

@@ -27,8 +27,8 @@ function useIsMobile(breakpoint = 768) {
 
 export default function App() {
   const isMobile = useIsMobile();
-  const { artists: allArtists, loading: artistsLoading } = useArtistData();
-  const { connections, connectionsByArtist, connectionCounts, loading: connectionsLoading } = useConnectionData();
+  const { artists: allArtists, loading: artistsLoading, error: artistsError } = useArtistData();
+  const { connections, connectionsByArtist, connectionCounts, loading: connectionsLoading, error: connectionsError } = useConnectionData();
 
   const [rangeStart, setRangeStart] = useState(DEFAULT_RANGE[0]);
   const [rangeEnd, setRangeEnd] = useState(DEFAULT_RANGE[1]);
@@ -92,7 +92,7 @@ export default function App() {
       const next = new Set(prev);
       if (next.has(bucketName)) {
         next.delete(bucketName);
-        if (next.size === 0) return prev; // don't allow empty
+        if (next.size === 0) return prev; // don't allow empty — keep last genre selected
       } else {
         next.add(bucketName);
       }
@@ -127,11 +127,11 @@ export default function App() {
 
   const handleSelect = useCallback((artist) => {
     setSelectedArtist(artist);
-    if (artist && mapRef.current) {
+    if (artist && mapRef.current && artist.birth_lng != null && artist.birth_lat != null) {
       try {
         mapRef.current.getMap().flyTo({
           center: [artist.birth_lng, artist.birth_lat],
-          zoom: 6,
+          zoom: Math.max(mapRef.current?.getMap?.()?.getZoom?.() || 6, 6),
         });
       } catch (_) {
         // map not ready
@@ -149,7 +149,7 @@ export default function App() {
     if (!allArtists.length) return [];
     return allArtists.filter((a) => {
       const start = a.active_start ?? a.birth_year;
-      const end = a.active_end ?? a.death_year ?? start;
+      const end = a.active_end ?? a.death_year ?? 2025;
       if (start == null) return false;
       const inRange = start <= rangeEnd && end >= rangeStart;
       if (!inRange) return false;
@@ -175,8 +175,30 @@ export default function App() {
     return connectionsByArtist.get(selectedArtist.name) || [];
   }, [selectedArtist, connectionsByArtist]);
 
+  if (artistsLoading || connectionsLoading) {
+    return (
+      <div role="status" aria-live="polite" style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FAF3EB', fontFamily: '"DM Sans", sans-serif' }}>
+        <div style={{ textAlign: 'center', color: '#5A5048' }}>
+          <div style={{ fontSize: 18, fontWeight: 500, marginBottom: 8 }}>Loading musicians…</div>
+          <div style={{ fontSize: 13, color: '#6B5F55' }}>Preparing 31,069 artists</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (artistsError || connectionsError) {
+    return (
+      <div role="alert" style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FAF3EB', fontFamily: '"DM Sans", sans-serif' }}>
+        <div style={{ textAlign: 'center', color: '#5A5048' }}>
+          <div style={{ fontSize: 18, fontWeight: 500, marginBottom: 8 }}>Failed to load data</div>
+          <div style={{ fontSize: 13, color: '#9A8E85' }}>{artistsError || connectionsError}</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden' }}>
+    <main style={{ width: '100vw', height: '100vh', overflow: 'hidden' }}>
       <Map
         mapRef={mapRef}
         artists={filteredArtists}
@@ -220,6 +242,7 @@ export default function App() {
         onRangeChange={handleRangeChange}
         isPlaying={isPlaying}
         onPlayPause={handlePlayPause}
+        isMobile={isMobile}
       />
 
       <DetailPanel
@@ -231,6 +254,6 @@ export default function App() {
         mapRef={mapRef}
         isMobile={isMobile}
       />
-    </div>
+    </main>
   );
 }

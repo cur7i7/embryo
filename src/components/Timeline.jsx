@@ -20,9 +20,10 @@ function buildBins(artists) {
   return bins;
 }
 
-export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange, isPlaying, onPlayPause }) {
+export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange, isPlaying, onPlayPause, isMobile }) {
   const containerRef = useRef(null);
   const dragging = useRef(null); // 'left' | 'right' | null
+  const didDrag = useRef(false);
 
   const bins = useMemo(() => buildBins(artists), [artists]);
 
@@ -54,11 +55,13 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
     e.preventDefault();
     e.stopPropagation();
     dragging.current = handle;
+    didDrag.current = false;
     e.currentTarget.setPointerCapture(e.pointerId);
   }, []);
 
   const handlePointerMove = useCallback((e) => {
     if (!dragging.current || !containerRef.current) return;
+    didDrag.current = true;
     e.preventDefault();
     const rect = containerRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -81,16 +84,30 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
   }, []);
 
   const handleClick = useCallback((e) => {
+    if (didDrag.current) { didDrag.current = false; return; }
     if (dragging.current || !containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const clickedYear = xToYear(x, rect.width);
-    const halfWidth = Math.floor((rangeEnd - rangeStart) / 2);
-    let newStart = Math.round((clickedYear - halfWidth) / 10) * 10;
-    let newEnd = newStart + (rangeEnd - rangeStart);
+    const fullRange = MAX_YEAR - MIN_YEAR;
+    const currentWidth = rangeEnd - rangeStart;
+
+    let newStart, newEnd;
+    if (currentWidth >= fullRange) {
+      // Full range is selected — zoom into a ~100-year window centered on clicked decade
+      const ZOOM_WIDTH = 100;
+      const center = Math.round(clickedYear / DECADE) * DECADE;
+      newStart = center - ZOOM_WIDTH / 2;
+      newEnd = center + ZOOM_WIDTH / 2;
+    } else {
+      // Narrow range — slide to center on clicked year
+      const halfWidth = Math.floor(currentWidth / 2);
+      newStart = Math.round((clickedYear - halfWidth) / DECADE) * DECADE;
+      newEnd = newStart + currentWidth;
+    }
     // Clamp to bounds
-    if (newStart < 1400) { newStart = 1400; newEnd = newStart + (rangeEnd - rangeStart); }
-    if (newEnd > 2025) { newEnd = 2025; newStart = newEnd - (rangeEnd - rangeStart); }
+    if (newStart < MIN_YEAR) { newStart = MIN_YEAR; newEnd = newStart + (newEnd - newStart); }
+    if (newEnd > MAX_YEAR) { newEnd = MAX_YEAR; newStart = Math.max(MIN_YEAR, newEnd - (currentWidth >= fullRange ? 100 : currentWidth)); }
     onRangeChange(newStart, newEnd);
   }, [rangeStart, rangeEnd, onRangeChange, xToYear]);
 
@@ -102,12 +119,13 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
 
   return (
     <div
+      id="timeline-controls"
       style={{
         position: 'fixed',
         bottom: 0,
         left: 0,
         right: 0,
-        height: '80px',
+        height: isMobile ? '64px' : '80px',
         backgroundColor: 'rgba(250, 243, 235, 0.95)',
         backdropFilter: 'blur(8px)',
         borderTop: '1px solid rgba(224, 216, 204, 0.8)',
@@ -127,12 +145,12 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
         onClick={onPlayPause}
         aria-label={isPlaying ? 'Pause playback' : 'Play timeline'}
         style={{
-          width: '40px',
-          height: '40px',
+          width: '44px',
+          height: '44px',
           borderRadius: '50%',
-          border: '2px solid #C2185B',
-          backgroundColor: isPlaying ? '#C2185B' : 'transparent',
-          color: isPlaying ? '#FAF3EB' : '#C2185B',
+          border: '2px solid #D83E7F',
+          backgroundColor: isPlaying ? '#D83E7F' : 'transparent',
+          color: isPlaying ? '#FAF3EB' : '#D83E7F',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
@@ -142,7 +160,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
           outline: 'none',
           fontFamily: '"DM Sans", sans-serif',
         }}
-        onFocus={(e) => e.currentTarget.style.boxShadow = '0 0 0 3px rgba(194,24,91,0.3)'}
+        onFocus={(e) => e.currentTarget.style.boxShadow = '0 0 0 3px rgba(216,62,127,0.3)'}
         onBlur={(e) => e.currentTarget.style.boxShadow = 'none'}
       >
         {isPlaying ? (
@@ -166,8 +184,9 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
           flex: 1,
           height: '64px',
           position: 'relative',
-          cursor: 'default',
+          cursor: 'pointer',
         }}
+        title={rangeEnd - rangeStart >= 2025 - 1400 ? "Click to zoom into a century" : "Click to center the range here"}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onClick={handleClick}
@@ -179,7 +198,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
             left: padLeft,
             right: padRight,
             top: 0,
-            bottom: 18,
+            bottom: isMobile ? 14 : 18,
             display: 'flex',
             alignItems: 'flex-end',
             gap: '1px',
@@ -192,11 +211,13 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
             return (
               <div
                 key={decade}
+                role="presentation"
+                aria-label={`${decade}s: ${count} artists`}
                 title={`${decade}s: ${count} artists`}
                 style={{
                   flex: 1,
                   height: `${Math.max(2, heightPct)}%`,
-                  background: 'linear-gradient(to top, #C2185B, #FF8F00)',
+                  background: 'linear-gradient(to top, #D83E7F, #FFBA52)',
                   opacity: inRange ? 0.65 : 0.25,
                   borderRadius: '2px 2px 0 0',
                   transition: 'opacity 0.15s',
@@ -210,12 +231,12 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
         <div
           style={{
             position: 'absolute',
-            left: `calc(${padLeft}px + ${leftPercent}% * (100% - ${padLeft + padRight}px) / 100)`,
-            width: `calc(${rightPercent - leftPercent}% * (100% - ${padLeft + padRight}px) / 100)`,
+            left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${leftPercent / 100})`,
+            width: `calc((100% - ${padLeft + padRight}px) * ${(rightPercent - leftPercent) / 100})`,
             top: 0,
-            bottom: 18,
-            background: 'linear-gradient(to right, rgba(194,24,91,0.08), rgba(156,39,176,0.08))',
-            border: '1px solid rgba(194,24,91,0.2)',
+            bottom: isMobile ? 14 : 18,
+            background: 'linear-gradient(to right, rgba(216,62,127,0.08), rgba(212,41,94,0.08))',
+            border: '1px solid rgba(216,62,127,0.2)',
             borderRadius: '2px',
             pointerEvents: 'none',
           }}
@@ -228,20 +249,25 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
           aria-valuemin={MIN_YEAR}
           aria-valuemax={MAX_YEAR}
           aria-valuenow={rangeStart}
+          aria-valuetext={`Year ${rangeStart}`}
           tabIndex={0}
           onPointerDown={(e) => handlePointerDown(e, 'left')}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
+          onFocus={(e) => { e.currentTarget.style.outline = '2px solid #D83E7F'; e.currentTarget.style.outlineOffset = '2px'; }}
+          onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
           onKeyDown={(e) => {
             if (e.key === 'ArrowLeft') onRangeChange(Math.max(MIN_YEAR, rangeStart - 10), rangeEnd);
             if (e.key === 'ArrowRight') onRangeChange(Math.min(rangeEnd - 10, rangeStart + 10), rangeEnd);
+            if (e.key === 'Home') onRangeChange(MIN_YEAR, rangeEnd);
+            if (e.key === 'End') onRangeChange(Math.min(rangeEnd - 10, MAX_YEAR - 10), rangeEnd);
+            if (e.key === 'PageUp') onRangeChange(Math.max(MIN_YEAR, rangeStart - 50), rangeEnd);
+            if (e.key === 'PageDown') onRangeChange(Math.min(rangeEnd - 10, rangeStart + 50), rangeEnd);
           }}
           style={{
             position: 'absolute',
-            left: `calc(${padLeft}px + ${leftPercent}% * (100% - ${padLeft + padRight}px) / 100 - 8px)`,
+            left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${leftPercent / 100} - 22px)`,
             top: 0,
-            bottom: 18,
-            width: '16px',
+            bottom: isMobile ? 14 : 18,
+            width: '44px',
             cursor: 'ew-resize',
             display: 'flex',
             alignItems: 'center',
@@ -253,9 +279,9 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
             style={{
               width: '4px',
               height: '100%',
-              backgroundColor: '#C2185B',
+              backgroundColor: '#D83E7F',
               borderRadius: '2px',
-              boxShadow: '0 0 8px rgba(194, 24, 91, 0.6)',
+              boxShadow: '0 0 8px rgba(216, 62, 127, 0.6)',
             }}
           />
         </div>
@@ -267,20 +293,25 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
           aria-valuemin={MIN_YEAR}
           aria-valuemax={MAX_YEAR}
           aria-valuenow={rangeEnd}
+          aria-valuetext={`Year ${rangeEnd}`}
           tabIndex={0}
           onPointerDown={(e) => handlePointerDown(e, 'right')}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
+          onFocus={(e) => { e.currentTarget.style.outline = '2px solid #D83E7F'; e.currentTarget.style.outlineOffset = '2px'; }}
+          onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
           onKeyDown={(e) => {
             if (e.key === 'ArrowLeft') onRangeChange(rangeStart, Math.max(rangeStart + 10, rangeEnd - 10));
             if (e.key === 'ArrowRight') onRangeChange(rangeStart, Math.min(MAX_YEAR, rangeEnd + 10));
+            if (e.key === 'Home') onRangeChange(rangeStart, Math.max(rangeStart + 10, MIN_YEAR + 10));
+            if (e.key === 'End') onRangeChange(rangeStart, MAX_YEAR);
+            if (e.key === 'PageUp') onRangeChange(rangeStart, Math.max(rangeStart + 10, rangeEnd - 50));
+            if (e.key === 'PageDown') onRangeChange(rangeStart, Math.min(MAX_YEAR, rangeEnd + 50));
           }}
           style={{
             position: 'absolute',
-            left: `calc(${padLeft}px + ${rightPercent}% * (100% - ${padLeft + padRight}px) / 100 - 8px)`,
+            left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${rightPercent / 100} - 22px)`,
             top: 0,
-            bottom: 18,
-            width: '16px',
+            bottom: isMobile ? 14 : 18,
+            width: '44px',
             cursor: 'ew-resize',
             display: 'flex',
             alignItems: 'center',
@@ -292,9 +323,9 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
             style={{
               width: '4px',
               height: '100%',
-              backgroundColor: '#9C27B0',
+              backgroundColor: '#D4295E',
               borderRadius: '2px',
-              boxShadow: '0 0 8px rgba(156, 39, 176, 0.6)',
+              boxShadow: '0 0 8px rgba(212, 41, 94, 0.6)',
             }}
           />
         </div>
@@ -320,10 +351,10 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                   position: 'absolute',
                   left: `${pct}%`,
                   transform: 'translateX(-50%)',
-                  fontSize: '9px',
+                  fontSize: '11px',
                   fontFamily: '"DM Sans", sans-serif',
                   fontWeight: 500,
-                  color: '#A89B8E',
+                  color: '#6B5F55',
                   letterSpacing: '0.02em',
                   whiteSpace: 'nowrap',
                 }}

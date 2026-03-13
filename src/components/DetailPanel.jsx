@@ -1,5 +1,6 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { getGenreBucket } from '../utils/genres.js';
+import { hexToRgba } from '../utils/rendering.js';
 
 const PANEL_WIDTH = 320;
 
@@ -23,7 +24,7 @@ function ConfidenceBar({ confidence }) {
         style={{
           height: '100%',
           width: `${Math.round(confidence * 100)}%`,
-          backgroundColor: '#A89080',
+          backgroundColor: '#E9ADBE',
           borderRadius: 2,
         }}
       />
@@ -49,16 +50,16 @@ function GenreDot({ color, size = 8 }) {
 
 function ConnectionTypeLabel({ type }) {
   const styles = {
-    teacher: { bg: '#F3E8FF', color: '#7C3AED', label: 'Teacher' },
-    influence: { bg: '#FEF3C7', color: '#D97706', label: 'Influence' },
-    peer: { bg: '#D1FAE5', color: '#059669', label: 'Peer' },
-    collaboration: { bg: '#DBEAFE', color: '#2563EB', label: 'Collab' },
+    teacher: { bg: '#F3DFD5', color: '#3E3530', label: 'Teacher' },
+    influence: { bg: '#F3DBC6', color: '#3E3530', label: 'Influence' },
+    peer: { bg: '#F8F1E0', color: '#3E3530', label: 'Peer' },
+    collaboration: { bg: '#EECACA', color: '#3E3530', label: 'Collab' },
   };
-  const s = styles[type] || { bg: '#F3F4F6', color: '#6B7280', label: type };
+  const s = styles[type] || { bg: '#F3DFD5', color: '#5A5048', label: type };
   return (
     <span
       style={{
-        fontSize: 10,
+        fontSize: 11,
         fontWeight: 600,
         padding: '2px 6px',
         borderRadius: 4,
@@ -79,13 +80,13 @@ function PipelineBadge({ pipeline }) {
   return (
     <span
       style={{
-        fontSize: 9,
+        fontSize: 11,
         fontWeight: 500,
         padding: '1px 5px',
         borderRadius: 3,
-        backgroundColor: isCurated ? '#ECFDF5' : '#F9FAFB',
-        color: isCurated ? '#065F46' : '#9CA3AF',
-        border: `1px solid ${isCurated ? '#A7F3D0' : '#E5E7EB'}`,
+        backgroundColor: isCurated ? '#F8F1E0' : '#F3DFD5',
+        color: isCurated ? '#5A5048' : '#5A5048',
+        border: `1px solid ${isCurated ? '#EEC1A2' : '#EECACA'}`,
         whiteSpace: 'nowrap',
       }}
     >
@@ -104,6 +105,24 @@ export default function DetailPanel({
   isMobile = false,
 }) {
   const isOpen = !!artist;
+  const closeButtonRef = useRef(null);
+  const [history, setHistory] = useState([]);
+  const prevArtistRef = useRef(null);
+
+  // Focus close button on panel open
+  useEffect(() => {
+    if (isOpen && closeButtonRef.current) {
+      closeButtonRef.current.focus();
+    }
+  }, [isOpen]);
+
+  // Track navigation history
+  useEffect(() => {
+    if (artist && prevArtistRef.current && prevArtistRef.current.name !== artist.name) {
+      setHistory(prev => [...prev.slice(-9), prevArtistRef.current]);
+    }
+    prevArtistRef.current = artist;
+  }, [artist]);
 
   // Close on Escape
   useEffect(() => {
@@ -137,7 +156,7 @@ export default function DetailPanel({
     return m;
   }, [allArtists]);
 
-  const { bucket, color } = artist ? getGenreBucket(artist.genres) : { bucket: 'Other', color: '#F9A825' };
+  const { bucket, color } = artist ? getGenreBucket(artist.genres) : { bucket: 'Other', color: '#E8A99B' };
 
   const lifespan = artist
     ? artist.birth_year
@@ -155,11 +174,11 @@ export default function DetailPanel({
   const panelStyle = isMobile
     ? {
         position: 'fixed',
-        bottom: 0,
+        bottom: 80,
         left: 0,
         right: 0,
         width: '100%',
-        height: '60vh',
+        height: 'calc(60vh - 80px)',
         backgroundColor: 'rgba(250, 243, 235, 0.98)',
         backdropFilter: 'blur(12px)',
         borderTop: '1px solid rgba(224, 216, 204, 0.8)',
@@ -168,6 +187,10 @@ export default function DetailPanel({
         overflowY: 'auto',
         transform: isOpen ? 'translateY(0)' : 'translateY(100%)',
         transition: 'transform 0.3s ease',
+        transitionProperty: 'transform, visibility',
+        transitionDelay: isOpen ? '0s' : '0s, 0.3s',
+        visibility: isOpen ? 'visible' : 'hidden',
+        pointerEvents: isOpen ? 'auto' : 'none',
         padding: '24px',
         fontFamily: '"DM Sans", sans-serif',
         borderRadius: '16px 16px 0 0',
@@ -186,6 +209,10 @@ export default function DetailPanel({
         overflowY: 'auto',
         transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
         transition: 'transform 0.3s ease',
+        transitionProperty: 'transform, visibility',
+        transitionDelay: isOpen ? '0s' : '0s, 0.3s',
+        visibility: isOpen ? 'visible' : 'hidden',
+        pointerEvents: isOpen ? 'auto' : 'none',
         padding: '24px',
         fontFamily: '"DM Sans", sans-serif',
       };
@@ -197,16 +224,47 @@ export default function DetailPanel({
       aria-label={artist ? `Details for ${artist.name}` : 'Artist details'}
       aria-hidden={!isOpen}
     >
+      {/* Back button */}
+      {history.length > 0 && (
+        <button
+          onClick={() => {
+            const prev = history[history.length - 1];
+            setHistory(h => h.slice(0, -1));
+            onSelect?.(prev);
+          }}
+          aria-label="Go back to previous artist"
+          style={{
+            position: 'absolute',
+            top: 16,
+            right: 64,
+            width: 44,
+            height: 44,
+            border: 'none',
+            borderRadius: '50%',
+            backgroundColor: 'rgba(122, 110, 101, 0.12)',
+            color: '#7A6E65',
+            fontSize: 18,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          ←
+        </button>
+      )}
+
       {/* Close button */}
       <button
+        ref={closeButtonRef}
         onClick={onClose}
         aria-label="Close detail panel"
         style={{
           position: 'absolute',
-          top: 16,
-          right: 16,
-          width: 32,
-          height: 32,
+          top: 12,
+          right: 12,
+          width: 44,
+          height: 44,
           border: 'none',
           borderRadius: '50%',
           backgroundColor: 'rgba(122, 110, 101, 0.12)',
@@ -221,6 +279,8 @@ export default function DetailPanel({
         }}
         onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(122, 110, 101, 0.22)'; }}
         onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(122, 110, 101, 0.12)'; }}
+        onFocus={e => { e.currentTarget.style.boxShadow = '0 0 0 3px rgba(122, 110, 101, 0.4)'; }}
+        onBlur={e => { e.currentTarget.style.boxShadow = 'none'; }}
       >
         ×
       </button>
@@ -233,8 +293,8 @@ export default function DetailPanel({
               width: '100%',
               height: 120,
               borderRadius: 12,
-              background: `linear-gradient(135deg, ${color}33 0%, ${color}66 50%, ${color}22 100%)`,
-              border: `1px solid ${color}44`,
+              background: `linear-gradient(135deg, ${hexToRgba(color, 0.2)} 0%, ${hexToRgba(color, 0.4)} 50%, ${hexToRgba(color, 0.13)} 100%)`,
+              border: `1px solid ${hexToRgba(color, 0.27)}`,
               marginBottom: 16,
               marginTop: 4,
               display: 'flex',
@@ -251,9 +311,8 @@ export default function DetailPanel({
                     fontSize: 11,
                     padding: '2px 8px',
                     borderRadius: 20,
-                    backgroundColor: `${color}33`,
-                    color: color,
-                    border: `1px solid ${color}66`,
+                    backgroundColor: 'rgba(250, 243, 235, 0.85)',
+                    color: '#3E3530',
                     fontWeight: 500,
                   }}
                 >
@@ -285,7 +344,7 @@ export default function DetailPanel({
               alignItems: 'center',
               gap: 6,
               fontSize: 13,
-              color: '#7A6E65',
+              color: '#6B5F55',
               marginBottom: 8,
               flexWrap: 'wrap',
             }}
@@ -294,7 +353,7 @@ export default function DetailPanel({
             <span>{bucket}</span>
             {location && (
               <>
-                <span style={{ color: '#C4B8AE' }}>·</span>
+                <span style={{ color: '#9A8E85' }}>·</span>
                 <span>{location}</span>
               </>
             )}
@@ -305,7 +364,7 @@ export default function DetailPanel({
             <div
               style={{
                 fontSize: 13,
-                color: '#9A8E85',
+                color: '#6B5F55',
                 marginBottom: 14,
               }}
             >
@@ -320,11 +379,11 @@ export default function DetailPanel({
             <div style={{ marginBottom: 16 }}>
               <div
                 style={{
-                  fontSize: 10,
+                  fontSize: 11,
                   fontWeight: 700,
                   letterSpacing: '0.08em',
                   textTransform: 'uppercase',
-                  color: '#A89080',
+                  color: '#6B5F55',
                   marginBottom: 8,
                 }}
               >
@@ -338,9 +397,9 @@ export default function DetailPanel({
                       fontSize: 12,
                       padding: '3px 10px',
                       borderRadius: 20,
-                      border: `1px solid ${color}55`,
+                      border: `1px solid ${hexToRgba(color, 0.33)}`,
                       color: '#5A4F47',
-                      backgroundColor: `${color}0D`,
+                      backgroundColor: hexToRgba(color, 0.05),
                     }}
                   >
                     {occ}
@@ -355,11 +414,11 @@ export default function DetailPanel({
             <div style={{ marginBottom: 16 }}>
               <div
                 style={{
-                  fontSize: 10,
+                  fontSize: 11,
                   fontWeight: 700,
                   letterSpacing: '0.08em',
                   textTransform: 'uppercase',
-                  color: '#A89080',
+                  color: '#6B5F55',
                   marginBottom: 8,
                 }}
               >
@@ -387,11 +446,11 @@ export default function DetailPanel({
               <hr style={{ border: 'none', borderTop: '1px solid rgba(224, 216, 204, 0.7)', margin: '0 0 14px 0' }} />
               <div
                 style={{
-                  fontSize: 10,
+                  fontSize: 11,
                   fontWeight: 700,
                   letterSpacing: '0.08em',
                   textTransform: 'uppercase',
-                  color: '#A89080',
+                  color: '#6B5F55',
                   marginBottom: 10,
                 }}
               >
@@ -404,7 +463,7 @@ export default function DetailPanel({
                   const connectedArtist = artistMap.get(connectedName);
                   const { color: connColor } = connectedArtist
                     ? getGenreBucket(connectedArtist.genres)
-                    : { color: '#F9A825' };
+                    : { color: '#E8A99B' };
 
                   return (
                     <div
@@ -431,18 +490,21 @@ export default function DetailPanel({
                           style={{
                             background: 'none',
                             border: 'none',
-                            padding: 0,
+                            padding: '4px 0',
+                            minHeight: 44,
                             fontFamily: '"DM Sans", sans-serif',
                             fontSize: 13,
                             fontWeight: 600,
                             color: connectedArtist ? '#3E3530' : '#9A8E85',
                             cursor: connectedArtist ? 'pointer' : 'default',
                             textDecoration: connectedArtist ? 'underline' : 'none',
-                            textDecorationColor: `${connColor}66`,
+                            textDecorationColor: hexToRgba(connColor, 0.4),
                             textUnderlineOffset: 2,
                           }}
                           disabled={!connectedArtist}
                           aria-label={`View ${connectedName}`}
+                          onFocus={e => { e.currentTarget.style.outline = '2px solid #5A5048'; e.currentTarget.style.outlineOffset = '2px'; }}
+                          onBlur={e => { e.currentTarget.style.outline = 'none'; }}
                         >
                           {connectedName}
                         </button>
@@ -457,7 +519,7 @@ export default function DetailPanel({
                             margin: '4px 0 4px 0',
                             fontSize: 11,
                             fontStyle: 'italic',
-                            color: '#7A6E65',
+                            color: '#5A4F47',
                             lineHeight: 1.5,
                           }}
                         >

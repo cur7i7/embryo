@@ -5,10 +5,14 @@ export function useConnectionData() {
   const [connectionsByArtist, setConnectionsByArtist] = useState(new Map());
   const [connectionCounts, setConnectionCounts] = useState(new Map());
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetch('/data/connections_final.json')
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
       .then((data) => {
         // Filter out rivalry connections
         const filtered = data.filter((c) => c.type !== 'rivalry');
@@ -43,9 +47,10 @@ export function useConnectionData() {
       })
       .catch((err) => {
         console.error('Failed to load connection data:', err);
+        setError(err.message);
         setLoading(false);
       });
   }, []);
 
-  return { connections, connectionsByArtist, connectionCounts, loading };
+  return { connections, connectionsByArtist, connectionCounts, loading, error };
 }

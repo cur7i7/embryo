@@ -8,9 +8,11 @@ export default function ArtistCount({ count, rangeStart, rangeEnd }) {
 
   return (
     <div
+      aria-live="polite"
+      role="status"
       style={{
         position: 'absolute',
-        top: '16px',
+        top: '56px',
         left: '16px',
         zIndex: 10,
         backgroundColor: 'rgba(250, 243, 235, 0.88)',
@@ -26,11 +28,12 @@ export default function ArtistCount({ count, rangeStart, rangeEnd }) {
         display: 'flex',
         alignItems: 'center',
         gap: '6px',
-        pointerEvents: 'none',
+        pointerEvents: 'auto',
+        cursor: 'default',
         userSelect: 'none',
       }}
     >
-      <span style={{ fontWeight: 600, color: '#C2185B' }}>
+      <span style={{ fontWeight: 600, color: '#D83E7F' }}>
         {count.toLocaleString()}
       </span>
       <span style={{ color: '#5A5048' }}>
