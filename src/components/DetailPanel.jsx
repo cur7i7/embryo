@@ -101,7 +101,6 @@ export default function DetailPanel({
   allArtists,
   onSelect,
   onClose,
-  mapRef,
   isMobile = false,
 }) {
   const isOpen = !!artist;

@@ -499,7 +499,6 @@ export default function App() {
         allArtists={allArtists}
         onSelect={handleSelect}
         onClose={handleCloseDetail}
-        mapRef={mapRef}
         isMobile={isMobile}
       />
     </main>
