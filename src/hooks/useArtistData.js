@@ -13,11 +13,30 @@ export function useArtistData() {
         return res.json();
       })
       .then((data) => {
-        const validCount = data.filter(
-          (a) => a.birth_lat != null && a.birth_lng != null
-        ).length;
-        console.log(`${validCount} artists with valid coordinates`);
-        setArtists(data);
+        const normalized = data.map((artist) => {
+          const lat = Number(artist.birth_lat);
+          const lng = Number(artist.birth_lng);
+          const validLat =
+            artist.birth_lat != null &&
+            !isNaN(lat) &&
+            lat >= -90 &&
+            lat <= 90;
+          const validLng =
+            artist.birth_lng != null &&
+            !isNaN(lng) &&
+            lng >= -180 &&
+            lng <= 180;
+          if (validLat && validLng) {
+            return { ...artist, birth_lat: lat, birth_lng: lng, _hasCoords: true };
+          }
+          return { ...artist, birth_lat: null, birth_lng: null, _hasCoords: false };
+        });
+        const validCount = normalized.filter((a) => a._hasCoords).length;
+        const invalidCount = normalized.length - validCount;
+        console.log(
+          `Artists loaded: ${normalized.length} total, ${validCount} with valid coordinates, ${invalidCount} without`
+        );
+        setArtists(normalized);
         setLoading(false);
       })
       .catch((err) => {
