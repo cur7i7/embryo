@@ -357,9 +357,10 @@ export default function DetailPanel({
                 onError={() => setImageError(true)}
                 style={{
                   display: 'block',
-                  maxHeight: 200,
+                  maxHeight: 260,
                   width: '100%',
                   objectFit: 'cover',
+                  objectPosition: 'center 20%',
                   borderRadius: 12,
                 }}
               />
