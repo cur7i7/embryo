@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
+import { useIsPointerFine } from '../hooks/useIsPointerFine';
 
 const MIN_YEAR = 1400;
+const PLAY_SPEEDS = [1, 0.5, 2]; // 1x, 0.5x, 2x — cycle order
 const MAX_YEAR = 2025;
 const DECADE = 10;
 const YEAR_LABELS_FULL = [1400, 1500, 1600, 1700, 1800, 1900, 2000, 2025];
@@ -22,6 +24,7 @@ function buildBins(artists) {
 }
 
 export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange, isPlaying, onPlayPause, isMobile, initialMode }) {
+  const isPointerFine = useIsPointerFine();
   const containerRef = useRef(null);
   const dragging = useRef(null); // 'left' | 'right' | 'year' | null
   const didDrag = useRef(false);
@@ -32,6 +35,13 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
   const handlePointerMoveRef = useRef(null);
   const radioYearRef = useRef(null);
   const radioRangeRef = useRef(null);
+
+  // Fix #19: Track which handle is actively being dragged for z-index priority
+  const [activeHandle, setActiveHandle] = useState(null);
+
+  // Fix #47: Play speed state (exposed via shift+click on play button)
+  const [playSpeedIndex, setPlaySpeedIndex] = useState(0);
+  const playSpeed = PLAY_SPEEDS[playSpeedIndex];
 
   // Keep refs in sync with latest prop values
   useEffect(() => {
@@ -104,15 +114,19 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
 
   const maxCount = useMemo(() => Math.max(1, ...Object.values(bins)), [bins]);
 
+  // Fix #7: Responsive padding — clamp(20px, 5vw, 40px) per side
+  const responsivePad = useMemo(() => {
+    const vw5 = windowWidth * 0.05;
+    return Math.max(20, Math.min(40, vw5));
+  }, [windowWidth]);
+
   // Convert a pixel x-offset within the container to a year
   const xToYear = useCallback((x, containerWidth) => {
-    const padLeft = 40;
-    const padRight = 40;
-    const usableWidth = containerWidth - padLeft - padRight;
-    const fraction = (x - padLeft) / usableWidth;
+    const usableWidth = containerWidth - responsivePad * 2;
+    const fraction = (x - responsivePad) / usableWidth;
     const year = MIN_YEAR + fraction * (MAX_YEAR - MIN_YEAR);
     return Math.round(Math.max(MIN_YEAR, Math.min(MAX_YEAR, year)));
-  }, []);
+  }, [responsivePad]);
 
   const yearToPercent = useCallback((year) => {
     return ((year - MIN_YEAR) / (MAX_YEAR - MIN_YEAR)) * 100;
@@ -168,6 +182,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
 
   const handlePointerUp = useCallback(() => {
     dragging.current = null;
+    setActiveHandle(null); // Fix #19: clear active handle
   }, []);
 
   const handlePointerDown = useCallback((e, handle) => {
@@ -175,10 +190,18 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
     e.stopPropagation();
     dragging.current = handle;
     didDrag.current = false;
+    setActiveHandle(handle); // Fix #19: track active handle for z-index
     // setPointerCapture routes all future pointermove/pointerup events to this
     // element even when the pointer leaves it, making window listeners redundant.
     e.currentTarget.setPointerCapture(e.pointerId);
   }, []);
+
+  // Fix #37: Double-click on track resets range to full extent
+  const handleDoubleClick = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onRangeChange(MIN_YEAR, MAX_YEAR);
+  }, [onRangeChange]);
 
   const handleClick = useCallback((e) => {
     if (didDrag.current) { didDrag.current = false; return; }
@@ -231,8 +254,9 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
     }
   }, [mode, rangeEnd, onRangeChange]);
 
-  const padLeft = 40;
-  const padRight = 40;
+  // Fix #7: Use responsive padding instead of hardcoded 40px
+  const padLeft = responsivePad;
+  const padRight = responsivePad;
 
   const isYearMode = mode === 'year';
   const selectedYear = rangeEnd;
@@ -266,52 +290,83 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
         userSelect: 'none',
       }}
     >
-      {/* Play/Pause Button — 36px visible, 44px hit area */}
-      <button
-        onClick={onPlayPause}
-        aria-label={isPlaying ? 'Pause playback' : 'Play timeline'}
-        aria-pressed={isPlaying}
-        style={{
-          width: 44,
-          height: 44,
-          padding: '4px',
-          borderRadius: '10px',
-          border: 'none',
-          backgroundColor: 'transparent',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-          outline: 'none',
-        }}
-        onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 3px rgba(196,50,107,0.4)'; }}
-        onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
-      >
-        <span style={{
-          width: 36,
-          height: 36,
-          borderRadius: '8px',
-          backgroundColor: isPlaying ? '#D83E7F' : 'rgba(196,50,107,0.1)',
-          color: isPlaying ? '#FAF3EB' : '#C4326B',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          transition: 'background-color 0.15s, color 0.15s',
-          fontFamily: '"DM Sans", sans-serif',
-        }}>
-          {isPlaying ? (
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
-              <rect x="2" y="2" width="4" height="10" rx="1" />
-              <rect x="8" y="2" width="4" height="10" rx="1" />
-            </svg>
-          ) : (
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
-              <polygon points="3,2 12,7 3,12" />
-            </svg>
-          )}
-        </span>
-      </button>
+      {/* Play/Pause Button — 36px visible, 44px hit area. Fix #47: Shift+click cycles speed */}
+      <div style={{ position: 'relative', flexShrink: 0 }}>
+        <button
+          onClick={(e) => {
+            if (e.shiftKey) {
+              // Fix #47: Shift+click cycles play speed
+              setPlaySpeedIndex((prev) => (prev + 1) % PLAY_SPEEDS.length);
+            } else {
+              onPlayPause(playSpeed);
+            }
+          }}
+          aria-label={isPlaying ? `Pause playback (${playSpeed}x speed)` : `Play timeline (${playSpeed}x speed). Shift+click to change speed`}
+          aria-pressed={isPlaying}
+          style={{
+            width: 44,
+            height: 44,
+            padding: '4px',
+            borderRadius: '10px',
+            border: 'none',
+            backgroundColor: 'transparent',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+            outline: 'none',
+          }}
+          onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 3px rgba(196,50,107,0.4)'; }}
+          onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
+        >
+          <span style={{
+            width: 36,
+            height: 36,
+            borderRadius: '8px',
+            backgroundColor: isPlaying ? '#D83E7F' : 'rgba(196,50,107,0.1)',
+            color: isPlaying ? '#FAF3EB' : '#C4326B',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'background-color 0.15s, color 0.15s',
+            fontFamily: '"DM Sans", sans-serif',
+          }}>
+            {isPlaying ? (
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                <rect x="2" y="2" width="4" height="10" rx="1" />
+                <rect x="8" y="2" width="4" height="10" rx="1" />
+              </svg>
+            ) : (
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                <polygon points="3,2 12,7 3,12" />
+              </svg>
+            )}
+          </span>
+        </button>
+        {/* Fix #47: Speed indicator badge */}
+        {playSpeed !== 1 && (
+          <span
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              top: 2,
+              right: 0,
+              fontSize: 9,
+              fontFamily: '"DM Sans", sans-serif',
+              fontWeight: 700,
+              color: '#FAF3EB',
+              backgroundColor: '#B8336A',
+              borderRadius: 4,
+              padding: '1px 3px',
+              lineHeight: 1,
+              pointerEvents: 'none',
+            }}
+          >
+            {playSpeed}x
+          </span>
+        )}
+      </div>
 
       {/* Mode toggle — segmented control */}
       <div
@@ -347,11 +402,11 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
             gap: 4,
             padding: '0 10px',
             minWidth: 44,
-            height: 36,
+            height: isPointerFine ? 36 : 44, // Fix #14: 44px on touch devices
             border: 'none',
             cursor: 'pointer',
             fontFamily: '"DM Sans", sans-serif',
-            fontSize: 11,
+            fontSize: 12, // Fix #28: was 11px, below project minimum
             fontWeight: 600,
             backgroundColor: isYearMode ? 'rgba(196,50,107,0.12)' : 'transparent',
             color: isYearMode ? '#C4326B' : '#6B5F55',
@@ -381,11 +436,11 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
             gap: 4,
             padding: '0 10px',
             minWidth: 44,
-            height: 36,
+            height: isPointerFine ? 36 : 44, // Fix #14: 44px on touch devices
             border: 'none',
             cursor: 'pointer',
             fontFamily: '"DM Sans", sans-serif',
-            fontSize: 11,
+            fontSize: 12, // Fix #28: was 11px, below project minimum
             fontWeight: 600,
             backgroundColor: !isYearMode ? 'rgba(196,50,107,0.12)' : 'transparent',
             color: !isYearMode ? '#C4326B' : '#6B5F55',
@@ -535,17 +590,18 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
               position: 'relative',
               cursor: 'pointer',
             }}
-            title={rangeEnd - rangeStart >= 2025 - 1400 ? 'Click to zoom into a century' : 'Click to center the range here'}
+            title={rangeEnd - rangeStart >= 2025 - 1400 ? 'Click to zoom into a century. Double-click to show all years.' : 'Click to center the range here. Double-click to show all years.'}
             onClick={handleClick}
+            onDoubleClick={handleDoubleClick}
           >
-            {/* Histogram bars */}
+            {/* Histogram bars — Fix #6: increased bottom to 20/22px so bars don't overlap year labels */}
             <div
               style={{
                 position: 'absolute',
                 left: padLeft,
                 right: padRight,
                 top: 0,
-                bottom: isMobile ? 12 : 14,
+                bottom: isMobile ? 20 : 22,
                 display: 'flex',
                 alignItems: 'flex-end',
                 gap: '1px',
@@ -572,14 +628,14 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
               })}
             </div>
 
-            {/* Selected range overlay */}
+            {/* Selected range overlay — Fix #6: match histogram bottom */}
             <div
               style={{
                 position: 'absolute',
                 left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${fillLeftPercent / 100})`,
                 width: `calc((100% - ${padLeft + padRight}px) * ${(fillRightPercent - fillLeftPercent) / 100})`,
                 top: 0,
-                bottom: isMobile ? 12 : 14,
+                bottom: isMobile ? 20 : 22,
                 background: 'linear-gradient(to right, rgba(216,62,127,0.08), rgba(212,41,94,0.08))',
                 border: '1px solid rgba(216,62,127,0.2)',
                 borderRadius: '2px',
@@ -587,7 +643,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
               }}
             />
 
-            {/* Left handle */}
+            {/* Left handle — Fix #19: active z-index, Fix #30: 44px min on touch */}
             <div
               role="slider"
               aria-label="Range start year"
@@ -614,13 +670,14 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                 position: 'absolute',
                 left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${leftPercent / 100} - 22px)`,
                 top: 0,
-                bottom: isMobile ? 12 : 14,
+                bottom: isPointerFine ? (isMobile ? 20 : 22) : 0, // Fix #30: full height on touch for 44px target
+                minHeight: isPointerFine ? undefined : 44, // Fix #30: ensure 44px on touch
                 width: '44px',
                 cursor: 'ew-resize',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                zIndex: 5,
+                zIndex: activeHandle === 'left' ? 8 : 5, // Fix #19: dragged handle on top
               }}
             >
               <div
@@ -634,7 +691,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
               />
             </div>
 
-            {/* Right handle */}
+            {/* Right handle — Fix #19: active z-index, Fix #30: 44px min on touch */}
             <div
               role="slider"
               aria-label="Range end year"
@@ -661,13 +718,14 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                 position: 'absolute',
                 left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${rightPercent / 100} - 22px)`,
                 top: 0,
-                bottom: isMobile ? 12 : 14,
+                bottom: isPointerFine ? (isMobile ? 20 : 22) : 0, // Fix #30: full height on touch
+                minHeight: isPointerFine ? undefined : 44, // Fix #30: ensure 44px on touch
                 width: '44px',
                 cursor: 'ew-resize',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                zIndex: 5,
+                zIndex: activeHandle === 'right' ? 8 : 5, // Fix #19: dragged handle on top
               }}
             >
               <div
@@ -681,7 +739,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
               />
             </div>
 
-            {/* Year labels (static reference marks) */}
+            {/* Year labels (static reference marks) — Fix #6: increased gap from bars */}
             <div
               style={{
                 position: 'absolute',
@@ -695,9 +753,14 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
             >
               {yearLabels.map((year) => {
                 const pct = yearToPercent(year);
-                const nearStart = Math.abs(year - rangeStart) < 15;
-                const nearEnd = Math.abs(year - rangeEnd) < 15;
-                if (nearStart || nearEnd) return null;
+                // Fix #38: Use pixel distance instead of year distance for consistent behavior
+                const containerEl = containerRef.current;
+                const usableWidth = containerEl ? containerEl.offsetWidth - padLeft - padRight : 300;
+                const pxPerYear = usableWidth / (MAX_YEAR - MIN_YEAR);
+                const MIN_PX_GAP = 40; // minimum pixel distance before hiding label
+                const pxFromStart = Math.abs(year - rangeStart) * pxPerYear;
+                const pxFromEnd = Math.abs(year - rangeEnd) * pxPerYear;
+                if (pxFromStart < MIN_PX_GAP || pxFromEnd < MIN_PX_GAP) return null;
                 return (
                   <span
                     key={year}
@@ -720,7 +783,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
               })}
             </div>
 
-            {/* Range mode: Editable start year display */}
+            {/* Range mode: Editable start year display — Fix #20: positioning, Fix #39: remove dead height */}
             {editingStart ? (
               <input
                 type="number"
@@ -752,11 +815,11 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                 aria-label="Set start year"
                 style={{
                   position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${leftPercent / 100} - 30px)`,
-                  bottom: 16, width: 56, height: 24, minHeight: 44, padding: '0 4px',
+                  bottom: 0, width: 56, minHeight: 28, padding: '0 4px', // Fix #20: bottom:0 keeps within bounds, Fix #39: removed dead height:24
                   fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
                   color: '#C4326B', backgroundColor: 'rgba(250,243,235,0.95)',
                   border: '1px solid #C4326B', borderRadius: 4, textAlign: 'center', outline: 'none',
-                  zIndex: 10,
+                  zIndex: 10, boxSizing: 'border-box',
                 }}
               />
             ) : (
@@ -765,9 +828,10 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                 aria-label={`Start year: ${rangeStart}. Click to edit`}
                 style={{
                   position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${leftPercent / 100} - 20px)`,
-                  bottom: 16, background: 'none', border: 'none', cursor: 'pointer',
+                  bottom: 0, background: 'none', border: 'none', cursor: 'pointer', // Fix #20: bottom:0
                   fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
-                  color: '#C4326B', padding: '2px 4px', minHeight: 44, display: 'flex', alignItems: 'center',
+                  color: '#C4326B', padding: '2px 4px', minHeight: 28, display: 'flex', alignItems: 'center',
+                  borderBottom: '1px dashed rgba(196,50,107,0.4)', // Fix #18: visual affordance
                   outline: 'none',
                 }}
                 onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 2px rgba(196,50,107,0.4)'; }}
@@ -777,7 +841,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
               </button>
             )}
 
-            {/* Range mode: Editable end year display */}
+            {/* Range mode: Editable end year display — Fix #20: positioning, Fix #39: remove dead height */}
             {editingEnd ? (
               <input
                 type="number"
@@ -809,11 +873,11 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                 aria-label="Set end year"
                 style={{
                   position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${rightPercent / 100} - 30px)`,
-                  bottom: 16, width: 56, height: 24, minHeight: 44, padding: '0 4px',
+                  bottom: 0, width: 56, minHeight: 28, padding: '0 4px', // Fix #20: bottom:0, Fix #39: removed dead height:24
                   fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
                   color: '#C4326B', backgroundColor: 'rgba(250,243,235,0.95)',
                   border: '1px solid #C4326B', borderRadius: 4, textAlign: 'center', outline: 'none',
-                  zIndex: 10,
+                  zIndex: 10, boxSizing: 'border-box',
                 }}
               />
             ) : (
@@ -822,9 +886,10 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                 aria-label={`End year: ${rangeEnd}. Click to edit`}
                 style={{
                   position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${rightPercent / 100} - 20px)`,
-                  bottom: 16, background: 'none', border: 'none', cursor: 'pointer',
+                  bottom: 0, background: 'none', border: 'none', cursor: 'pointer', // Fix #20: bottom:0
                   fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
-                  color: '#C4326B', padding: '2px 4px', minHeight: 44, display: 'flex', alignItems: 'center',
+                  color: '#C4326B', padding: '2px 4px', minHeight: 28, display: 'flex', alignItems: 'center',
+                  borderBottom: '1px dashed rgba(196,50,107,0.4)', // Fix #18: visual affordance
                   outline: 'none',
                 }}
                 onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 2px rgba(196,50,107,0.4)'; }}

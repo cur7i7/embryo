@@ -1,14 +1,18 @@
-import React, { useState, useReducer, useMemo, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useReducer, useMemo, useEffect, useRef, useCallback, createContext } from 'react';
 import Map from './components/Map.jsx';
 import Timeline from './components/Timeline.jsx';
 import GenreFilters from './components/GenreFilters.jsx';
 import ConnectionFilters from './components/ConnectionFilters.jsx';
 import DetailPanel from './components/DetailPanel.jsx';
 import SearchBar from './components/SearchBar.jsx';
+import OnboardingOverlay from './components/OnboardingOverlay.jsx';
 import { useArtistData } from './hooks/useArtistData.js';
 import { useConnectionData } from './hooks/useConnectionData.js';
 import { GENRE_BUCKETS, getGenreBucket } from './utils/genres.js';
 import { flyToArtist } from './utils/mapHelpers.js';
+
+// Fix #3: Context to provide total artist count to ArtistCount without modifying Map.jsx
+export const TotalArtistCountContext = createContext(0);
 
 const DEFAULT_RANGE = [1400, 2025];
 const DEFAULT_CENTER = [10, 48];
@@ -74,15 +78,41 @@ function timelineReducer(state, action) {
 // Hooks
 // ---------------------------------------------------------------------------
 // Fix #56: Raised base breakpoint from 768→900 so tablets in portrait (768px)
-// get the desktop layout. The touch-device check at 1024px remains for landscape tablets.
+// get the desktop layout.
+// Fix #24: 1024px landscape touch devices (iPad landscape) now get desktop layout.
+// Only portrait touch devices ≤1024px get mobile.
 function useIsMobile(breakpoint = 900) {
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= breakpoint || (window.innerWidth <= 1024 && navigator.maxTouchPoints > 0));
+  const check = () => {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const isTouch = navigator.maxTouchPoints > 0;
+    // Landscape touch at 1024px+ → desktop
+    if (isTouch && w >= 1024 && w > h) return false;
+    return w <= breakpoint || (w <= 1024 && isTouch);
+  };
+  const [isMobile, setIsMobile] = useState(check);
   useEffect(() => {
-    const handler = () => setIsMobile(window.innerWidth <= breakpoint || (window.innerWidth <= 1024 && navigator.maxTouchPoints > 0));
+    const handler = () => setIsMobile(check());
     window.addEventListener('resize', handler);
     return () => window.removeEventListener('resize', handler);
   }, [breakpoint]);
   return isMobile;
+}
+
+// Fix #4/#5: Detect constrained landscape viewports (phone landscape)
+function useIsLandscapeConstrained() {
+  const check = () => {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    return w > h && h <= 500;
+  };
+  const [value, setValue] = useState(check);
+  useEffect(() => {
+    const handler = () => setValue(check());
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+  return value;
 }
 
 // ---------------------------------------------------------------------------
@@ -92,6 +122,7 @@ const _initialHash = parseHash();
 
 export default function App() {
   const isMobile = useIsMobile();
+  const isLandscapeConstrained = useIsLandscapeConstrained();
   const { artists: allArtists, loading: artistsLoading, error: artistsError } = useArtistData();
   const { connections, connectionsByArtist, connectionCounts, loading: connectionsLoading, error: connectionsError } = useConnectionData();
 
@@ -117,12 +148,26 @@ export default function App() {
   // Fix #57: Track whether connections warning has been dismissed
   const [connectionsWarningDismissed, setConnectionsWarningDismissed] = useState(false);
 
+  // Fix #1: Onboarding overlay for first-time users
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    try { return !localStorage.getItem('embryo-onboarded'); } catch { return false; }
+  });
+
+  // Fix #11, #16, #31: Toast notification state
+  const [toast, setToast] = useState(null);
+  const toastTimer = useRef(null);
+  const showToast = useCallback((message) => {
+    clearTimeout(toastTimer.current);
+    setToast(message);
+    toastTimer.current = setTimeout(() => setToast(null), 2500);
+  }, []);
+
   // Progressive loading messages (Fix #34)
   const [loadingMessage, setLoadingMessage] = useState('');
   useEffect(() => {
     if (!artistsLoading && !connectionsLoading) return;
     const t1 = setTimeout(() => setLoadingMessage('Loading artist data…'), 3000);
-    const t2 = setTimeout(() => setLoadingMessage('Almost there — loading 30,000+ musicians…'), 8000);
+    const t2 = setTimeout(() => setLoadingMessage('Almost there — loading 30,000+ artists…'), 8000);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [artistsLoading, connectionsLoading]);
 
@@ -255,35 +300,43 @@ export default function App() {
 
   const handlePlayPause = useCallback(() => dispatch({ type: 'TOGGLE_PLAY' }), []);
 
+  // Fix #16: Feedback when trying to deselect the last filter
   const handleToggleGenre = useCallback((bucketName) => {
     setActiveGenres(prev => {
       const next = new Set(prev);
       if (next.has(bucketName)) {
         next.delete(bucketName);
-        if (next.size === 0) return prev;
+        if (next.size === 0) {
+          showToast('At least one genre filter must be active');
+          return prev;
+        }
       } else {
         next.add(bucketName);
       }
       return next;
     });
-  }, []);
+  }, [showToast]);
 
   const handleSelectAllGenres = useCallback(() => {
     setActiveGenres(new Set(ALL_GENRE_KEYS));
   }, []);
 
+  // Fix #16: Feedback when trying to deselect the last connection type
   const handleToggleConnectionType = useCallback((type) => {
     setActiveConnectionTypes(prev => {
       const next = new Set(prev);
       if (next.has(type)) {
         next.delete(type);
-        if (next.size === 0) return prev;
+        if (next.size === 0) {
+          showToast('At least one connection type must be active');
+          return prev;
+        }
       } else {
         next.add(type);
       }
       return next;
     });
-  }, []);
+  }, [showToast]);
 
   const handleSelectAllConnectionTypes = useCallback(() => {
     setActiveConnectionTypes(new Set(ALL_CONNECTION_TYPES));
@@ -301,21 +354,24 @@ export default function App() {
     // Auto-expand timeline is handled via a separate effect that reads reducer state.
 
     // Auto-expand genre filter
+    // Fix #31: Show indicator on mobile when genre filter is auto-added
     const { bucket } = getGenreBucket(artist.genres);
     setActiveGenres(prev => {
       if (prev.has(bucket)) return prev;
       const next = new Set(prev);
       next.add(bucket);
+      showToast(`Added "${bucket}" genre filter`);
       return next;
     });
 
     // Fly to artist
     flyToArtist(mapRef, artist);
-  }, []);
+  }, [showToast]);
 
   // Auto-expand timeline when artist is first selected but outside range.
   // Only triggers on selectedArtist change — NOT on range changes, so user's
   // manual year/range adjustments are not overridden.
+  // Fix #11: Show a toast explaining the auto-expand.
   useEffect(() => {
     if (!selectedArtist) return;
     const aStart = selectedArtist.active_start ?? selectedArtist.birth_year;
@@ -328,6 +384,8 @@ export default function App() {
         start: Math.max(1400, Math.min(timeline.rangeStart, aStart - 10)),
         end: Math.min(2025, Math.max(timeline.rangeEnd, aEnd + 10)),
       });
+      const name = selectedArtist.name || 'this artist';
+      showToast(`Timeline expanded to show ${name}'s active period`);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedArtist]);
@@ -422,17 +480,18 @@ export default function App() {
           @keyframes embryo-bar { 0% { width: 0%; } 100% { width: 100%; } }
         `}</style>
         <div style={{ textAlign: 'center', color: '#5A5048' }}>
+          <img src="/embryo-logo.svg" alt="" style={{ width: 64, height: 64, marginBottom: 8 }} />
           <div style={{ fontSize: 20, fontWeight: 600, marginBottom: 6, letterSpacing: '0.04em', color: '#3E3530' }}>
             EMBRYO
           </div>
           <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 16, animation: 'embryo-pulse 1.8s ease-in-out infinite' }}>
-            Loading musicians…
+            Loading artists…
           </div>
           <div style={{ width: 180, height: 3, borderRadius: 2, backgroundColor: 'rgba(90,80,72,0.12)', overflow: 'hidden' }}>
             <div style={{ height: '100%', borderRadius: 2, backgroundColor: '#C4326B', animation: 'embryo-bar 2.5s ease-in-out infinite' }} />
           </div>
           <div style={{ fontSize: 12, color: '#7A6E65', marginTop: 10 }}>
-            Preparing 31,069 artists
+            Preparing the map…
           </div>
           {loadingMessage && (
             <div style={{ fontSize: 12, color: '#7A6E65', marginTop: 8, maxWidth: 220 }}>
@@ -474,7 +533,10 @@ export default function App() {
     );
   }
 
+  const totalArtistCount = allArtists.length;
+
   return (
+    <TotalArtistCountContext.Provider value={totalArtistCount}>
     <main style={{ width: '100vw', minHeight: '100vh', height: '100dvh', overflow: 'hidden' }}>
       <h1 style={{
         position: 'absolute',
@@ -484,7 +546,7 @@ export default function App() {
         clip: 'rect(0,0,0,0)',
         whiteSpace: 'nowrap',
       }}>
-        EMBRYO — Interactive Musician Map
+        EMBRYO — Interactive Artist Map
       </h1>
       {/* Fix #57: Non-fatal warning banner when connections fail to load */}
       {connectionsError && !connectionsWarningDismissed && (
@@ -516,10 +578,13 @@ export default function App() {
           <span>Connection data unavailable — showing artists only</span>
           <button
             onClick={() => setConnectionsWarningDismissed(true)}
+            onFocus={(e) => { if (e.target.matches(':focus-visible')) e.target.style.boxShadow = '0 0 0 2px #B8336A'; }}
+            onBlur={(e) => { e.target.style.boxShadow = 'none'; }}
             aria-label="Dismiss warning"
             style={{
               background: 'none',
               border: 'none',
+              borderRadius: 8,
               cursor: 'pointer',
               fontSize: 16,
               color: '#8A7050',
@@ -560,17 +625,20 @@ export default function App() {
         allArtists={allArtists}
         onSelect={handleSelect}
         isMobile={isMobile}
+        artistCount={allArtists.length}
       />
 
       {/* Reset view button — only visible when filters are non-default */}
+      {/* Fix #9: Moved below ArtistCount to avoid overlap on notched devices */}
+      {/* Fix #34: Added safe-area-inset-left for landscape notch */}
       {!isDefault && (
         <button
           onClick={handleReset}
           aria-label="Reset view to defaults"
           style={{
             position: 'fixed',
-            top: 100,
-            left: 16,
+            top: 'calc(100px + env(safe-area-inset-top))',
+            left: 'calc(16px + env(safe-area-inset-left))',
             zIndex: 15,
             display: 'flex',
             alignItems: 'center',
@@ -597,7 +665,8 @@ export default function App() {
       )}
 
       {/* Mobile: collapsible filters toggle */}
-      {isMobile && (
+      {/* Fix #4/#5: Hide in constrained landscape to save vertical space */}
+      {isMobile && !isLandscapeConstrained && (
         <button
           onClick={() => setFiltersExpanded(prev => !prev)}
           aria-expanded={filtersExpanded}
@@ -605,7 +674,7 @@ export default function App() {
             position: 'fixed',
             bottom: filtersExpanded ? `calc(${filterPanelHeight}px + env(safe-area-inset-bottom))` : `calc(56px + env(safe-area-inset-bottom))`,
             left: 12,
-            zIndex: 21,
+            zIndex: 18,
             display: 'flex',
             alignItems: 'center',
             gap: 5,
@@ -635,9 +704,10 @@ export default function App() {
       )}
 
       {/* Filters — always visible on desktop, collapsible on mobile */}
-      {(!isMobile || filtersExpanded) && (
+      {/* Fix #4/#5: Hide filters entirely in constrained landscape */}
+      {(!isMobile || filtersExpanded) && !isLandscapeConstrained && (
         <div id="filter-panels" ref={filterPanelRef} style={{
-          maxHeight: 'min(60vh, 200px)',
+          maxHeight: 'clamp(120px, 25vh, 200px)',
           overflowY: 'auto',
         }}>
           <GenreFilters
@@ -676,6 +746,82 @@ export default function App() {
         onClose={handleCloseDetail}
         isMobile={isMobile}
       />
+
+      {/* Fix #36: Empty state when filters yield 0 artists */}
+      {!artistsLoading && allArtists.length > 0 && filteredArtists.length === 0 && (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 10,
+            textAlign: 'center',
+            fontFamily: '"DM Sans", sans-serif',
+            backgroundColor: 'rgba(250, 243, 235, 0.95)',
+            backdropFilter: 'blur(6px)',
+            borderRadius: 16,
+            padding: '20px 28px',
+            border: '1px solid rgba(224, 216, 204, 0.7)',
+            boxShadow: '0 4px 20px rgba(90, 80, 72, 0.12)',
+            maxWidth: 'calc(100vw - 48px)',
+          }}
+        >
+          <div style={{ fontSize: 15, fontWeight: 600, color: '#3E3530', marginBottom: 6 }}>
+            No artists match current filters
+          </div>
+          <div style={{ fontSize: 13, color: '#7A6E65' }}>
+            Try adjusting your genre selection or timeline range.
+          </div>
+        </div>
+      )}
+
+      {/* Fix #11, #16, #31: Toast notification */}
+      {toast && (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            position: 'fixed',
+            bottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : 80,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 50,
+            fontFamily: '"DM Sans", sans-serif',
+            fontSize: 13,
+            fontWeight: 500,
+            color: '#3E3530',
+            backgroundColor: 'rgba(250, 243, 235, 0.95)',
+            backdropFilter: 'blur(8px)',
+            border: '1px solid rgba(224, 216, 204, 0.7)',
+            borderRadius: 12,
+            padding: '8px 16px',
+            boxShadow: '0 4px 16px rgba(90, 80, 72, 0.15)',
+            whiteSpace: 'nowrap',
+            maxWidth: 'calc(100vw - 32px)',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            animation: 'embryo-toast-in 0.2s ease-out',
+            pointerEvents: 'none',
+          }}
+        >
+          {toast}
+        </div>
+      )}
+      <style>{`
+        @keyframes embryo-toast-in {
+          from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+          to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+      `}</style>
+
+      {/* Fix #1: Onboarding overlay for first-time users */}
+      {showOnboarding && (
+        <OnboardingOverlay onComplete={() => setShowOnboarding(false)} />
+      )}
     </main>
+    </TotalArtistCountContext.Provider>
   );
 }

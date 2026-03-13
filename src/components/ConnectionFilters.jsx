@@ -31,7 +31,7 @@ function ConnectionFilters({ activeConnectionTypes, onToggleType, onSelectAll, t
     <>
     <div style={{
       position: 'fixed',
-      bottom: isMobile ? `calc(108px + env(safe-area-inset-bottom))` : `calc(72px + env(safe-area-inset-bottom))`,
+      bottom: isMobile ? `calc(clamp(44px, 6vw, 52px) + 56px + env(safe-area-inset-bottom))` : `calc(clamp(44px, 6vw, 52px) + 20px + env(safe-area-inset-bottom))`,
       left: isMobile ? '0' : '16px',
       right: isMobile ? '0' : 'auto',
       zIndex: 20,
@@ -47,7 +47,7 @@ function ConnectionFilters({ activeConnectionTypes, onToggleType, onSelectAll, t
         backgroundColor: 'rgba(250, 243, 235, 0.88)',
         backdropFilter: 'blur(8px)',
         WebkitBackdropFilter: 'blur(8px)',
-        borderRadius: isMobile ? '0' : '10px',
+        borderRadius: isMobile ? '0' : '12px',
         border: '1px solid rgba(224, 216, 204, 0.5)',
         boxShadow: '0 1px 6px rgba(90, 80, 72, 0.06)',
         overflowX: isMobile ? 'auto' : 'visible',
@@ -62,14 +62,14 @@ function ConnectionFilters({ activeConnectionTypes, onToggleType, onSelectAll, t
         title="Show all connection types"
         style={{
           fontFamily: '"DM Sans", sans-serif',
-          fontSize: isPointerFine ? 12 : 'clamp(10px, 1.4vw, 12px)',
+          fontSize: isPointerFine ? 12 : 'clamp(11px, 1.4vw, 12px)',
           fontWeight: 600,
           lineHeight: 1.2,
           letterSpacing: '0.03em',
           color: allActive ? '#FAF3EB' : '#6B5F55',
           backgroundColor: allActive ? ACCENT : 'transparent',
           border: allActive ? `1px solid ${ACCENT}` : '1px solid rgba(90,80,72,0.15)',
-          borderRadius: isPointerFine ? 999 : '6px',
+          borderRadius: isPointerFine ? 999 : '8px',
           padding: isPointerFine ? '3px 8px' : (isMobile ? '6px 10px' : '4px 8px'),
           minHeight: isPointerFine ? 30 : 44,
           cursor: 'pointer',
@@ -110,14 +110,14 @@ function ConnectionFilters({ activeConnectionTypes, onToggleType, onSelectAll, t
             title={`${label} connections (${count.toLocaleString()})`}
             style={{
               fontFamily: '"DM Sans", sans-serif',
-              fontSize: isPointerFine ? 12 : 'clamp(10px, 1.4vw, 12px)',
+              fontSize: isPointerFine ? 12 : 'clamp(11px, 1.4vw, 12px)',
               fontWeight: isActive ? 600 : 400,
               lineHeight: 1.2,
               letterSpacing: '0.02em',
               color: isActive ? ACCENT : '#4A3F37',
               backgroundColor: isActive ? 'rgba(90,80,72,0.08)' : 'transparent',
               border: isActive ? `1.5px solid ${ACCENT}` : '1px solid rgba(90,80,72,0.12)',
-              borderRadius: isPointerFine ? 999 : '6px',
+              borderRadius: isPointerFine ? 999 : '8px',
               padding: isPointerFine ? '3px 8px' : (isMobile ? '6px 9px' : '4px 7px'),
               minHeight: isPointerFine ? 30 : 44,
               cursor: 'pointer',
@@ -151,7 +151,7 @@ function ConnectionFilters({ activeConnectionTypes, onToggleType, onSelectAll, t
               <span
                 aria-hidden="true"
                 style={{
-                  fontSize: 'clamp(10px, 1.2vw, 12px)',
+                  fontSize: 'clamp(11px, 1.2vw, 12px)',
                   fontWeight: 400,
                   color: '#5A5048',
                 }}

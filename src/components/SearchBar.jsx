@@ -22,8 +22,8 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false, artistCoun
   // reflect the full dataset rather than the currently-filtered slice.
   const totalCount = artistCount ?? (allArtists?.length || artists?.length) ?? 0;
   const searchPlaceholder = totalCount > 0
-    ? `Search ${totalCount.toLocaleString()} musicians…`
-    : 'Search musicians…';
+    ? `Search ${totalCount.toLocaleString()} artists…`
+    : 'Search artists…';
 
   // Use the full unfiltered dataset for indexing so the Fuse index is not
   // rebuilt on every timeline drag (which changes the filtered artists list
@@ -167,7 +167,7 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false, artistCoun
         fontFamily: '"DM Sans", sans-serif',
       }}
       role="search"
-      aria-label="Search for musicians"
+      aria-label="Search for artists"
     >
       {/* Input */}
       <div style={{ position: 'relative' }}>
@@ -193,14 +193,14 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false, artistCoun
         <input
           id="search-input"
           ref={inputRef}
-          type="text"
+          type="search"
           value={query}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onBlur={handleBlur}
           onFocus={handleFocus}
           placeholder={searchPlaceholder}
-          aria-label="Search musicians"
+          aria-label="Search artists"
           aria-expanded={isOpen}
           aria-haspopup="listbox"
           aria-controls="search-results-list"
@@ -216,7 +216,7 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false, artistCoun
             color: '#3E3530',
             backgroundColor: 'rgba(250, 243, 235, 0.95)',
             border: '1px solid rgba(224, 216, 204, 0.8)',
-            borderRadius: (isOpen || (hasFocus && query.trim().length >= 2 && results.length === 0)) ? '16px 16px 0 0' : 999,
+            borderRadius: (isOpen || (hasFocus && query.trim().length >= 2 && results.length === 0)) ? '12px 12px 0 0' : 999,
             outline: '2px solid transparent',
             boxShadow: '0 2px 12px rgba(90, 80, 72, 0.10)',
             backdropFilter: 'blur(8px)',
@@ -280,8 +280,8 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false, artistCoun
             backgroundColor: 'rgba(250, 243, 235, 0.98)',
             border: '1px solid rgba(224, 216, 204, 0.8)',
             borderTop: 'none',
-            borderRadius: '0 0 16px 16px',
-            boxShadow: '0 4px 16px rgba(90, 80, 72, 0.14)',
+            borderRadius: '0 0 12px 12px',
+            boxShadow: '0 4px 16px rgba(90, 80, 72, 0.18), 0 1px 3px rgba(90, 80, 72, 0.08)',
             backdropFilter: 'blur(8px)',
             maxHeight: 'clamp(160px, 40vh, 320px)',
             overflowY: 'auto',
@@ -341,7 +341,7 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false, artistCoun
                   </div>
                   <div
                     style={{
-                      fontSize: 10,
+                      fontSize: 12,
                       color: '#6B5F55',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
@@ -372,7 +372,7 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false, artistCoun
             backgroundColor: 'rgba(250, 243, 235, 0.98)',
             border: '1px solid rgba(224, 216, 204, 0.8)',
             borderTop: 'none',
-            borderRadius: '0 0 16px 16px',
+            borderRadius: '0 0 12px 12px',
             boxShadow: '0 4px 16px rgba(90, 80, 72, 0.14)',
             backdropFilter: 'blur(8px)',
             zIndex: 21,

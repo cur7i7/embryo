@@ -37,6 +37,43 @@ function overlaps(a, b) {
   return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 }
 
+// Cluster tooltip helpers (Issue #35) — lightweight DOM tooltip for cluster hover
+let _clusterTooltipEl = null;
+function showClusterTooltip(mx, my, count, canvas) {
+  if (!_clusterTooltipEl) {
+    _clusterTooltipEl = document.createElement('div');
+    _clusterTooltipEl.setAttribute('role', 'tooltip');
+    Object.assign(_clusterTooltipEl.style, {
+      position: 'absolute',
+      pointerEvents: 'none',
+      zIndex: '10',
+      padding: '4px 10px',
+      borderRadius: '6px',
+      backgroundColor: 'rgba(44, 36, 32, 0.9)',
+      color: '#FAF3EB',
+      fontFamily: '"DM Sans", sans-serif',
+      fontSize: '12px',
+      fontWeight: '500',
+      whiteSpace: 'nowrap',
+      transform: 'translate(-50%, -100%)',
+      marginTop: '-10px',
+    });
+    document.body.appendChild(_clusterTooltipEl);
+  }
+  const artistLabel = count === 1 ? 'artist' : 'artists';
+  _clusterTooltipEl.textContent = `${count.toLocaleString()} ${artistLabel}`;
+  // Position relative to viewport using canvas offset
+  const rect = canvas?.getBoundingClientRect?.() || { left: 0, top: 0 };
+  _clusterTooltipEl.style.left = (rect.left + mx) + 'px';
+  _clusterTooltipEl.style.top = (rect.top + my - 8) + 'px';
+  _clusterTooltipEl.style.display = 'block';
+}
+function hideClusterTooltip() {
+  if (_clusterTooltipEl) {
+    _clusterTooltipEl.style.display = 'none';
+  }
+}
+
 export default function CanvasOverlay({
   mapRef,
   artists,
@@ -1232,7 +1269,8 @@ export default function CanvasOverlay({
     return null;
   }, []);
 
-  // Handle cluster clicks when in cluster mode
+  // Handle cluster clicks when in cluster mode — zoom by 3 levels per click
+  // to reduce clicks from 4-6 to 2-3 (Issue #2)
   const handleClusterClick = useCallback((mx, my) => {
     const map = mapRef.current?.getMap?.();
     const index = scIndexRef.current;
@@ -1256,17 +1294,48 @@ export default function CanvasOverlay({
       const count = cluster.properties.point_count;
       const clusterRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log2(count) * 7, CLUSTER_RADIUS_MAX);
       if (Math.sqrt(dx * dx + dy * dy) <= clusterRadius) {
-        try {
-          const expansionZoom = index.getClusterExpansionZoom(cluster.id);
-          map.flyTo({ center: cluster.geometry.coordinates, zoom: expansionZoom });
-        } catch { /* cluster expansion may fail at max zoom */ }
+        // Jump by 3 zoom levels instead of incremental expansion (Issue #2)
+        const targetZoom = Math.min(map.getZoom() + 3, 16);
+        map.flyTo({ center: cluster.geometry.coordinates, zoom: targetZoom });
         return true;
       }
     }
     return false;
   }, [mapRef]);
 
-  // Handle city group clicks when in city mode -> fly to zoom 13
+  // Handle double-click on cluster to zoom directly to individual artist level (Issue #2)
+  const handleClusterDoubleClick = useCallback((mx, my) => {
+    const map = mapRef.current?.getMap?.();
+    const index = scIndexRef.current;
+    if (!map || !index) return false;
+
+    if (renderModeRef.current !== 'cluster') return false;
+
+    const bounds = map.getBounds();
+    const zoom = Math.floor(map.getZoom());
+    const clusters = index.getClusters(
+      [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()],
+      zoom
+    );
+
+    for (const cluster of clusters) {
+      if (!cluster.properties.cluster) continue;
+      const [lng, lat] = cluster.geometry.coordinates;
+      const pt = map.project([lng, lat]);
+      const dx = pt.x - mx;
+      const dy = pt.y - my;
+      const count = cluster.properties.point_count;
+      const clusterRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log2(count) * 7, CLUSTER_RADIUS_MAX);
+      if (Math.sqrt(dx * dx + dy * dy) <= clusterRadius) {
+        // Double-click jumps directly to individual artist level (zoom 9)
+        map.flyTo({ center: cluster.geometry.coordinates, zoom: ZOOM_INDIVIDUAL });
+        return true;
+      }
+    }
+    return false;
+  }, [mapRef]);
+
+  // Handle city group clicks when in city mode -> adaptive zoom based on artist count (Issue #2, #15)
   const handleCityClick = useCallback((mx, my) => {
     const map = mapRef.current?.getMap?.();
     if (!map) return false;
@@ -1280,7 +1349,14 @@ export default function CanvasOverlay({
       const dx = x - mx;
       const dy = y - my;
       if (Math.sqrt(dx * dx + dy * dy) <= Math.max(radius, hitRadiusRef.current)) {
-        map.flyTo({ center: [group.lng, group.lat], zoom: 13 });
+        // Adaptive zoom: large cities need lower zoom to avoid overshoot (Issue #15)
+        const artistCount = group.artists.length;
+        let targetZoom;
+        if (artistCount > 100) targetZoom = 10;
+        else if (artistCount > 50) targetZoom = 11;
+        else if (artistCount > 20) targetZoom = 12;
+        else targetZoom = 13;
+        map.flyTo({ center: [group.lng, group.lat], zoom: targetZoom });
         return true;
       }
     }
@@ -1299,6 +1375,7 @@ export default function CanvasOverlay({
 
       // In city mode, check city group hover for pointer cursor + highlight
       if (renderModeRef.current === 'city') {
+        hideClusterTooltip();
         const cityPosMap = cityPosMapRef.current;
         let foundCityKey = null;
         if (cityPosMap && cityPosMap.size > 0) {
@@ -1331,13 +1408,43 @@ export default function CanvasOverlay({
         return;
       }
 
-      // In cluster mode, skip individual artist hit testing
+      // In cluster mode, check cluster hover for pointer cursor + tooltip (Issue #35)
       if (renderModeRef.current === 'cluster') {
+        const index = scIndexRef.current;
+        if (index) {
+          const bounds = map.getBounds();
+          const zoom = Math.floor(map.getZoom());
+          const clusters = index.getClusters(
+            [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()],
+            zoom
+          );
+          let foundCluster = false;
+          for (const cluster of clusters) {
+            if (!cluster.properties.cluster) continue;
+            const [lng, lat] = cluster.geometry.coordinates;
+            const pt = map.project([lng, lat]);
+            const cdx = pt.x - mx;
+            const cdy = pt.y - my;
+            const count = cluster.properties.point_count;
+            const clusterRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log2(count) * 7, CLUSTER_RADIUS_MAX);
+            if (Math.sqrt(cdx * cdx + cdy * cdy) <= clusterRadius) {
+              map.getCanvas().style.cursor = 'pointer';
+              // Show tooltip with cluster count
+              showClusterTooltip(mx, my, count, canvasRef.current);
+              foundCluster = true;
+              break;
+            }
+          }
+          if (!foundCluster) {
+            map.getCanvas().style.cursor = '';
+            hideClusterTooltip();
+          }
+        }
         onHoverRef.current?.(null);
-        map.getCanvas().style.cursor = '';
         return;
       }
 
+      hideClusterTooltip();
       const hit = hitTest(mx, my);
       if (hit) {
         onHoverRef.current?.(hit.artist);
@@ -1358,9 +1465,19 @@ export default function CanvasOverlay({
       onSelectRef.current?.(hit ? hit.artist : null);
     };
 
+    // Double-click on cluster to jump directly to individual view (Issue #2)
+    const handleMapDblClick = (e) => {
+      const mx = e.point.x;
+      const my = e.point.y;
+      if (handleClusterDoubleClick(mx, my)) {
+        e.preventDefault(); // Prevent default map double-click zoom
+      }
+    };
+
     const handleMapMouseLeave = () => {
       onHoverRef.current?.(null);
       map.getCanvas().style.cursor = '';
+      hideClusterTooltip();
       if (hoveredCityKeyRef.current !== null) {
         hoveredCityKeyRef.current = null;
         needsAnimRef.current = true;
@@ -1382,6 +1499,7 @@ export default function CanvasOverlay({
     events.forEach((evt) => map.on(evt, onMapEvent));
     map.on('mousemove', handleMapMouseMove);
     map.on('click', handleMapClick);
+    map.on('dblclick', handleMapDblClick);
     map.on('mouseout', handleMapMouseLeave);
     map.on('touchstart', handleMapTouchStart);
 
@@ -1393,14 +1511,16 @@ export default function CanvasOverlay({
       events.forEach((evt) => map.off(evt, onMapEvent));
       map.off('mousemove', handleMapMouseMove);
       map.off('click', handleMapClick);
+      map.off('dblclick', handleMapDblClick);
       map.off('mouseout', handleMapMouseLeave);
       map.off('touchstart', handleMapTouchStart);
+      hideClusterTooltip();
       if (rafRef.current != null) {
         cancelAnimationFrame(rafRef.current);
         rafRef.current = null;
       }
     };
-  }, [mapRef, startRaf, hitTest, handleClusterClick, handleCityClick]);
+  }, [mapRef, startRaf, hitTest, handleClusterClick, handleClusterDoubleClick, handleCityClick]);
 
   // Keyboard handler for canvas — arrow keys to cycle visible artists, Enter/Space to select
   const handleKeyDown = useCallback((e) => {
@@ -1424,11 +1544,17 @@ export default function CanvasOverlay({
       }
 
       if (mode === 'city') {
-        // Fly to focused city at zoom 13
+        // Fly to focused city with adaptive zoom (Issue #15)
         const focused = focusedArtistIndexRef._focusedCity;
         if (focused && map) {
           const { entry } = focused;
-          map.flyTo({ center: [entry.group.lng, entry.group.lat], zoom: 13 });
+          const artistCount = entry.group.artists.length;
+          let targetZoom;
+          if (artistCount > 100) targetZoom = 10;
+          else if (artistCount > 50) targetZoom = 11;
+          else if (artistCount > 20) targetZoom = 12;
+          else targetZoom = 13;
+          map.flyTo({ center: [entry.group.lng, entry.group.lat], zoom: targetZoom });
         }
         return;
       }

@@ -31,11 +31,13 @@ function GenreFilters({ activeGenres, onToggleGenre, onSelectAll, isMobile = fal
   const allActive = activeGenres.size === BUCKET_NAMES.length;
   const isPointerFine = useIsPointerFine();
   const [showLeftFade, setShowLeftFade] = useState(false);
+  const [hasScrolled, setHasScrolled] = useState(false);
   const scrollRef = useRef(null);
 
   const handleScroll = () => {
     if (scrollRef.current) {
       setShowLeftFade(scrollRef.current.scrollLeft > 0);
+      if (!hasScrolled) setHasScrolled(true);
     }
   };
 
@@ -43,7 +45,7 @@ function GenreFilters({ activeGenres, onToggleGenre, onSelectAll, isMobile = fal
     <>
     <div style={{
       position: 'fixed',
-      bottom: isMobile ? `calc(168px + env(safe-area-inset-bottom))` : `calc(128px + env(safe-area-inset-bottom))`,
+      bottom: isMobile ? `calc(clamp(44px, 6vw, 52px) + 116px + env(safe-area-inset-bottom))` : `calc(clamp(44px, 6vw, 52px) + 76px + env(safe-area-inset-bottom))`,
       left: isMobile ? '0' : '16px',
       right: isMobile ? '0' : 'auto',
       zIndex: 20,
@@ -207,6 +209,30 @@ function GenreFilters({ activeGenres, onToggleGenre, onSelectAll, isMobile = fal
           borderRadius: '0 0 0 0',
         }}
       />
+    )}
+    {isMobile && !hasScrolled && (
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          right: 4,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          fontSize: 11,
+          fontFamily: '"DM Sans", sans-serif',
+          color: '#5A5048',
+          opacity: 0.7,
+          pointerEvents: 'none',
+          animation: 'genreScrollHint 1.5s ease-in-out infinite',
+        }}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ display: 'block' }}>
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+      </div>
+    )}
+    {isMobile && !hasScrolled && (
+      <style>{`@keyframes genreScrollHint { 0%, 100% { opacity: 0.4; transform: translateY(-50%) translateX(0); } 50% { opacity: 0.8; transform: translateY(-50%) translateX(3px); } }`}</style>
     )}
     </div>
     <div

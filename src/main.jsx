@@ -21,7 +21,24 @@ class ErrorBoundary extends React.Component {
           <div style={{ textAlign: 'center', color: '#5A5048', maxWidth: 400, padding: 24 }}>
             <div style={{ fontSize: 18, fontWeight: 500, marginBottom: 8 }}>Something went wrong</div>
             <div style={{ fontSize: 13, color: '#7A6E65', marginBottom: 16 }}>{this.state.error?.message}</div>
-            <button onClick={() => window.location.reload()} style={{ padding: '10px 24px', fontSize: 14, fontWeight: 500, backgroundColor: '#D83E7F', color: '#FAF3EB', border: 'none', borderRadius: 8, cursor: 'pointer', fontFamily: '"DM Sans", sans-serif', minHeight: 44 }}>Reload</button>
+            <button
+              onClick={() => window.location.reload()}
+              onFocus={(e) => { if (e.target.matches(':focus-visible')) e.target.style.boxShadow = '0 0 0 2px #B8336A'; }}
+              onBlur={(e) => { e.target.style.boxShadow = 'none'; }}
+              style={{
+                marginTop: 16,
+                padding: '10px 24px',
+                fontSize: 14,
+                fontFamily: '"DM Sans", sans-serif',
+                fontWeight: 600,
+                color: '#3E3530',
+                backgroundColor: 'rgba(250, 243, 235, 0.95)',
+                border: '1px solid rgba(168, 144, 128, 0.4)',
+                borderRadius: 20,
+                cursor: 'pointer',
+                minHeight: 44,
+              }}
+            >Try again</button>
           </div>
         </div>
       );

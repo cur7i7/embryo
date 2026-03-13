@@ -56,7 +56,7 @@ export default function Map({
   const visibleCount = useMemo(() => (artists || []).length, [artists]);
 
   return (
-    <div role="application" aria-label="Interactive world map showing musicians from 1400 to 2025. Use search or timeline to explore." style={{ width: '100vw', minHeight: '100vh', height: '100dvh', backgroundColor: '#FAF3EB', position: 'relative' }}>
+    <div role="application" aria-label="Interactive world map showing artists from 1400 to 2025. Use search or timeline to explore." style={{ width: '100vw', minHeight: '100vh', height: '100dvh', backgroundColor: '#FAF3EB', position: 'relative' }}>
       <a
         href="#timeline-controls"
         onClick={(e) => {
@@ -200,6 +200,85 @@ export default function Map({
         rangeEnd={rangeEnd}
         isPlaying={isPlaying}
       />
+      {/* Zoom controls for accessibility — users without scroll/trackpad/pinch (Issue #13) */}
+      <div
+        role="group"
+        aria-label="Map zoom controls"
+        style={{
+          position: 'absolute',
+          bottom: 32,
+          right: 12,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 4,
+          zIndex: 10,
+        }}
+      >
+        <button
+          type="button"
+          aria-label="Zoom in"
+          onClick={() => {
+            const map = mapRef.current?.getMap?.();
+            if (map) map.zoomIn({ duration: 300 });
+          }}
+          style={{
+            width: 44,
+            height: 44,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: '#FAF3EB',
+            color: '#2C2420',
+            border: '1px solid rgba(44, 36, 32, 0.15)',
+            borderRadius: '10px 10px 2px 2px',
+            cursor: 'pointer',
+            fontFamily: '"DM Sans", sans-serif',
+            fontSize: 22,
+            fontWeight: 600,
+            lineHeight: 1,
+            padding: 0,
+            boxShadow: '0 2px 6px rgba(44, 36, 32, 0.12)',
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#F0E8DE'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#FAF3EB'; }}
+          onFocus={(e) => { e.currentTarget.style.outline = '2px solid #D83E7F'; e.currentTarget.style.outlineOffset = '2px'; }}
+          onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
+        >
+          +
+        </button>
+        <button
+          type="button"
+          aria-label="Zoom out"
+          onClick={() => {
+            const map = mapRef.current?.getMap?.();
+            if (map) map.zoomOut({ duration: 300 });
+          }}
+          style={{
+            width: 44,
+            height: 44,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: '#FAF3EB',
+            color: '#2C2420',
+            border: '1px solid rgba(44, 36, 32, 0.15)',
+            borderRadius: '2px 2px 10px 10px',
+            cursor: 'pointer',
+            fontFamily: '"DM Sans", sans-serif',
+            fontSize: 22,
+            fontWeight: 600,
+            lineHeight: 1,
+            padding: 0,
+            boxShadow: '0 2px 6px rgba(44, 36, 32, 0.12)',
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#F0E8DE'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#FAF3EB'; }}
+          onFocus={(e) => { e.currentTarget.style.outline = '2px solid #D83E7F'; e.currentTarget.style.outlineOffset = '2px'; }}
+          onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
+        >
+          &minus;
+        </button>
+      </div>
     </div>
   );
 }

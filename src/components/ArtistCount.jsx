@@ -1,8 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useIsPointerFine } from '../hooks/useIsPointerFine.js';
+import { TotalArtistCountContext } from '../App.jsx';
 
+// Fix #3: Shows "{filtered} of {total} artists" when filters are active,
+// or just "{total} artists" when showing all.
 function ArtistCount({ count, rangeStart, rangeEnd, isPlaying = false }) {
   const isPointerFine = useIsPointerFine();
+  const totalCount = useContext(TotalArtistCountContext);
+
+  const isFiltered = totalCount > 0 && count !== totalCount;
+
   const label =
     rangeStart === 1400 && rangeEnd === 2025
       ? 'All years'
@@ -16,13 +23,17 @@ function ArtistCount({ count, rangeStart, rangeEnd, isPlaying = false }) {
     return () => clearTimeout(t);
   }, [count, label]);
 
+  const countText = isFiltered
+    ? `${count.toLocaleString()} of ${totalCount.toLocaleString()}`
+    : count.toLocaleString();
+
   return (
     <>
     <div
       style={{
         position: 'absolute',
         top: 'calc(56px + env(safe-area-inset-top))',
-        left: '16px',
+        left: 'calc(16px + env(safe-area-inset-left))',
         zIndex: 10,
         backgroundColor: 'rgba(250, 243, 235, 0.88)',
         backdropFilter: 'blur(6px)',
@@ -43,7 +54,7 @@ function ArtistCount({ count, rangeStart, rangeEnd, isPlaying = false }) {
       }}
     >
       <span style={{ fontWeight: 600, color: '#C4326B' }}>
-        {count.toLocaleString()}
+        {countText}
       </span>
       <span style={{ color: '#5A5048' }}>
         artists
