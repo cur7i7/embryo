@@ -4,7 +4,7 @@ import { getGenreBucket } from '../utils/genres.js';
 
 const MAX_RESULTS = 8;
 
-export default function SearchBar({ artists, onSelect, isMobile = false }) {
+export default function SearchBar({ artists, allArtists, onSelect, isMobile = false }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -14,9 +14,13 @@ export default function SearchBar({ artists, onSelect, isMobile = false }) {
   const dropdownRef = useRef(null);
   const blurTimeoutRef = useRef(null);
 
+  // Use the full unfiltered dataset for indexing so the Fuse index is not
+  // rebuilt on every timeline drag (which changes the filtered artists list
+  // every frame). Fall back to artists if allArtists is not provided.
+  const indexSource = allArtists && allArtists.length > 0 ? allArtists : artists;
   const fuse = useMemo(() => {
-    if (!artists || artists.length === 0) return null;
-    return new Fuse(artists, {
+    if (!indexSource || indexSource.length === 0) return null;
+    return new Fuse(indexSource, {
       keys: [
         { name: 'name', weight: 0.7 },
         { name: 'birth_city', weight: 0.2 },
@@ -26,7 +30,8 @@ export default function SearchBar({ artists, onSelect, isMobile = false }) {
       minMatchCharLength: 2,
       includeScore: true,
     });
-  }, [artists]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [indexSource.length]);
 
   const handleInputChange = useCallback((e) => {
     const val = e.target.value;
@@ -275,6 +280,7 @@ export default function SearchBar({ artists, onSelect, isMobile = false }) {
                   alignItems: 'center',
                   gap: 10,
                   padding: '9px 14px',
+                  minHeight: 44,
                   cursor: 'pointer',
                   backgroundColor: isActive ? 'rgba(168, 144, 128, 0.10)' : 'transparent',
                   borderBottom: i < results.length - 1 ? '1px solid rgba(224, 216, 204, 0.4)' : 'none',

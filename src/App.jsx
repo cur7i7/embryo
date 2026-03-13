@@ -429,6 +429,7 @@ export default function App() {
 
       <SearchBar
         artists={filteredArtists}
+        allArtists={allArtists}
         onSelect={handleSelect}
         isMobile={isMobile}
       />

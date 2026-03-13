@@ -25,6 +25,8 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
   const containerRef = useRef(null);
   const dragging = useRef(null); // 'left' | 'right' | null
   const didDrag = useRef(false);
+  const rafPending = useRef(false);
+  const pendingRange = useRef(null);
 
   // Viewport-aware year labels: fewer on narrow screens to prevent overlap
   const [windowWidth, setWindowWidth] = useState(() => window.innerWidth);
@@ -85,14 +87,28 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
     const year = xToYear(x, rect.width);
     const SNAP = 10; // snap to decade
 
+    let next = null;
     if (dragging.current === 'left') {
       const snapped = Math.round(year / SNAP) * SNAP;
       const newStart = Math.max(MIN_YEAR, Math.min(snapped, rangeEnd - SNAP));
-      if (newStart !== rangeStart) onRangeChange(newStart, rangeEnd);
+      if (newStart !== rangeStart) next = [newStart, rangeEnd];
     } else {
       const snapped = Math.round(year / SNAP) * SNAP;
       const newEnd = Math.min(MAX_YEAR, Math.max(snapped, rangeStart + SNAP));
-      if (newEnd !== rangeEnd) onRangeChange(rangeStart, newEnd);
+      if (newEnd !== rangeEnd) next = [rangeStart, newEnd];
+    }
+
+    if (!next) return;
+    pendingRange.current = next;
+    if (!rafPending.current) {
+      rafPending.current = true;
+      requestAnimationFrame(() => {
+        if (pendingRange.current) {
+          onRangeChange(pendingRange.current[0], pendingRange.current[1]);
+          pendingRange.current = null;
+        }
+        rafPending.current = false;
+      });
     }
   }, [dragging, rangeStart, rangeEnd, onRangeChange, xToYear]);
 
@@ -180,8 +196,8 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
         aria-label={isPlaying ? 'Pause playback' : 'Play timeline'}
         aria-pressed={isPlaying}
         style={{
-          width: 'clamp(34px, 5vw, 44px)',
-          height: 'clamp(34px, 5vw, 44px)',
+          width: 44,
+          height: 44,
           borderRadius: '10px',
           border: 'none',
           backgroundColor: isPlaying ? '#D83E7F' : 'rgba(196,50,107,0.1)',
