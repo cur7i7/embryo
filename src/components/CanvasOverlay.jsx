@@ -128,6 +128,9 @@ export default function CanvasOverlay({
   // Track which connectionCounts was used for the last presorted array
   const lastSortedCountsRef = useRef(null);
 
+  // Filter signature to avoid redundant Supercluster/cityGroup rebuilds (Codex 2.5)
+  const filterSignatureRef = useRef('');
+
   // Initialize textures once on mount
   useEffect(() => {
     orbTexturesRef.current = GENRE_COLORS.map((color) =>
@@ -943,8 +946,16 @@ export default function CanvasOverlay({
     }
     artistByIdRef.current = byId;
 
+    // Filter signature versioning (Codex 2.5): avoid redundant Supercluster/cityGroup
+    // rebuilds when the same artist set is passed due to unrelated re-renders.
+    const sig = valid.length + '_' + (valid[0]?.id ?? '') + '_' + (valid[valid.length - 1]?.id ?? '');
+    const sigChanged = sig !== filterSignatureRef.current;
+    if (sigChanged) {
+      filterSignatureRef.current = sig;
+    }
+
     // Pre-sort valid artists by connection count (descending) once, not per frame.
-    // Active/connected priority is applied at render time via a cheap partition.
+    // Always rebuild — depends on connectionCounts which may change independently.
     const cc = connectionCountsRef.current;
     const sorted = [...valid].sort((a, b) => {
       const aCount = (cc && cc.get(a.id)) || 0;
@@ -954,19 +965,45 @@ export default function CanvasOverlay({
     presortedArtistsRef.current = sorted;
     lastSortedCountsRef.current = cc;
 
-    // Rebuild city groups
-    cityGroupsRef.current = buildCityGroups(valid);
+    // Only rebuild expensive spatial structures when the filtered set actually changed
+    if (sigChanged) {
+      // Rebuild city groups
+      cityGroupsRef.current = buildCityGroups(valid);
 
-    // Rebuild Supercluster index
-    const index = new Supercluster({ radius: SUPERCLUSTER_RADIUS, maxZoom: 16 });
-    index.load(
-      valid.map((a) => ({
-        type: 'Feature',
-        properties: { artistId: a.id, name: a.name, genres: a.genres },
-        geometry: { type: 'Point', coordinates: [a.birth_lng, a.birth_lat] },
-      }))
-    );
-    scIndexRef.current = index;
+      // Rebuild Supercluster index
+      const index = new Supercluster({ radius: SUPERCLUSTER_RADIUS, maxZoom: 16 });
+      index.load(
+        valid.map((a) => ({
+          type: 'Feature',
+          properties: { artistId: a.id, name: a.name, genres: a.genres },
+          geometry: { type: 'Point', coordinates: [a.birth_lng, a.birth_lat] },
+        }))
+      );
+      scIndexRef.current = index;
+
+      // Build display offsets for co-located artists
+      const coordGroups = new Map();
+      for (const artist of valid) {
+        const key = Math.round(artist.birth_lat * 100) + ',' + Math.round(artist.birth_lng * 100);
+        if (!coordGroups.has(key)) coordGroups.set(key, []);
+        coordGroups.get(key).push(artist);
+      }
+      const newOffsets = new Map();
+      for (const [, group] of coordGroups) {
+        if (group.length < 2) continue;
+        const count = group.length;
+        for (let i = 0; i < count; i++) {
+          if (i === 0) {
+            newOffsets.set(group[i].id, { dlat: 0, dlng: 0 });
+          } else {
+            const angle = i * (2 * Math.PI / count);
+            const radius = COLOCATION_OFFSET_RADIUS * Math.ceil(i / 6);
+            newOffsets.set(group[i].id, { dlat: Math.sin(angle) * radius, dlng: Math.cos(angle) * radius });
+          }
+        }
+      }
+      displayOffsetsRef.current = newOffsets;
+    }
 
     // Precompute per-artist metadata (genre bucket, color, pulse hash)
     const newMeta = new Map();
@@ -979,29 +1016,6 @@ export default function CanvasOverlay({
 
     // Reset focused artist index
     focusedArtistIndexRef.current = -1;
-
-    // Build display offsets for co-located artists
-    const coordGroups = new Map();
-    for (const artist of valid) {
-      const key = Math.round(artist.birth_lat * 100) + ',' + Math.round(artist.birth_lng * 100);
-      if (!coordGroups.has(key)) coordGroups.set(key, []);
-      coordGroups.get(key).push(artist);
-    }
-    const newOffsets = new Map();
-    for (const [, group] of coordGroups) {
-      if (group.length < 2) continue;
-      const count = group.length;
-      for (let i = 0; i < count; i++) {
-        if (i === 0) {
-          newOffsets.set(group[i].id, { dlat: 0, dlng: 0 });
-        } else {
-          const angle = i * (2 * Math.PI / count);
-          const radius = COLOCATION_OFFSET_RADIUS * Math.ceil(i / 6);
-          newOffsets.set(group[i].id, { dlat: Math.sin(angle) * radius, dlng: Math.cos(angle) * radius });
-        }
-      }
-    }
-    displayOffsetsRef.current = newOffsets;
 
     // Trigger re-render
     needsAnimRef.current = true;
