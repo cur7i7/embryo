@@ -18,7 +18,10 @@ export function getGenreBucket(genres) {
     for (const [bucketName, bucketData] of Object.entries(GENRE_BUCKETS)) {
       if (bucketName === 'Other') continue;
       for (const g of bucketData.genres) {
-        if (g.length >= 3 && (lowerGenre.includes(g) || g.includes(lowerGenre))) {
+        const matches = g.length <= 4
+          ? (() => { const escaped = g.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); return new RegExp(`(?:^|[\\s\\-\\/,])${escaped}(?:$|[\\s\\-\\/,])`, 'i').test(lowerGenre); })()
+          : lowerGenre.includes(g);
+        if (matches) {
           return { bucket: bucketName, color: bucketData.color };
         }
       }

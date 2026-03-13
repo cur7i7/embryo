@@ -27,6 +27,17 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
   const didDrag = useRef(false);
   const rafPending = useRef(false);
   const pendingRange = useRef(null);
+  const rangeStartRef = useRef(rangeStart);
+  const rangeEndRef = useRef(rangeEnd);
+  const handlePointerMoveRef = useRef(null);
+  const radioYearRef = useRef(null);
+  const radioRangeRef = useRef(null);
+
+  // Keep refs in sync with latest prop values
+  useEffect(() => {
+    rangeStartRef.current = rangeStart;
+    rangeEndRef.current = rangeEnd;
+  }, [rangeStart, rangeEnd]);
 
   // B: Mode state — 'range' (two handles) or 'year' (single handle)
   const [mode, setMode] = useState(initialMode || 'range');
@@ -104,20 +115,24 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
     const year = xToYear(x, rect.width);
     const SNAP = 10; // snap to decade
 
+    // Always read latest values from refs to avoid stale closure issues
+    const currentRangeStart = rangeStartRef.current;
+    const currentRangeEnd = rangeEndRef.current;
+
     let next = null;
     if (dragging.current === 'year') {
       // Year mode: single handle moves both start and end
       const snapped = Math.round(year / SNAP) * SNAP;
       const clamped = Math.max(MIN_YEAR, Math.min(MAX_YEAR, snapped));
-      if (clamped !== rangeEnd) next = [clamped, clamped];
+      if (clamped !== currentRangeEnd) next = [clamped, clamped];
     } else if (dragging.current === 'left') {
       const snapped = Math.round(year / SNAP) * SNAP;
-      const newStart = Math.max(MIN_YEAR, Math.min(snapped, rangeEnd - SNAP));
-      if (newStart !== rangeStart) next = [newStart, rangeEnd];
+      const newStart = Math.max(MIN_YEAR, Math.min(snapped, currentRangeEnd - SNAP));
+      if (newStart !== currentRangeStart) next = [newStart, currentRangeEnd];
     } else {
       const snapped = Math.round(year / SNAP) * SNAP;
-      const newEnd = Math.min(MAX_YEAR, Math.max(snapped, rangeStart + SNAP));
-      if (newEnd !== rangeEnd) next = [rangeStart, newEnd];
+      const newEnd = Math.min(MAX_YEAR, Math.max(snapped, currentRangeStart + SNAP));
+      if (newEnd !== currentRangeEnd) next = [currentRangeStart, newEnd];
     }
 
     if (!next) return;
@@ -132,7 +147,12 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
         rafPending.current = false;
       });
     }
-  }, [dragging, rangeStart, rangeEnd, onRangeChange, xToYear]);
+  }, [dragging, onRangeChange, xToYear]);
+
+  // Keep the ref in sync so handlePointerDown always calls the latest version
+  useEffect(() => {
+    handlePointerMoveRef.current = handlePointerMove;
+  });
 
   const handlePointerUp = useCallback(() => {
     dragging.current = null;
@@ -144,7 +164,8 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
     dragging.current = handle;
     didDrag.current = false;
     e.currentTarget.setPointerCapture(e.pointerId);
-    const onMove = (ev) => handlePointerMove(ev);
+    // Use ref so the window listener always calls the latest handlePointerMove
+    const onMove = (ev) => handlePointerMoveRef.current(ev);
     const onUp = (ev) => {
       handlePointerUp(ev);
       window.removeEventListener('pointermove', onMove);
@@ -152,7 +173,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
     };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
-  }, [handlePointerMove, handlePointerUp]);
+  }, [handlePointerUp]);
 
   const handleClick = useCallback((e) => {
     if (didDrag.current) { didDrag.current = false; return; }
@@ -291,6 +312,15 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
       <div
         role="radiogroup"
         aria-label="Timeline mode"
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (!isYearMode) { handleModeToggle(); radioYearRef.current?.focus(); }
+          } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (isYearMode) { handleModeToggle(); radioRangeRef.current?.focus(); }
+          }
+        }}
         style={{
           display: 'flex',
           borderRadius: 8,
@@ -300,6 +330,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
         }}
       >
         <button
+          ref={radioYearRef}
           role="radio"
           aria-checked={isYearMode}
           aria-label="Single year mode"
@@ -333,6 +364,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
         </button>
         <div style={{ width: 1, backgroundColor: 'rgba(150, 140, 130, 0.3)' }} />
         <button
+          ref={radioRangeRef}
           role="radio"
           aria-checked={!isYearMode}
           aria-label="Year range mode"
@@ -551,11 +583,11 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
             >
               <div
                 style={{
-                  width: '4px',
+                  width: '12px',
                   height: '100%',
                   backgroundColor: '#D83E7F',
-                  borderRadius: '2px',
-                  boxShadow: '0 0 8px rgba(216, 62, 127, 0.6)',
+                  borderRadius: '6px',
+                  boxShadow: '0 1px 4px rgba(216, 62, 127, 0.5), 0 0 0 1px rgba(216, 62, 127, 0.25)',
                 }}
               />
             </div>
@@ -596,11 +628,11 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
             >
               <div
                 style={{
-                  width: 4,
+                  width: 12,
                   height: '100%',
                   backgroundColor: '#D4295E',
-                  borderRadius: '2px',
-                  boxShadow: '0 0 8px rgba(212, 41, 94, 0.6)',
+                  borderRadius: 6,
+                  boxShadow: '0 1px 4px rgba(212, 41, 94, 0.5), 0 0 0 1px rgba(212, 41, 94, 0.25)',
                 }}
               />
             </div>
@@ -632,9 +664,10 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                       fontSize: '11px',
                       fontFamily: '"DM Sans", sans-serif',
                       fontWeight: 500,
-                      color: '#6B5F55',
+                      color: '#4A3F37',
                       letterSpacing: '0.02em',
                       whiteSpace: 'nowrap',
+                      textShadow: '0 0 4px rgba(250, 243, 235, 0.9)',
                     }}
                   >
                     {year}

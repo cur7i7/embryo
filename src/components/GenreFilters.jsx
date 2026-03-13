@@ -117,7 +117,7 @@ function GenreFilters({ activeGenres, onToggleGenre, onSelectAll, isMobile = fal
               fontWeight: isActive ? 600 : 500,
               lineHeight: 1,
               letterSpacing: '0.01em',
-              color: isActive ? '#3E3530' : '#6B5F55',
+              color: isActive ? '#3E3530' : '#4A3F37',
               backgroundColor: isActive ? `${color}1F` : 'transparent',
               border: isActive ? `1.5px solid ${color}` : '1px solid rgba(90,80,72,0.15)',
               borderRadius: isPointerFine ? 999 : '8px',
@@ -142,7 +142,7 @@ function GenreFilters({ activeGenres, onToggleGenre, onSelectAll, isMobile = fal
               if (!isActive) {
                 e.currentTarget.style.backgroundColor = 'transparent';
                 e.currentTarget.style.borderColor = 'rgba(90,80,72,0.15)';
-                e.currentTarget.style.color = '#6B5F55';
+                e.currentTarget.style.color = '#4A3F37';
               }
             }}
             onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = `0 0 0 2px ${color}66`; }}
@@ -152,10 +152,10 @@ function GenreFilters({ activeGenres, onToggleGenre, onSelectAll, isMobile = fal
               aria-hidden="true"
               style={{
                 display: 'inline-block',
-                width: '8px',
-                height: '8px',
-                fontSize: '8px',
-                lineHeight: '8px',
+                width: '11px',
+                height: '11px',
+                fontSize: '11px',
+                lineHeight: '11px',
                 color: '#5A5048',
                 flexShrink: 0,
                 textAlign: 'center',

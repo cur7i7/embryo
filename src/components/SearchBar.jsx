@@ -28,8 +28,7 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false }) {
       minMatchCharLength: 2,
       includeScore: true,
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [indexSource.length]);
+  }, [indexSource]);
 
   const handleInputChange = useCallback((e) => {
     const val = e.target.value;
@@ -337,7 +336,7 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false }) {
             padding: '12px 14px',
             fontSize: 13,
             fontFamily: '"DM Sans", sans-serif',
-            color: '#6B5F55',
+            color: '#4A3F37',
             backgroundColor: 'rgba(250, 243, 235, 0.98)',
             border: '1px solid rgba(224, 216, 204, 0.8)',
             borderTop: 'none',

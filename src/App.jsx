@@ -74,9 +74,9 @@ function timelineReducer(state, action) {
 // Hooks
 // ---------------------------------------------------------------------------
 function useIsMobile(breakpoint = 768) {
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= breakpoint);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= breakpoint || (window.innerWidth <= 1024 && navigator.maxTouchPoints > 0));
   useEffect(() => {
-    const handler = () => setIsMobile(window.innerWidth <= breakpoint);
+    const handler = () => setIsMobile(window.innerWidth <= breakpoint || (window.innerWidth <= 1024 && navigator.maxTouchPoints > 0));
     window.addEventListener('resize', handler);
     return () => window.removeEventListener('resize', handler);
   }, [breakpoint]);
@@ -343,6 +343,15 @@ export default function App() {
     return result;
   }, [preprocessedArtists, timeline.rangeStart, timeline.rangeEnd, activeGenres]);
 
+  // Clear selected artist when they're filtered out of view
+  useEffect(() => {
+    if (!selectedArtist) return;
+    const stillVisible = filteredArtists.some(a => a.id === selectedArtist.id);
+    if (!stillVisible) {
+      setSelectedArtist(null);
+    }
+  }, [filteredArtists, selectedArtist]);
+
   const connectionTypeCounts = useMemo(() => {
     const counts = { teacher: 0, influence: 0, peer: 0, collaboration: 0 };
     for (const conn of connections) {
@@ -407,6 +416,24 @@ export default function App() {
         <div style={{ textAlign: 'center', color: '#5A5048' }}>
           <div style={{ fontSize: 18, fontWeight: 500, marginBottom: 8 }}>Failed to load data</div>
           <div style={{ fontSize: 13, color: '#7A6E65' }}>{artistsError || connectionsError}</div>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              marginTop: 16,
+              padding: '10px 24px',
+              fontSize: 14,
+              fontFamily: '"DM Sans", sans-serif',
+              fontWeight: 600,
+              color: '#3E3530',
+              backgroundColor: 'rgba(250, 243, 235, 0.95)',
+              border: '1px solid rgba(168, 144, 128, 0.4)',
+              borderRadius: 20,
+              cursor: 'pointer',
+              minHeight: 44,
+            }}
+          >
+            Try again
+          </button>
         </div>
       </div>
     );
@@ -508,7 +535,7 @@ export default function App() {
             borderRadius: 16,
             boxShadow: '0 2px 8px rgba(90, 80, 72, 0.10)',
             cursor: 'pointer',
-            minHeight: 36,
+            minHeight: 44,
             transition: 'bottom 0.2s ease, color 0.15s ease',
           }}
         >
@@ -524,7 +551,10 @@ export default function App() {
 
       {/* Filters — always visible on desktop, collapsible on mobile */}
       {(!isMobile || filtersExpanded) && (
-        <div id="filter-panels">
+        <div id="filter-panels" style={{
+          maxHeight: 'min(60vh, 200px)',
+          overflowY: 'auto',
+        }}>
           <GenreFilters
             activeGenres={activeGenres}
             onToggleGenre={handleToggleGenre}

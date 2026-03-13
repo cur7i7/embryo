@@ -100,7 +100,7 @@ function ConnectionFilters({ activeConnectionTypes, onToggleType, onSelectAll, t
               fontWeight: isActive ? 600 : 400,
               lineHeight: 1,
               letterSpacing: '0.02em',
-              color: isActive ? ACCENT : '#5A5048',
+              color: isActive ? ACCENT : '#4A3F37',
               backgroundColor: isActive ? 'rgba(90,80,72,0.08)' : 'transparent',
               border: isActive ? `1.5px solid ${ACCENT}` : '1px solid rgba(90,80,72,0.12)',
               borderRadius: isPointerFine ? 999 : '6px',
@@ -125,7 +125,7 @@ function ConnectionFilters({ activeConnectionTypes, onToggleType, onSelectAll, t
               if (!isActive) {
                 e.currentTarget.style.backgroundColor = 'transparent';
                 e.currentTarget.style.borderColor = 'rgba(90,80,72,0.12)';
-                e.currentTarget.style.color = '#5A5048';
+                e.currentTarget.style.color = '#4A3F37';
               }
             }}
             onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 2px rgba(90,80,72,0.4)'; }}
@@ -137,7 +137,7 @@ function ConnectionFilters({ activeConnectionTypes, onToggleType, onSelectAll, t
               <span
                 aria-hidden="true"
                 style={{
-                  fontSize: 'clamp(9px, 1.2vw, 11px)',
+                  fontSize: 'clamp(11px, 1.2vw, 12px)',
                   fontWeight: 400,
                   color: '#5A5048',
                 }}
