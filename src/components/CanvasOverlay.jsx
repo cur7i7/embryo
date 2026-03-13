@@ -160,14 +160,14 @@ export default function CanvasOverlay({
   // -------------------------------------------------------------------
   const render = useCallback((ts) => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) return false;
 
     const map = mapRef.current?.getMap?.();
-    if (!map) return;
+    if (!map) return false;
 
     const orbTextures = orbTexturesRef.current;
     const grainTexture = grainTextureRef.current;
-    if (!orbTextures || !grainTexture) return;
+    if (!orbTextures || !grainTexture) return false;
 
     // Read latest props from refs
     const connectionCounts = connectionCountsRef.current;
@@ -265,15 +265,9 @@ export default function CanvasOverlay({
       }
     }
 
-    // Only keep rAF running when something is visually animating:
-    // active opacity transitions, map movement, or particle/pulse animations
-    // (which only run for selected artists with arcs, not static hover).
-    const hasParticlesOrPulses = !reducedMotion && !!selectedArtistRef.current && selectedArcs.length > 0;
-    const hasPulsingOrbs = !reducedMotion && clusterAlpha > 0 && !activeArtist;
-    needsAnimRef.current = hasActiveTransitions || mapMovingRef.current ||
-      hasParticlesOrPulses || hasPulsingOrbs;
     // Clear the map-moving flag after this frame; onMapEvent will re-set it if
     // another move event fires before the next rAF callback.
+    const wasMapMoving = mapMovingRef.current;
     mapMovingRef.current = false;
 
     // Determine active interaction target
@@ -443,6 +437,13 @@ export default function CanvasOverlay({
 
     // Store individualAlpha for hit-test guard (S2)
     individualAlphaRef.current = individualAlpha;
+
+    // Decide whether to keep rAF running after this frame.
+    // Only continue when something is visually animating — not for static hover/selection.
+    const hasParticlesOrPulses = !reducedMotion && !!selectedArtist && selectedArcs.length > 0;
+    const hasPulsingOrbs = !reducedMotion && clusterAlpha > 0 && !activeArtist;
+    needsAnimRef.current = hasActiveTransitions || wasMapMoving ||
+      hasParticlesOrPulses || hasPulsingOrbs;
 
     // --- Cluster phase --- hard-reset canvas state
     ctx.globalAlpha = 1.0;
@@ -944,6 +945,7 @@ export default function CanvasOverlay({
     }
 
     ctx.restore();
+    return true;
   }, [mapRef]);
 
   // -------------------------------------------------------------------
@@ -953,8 +955,10 @@ export default function CanvasOverlay({
     if (rafRef.current != null) return; // already running
 
     const loop = (ts) => {
-      render(ts);
-      if (needsAnimRef.current) {
+      const didRender = render(ts);
+      // If render bailed early (missing textures/map), retry next frame.
+      // Otherwise, only continue if something is actively animating.
+      if (didRender === false || needsAnimRef.current) {
         rafRef.current = requestAnimationFrame(loop);
       } else {
         rafRef.current = null;
@@ -1486,8 +1490,9 @@ export default function CanvasOverlay({
   // ARIA live region text for hovered/selected artist + zoom mode.
   // Memoized from props/state to avoid reading refs during render.
   const modeLabel = renderModeState === 'cluster' ? 'Cluster view' : renderModeState === 'city' ? 'City view' : 'Individual view';
-  const liveText = useMemo(() => {
-    if (keyboardAnnouncement) return keyboardAnnouncement;
+  const effectiveLiveText = useMemo(() => {
+    // Keyboard announcement takes precedence only when no mouse hover/selection is active
+    if (keyboardAnnouncement && !hoveredArtist && !selectedArtist) return keyboardAnnouncement;
     if (hoveredArtist) {
       const genre = hoveredArtist.genres ? getGenreBucket(hoveredArtist.genres).bucket : '';
       const year = hoveredArtist.birth_year || 'unknown year';
@@ -1501,26 +1506,19 @@ export default function CanvasOverlay({
     return modeLabel;
   }, [hoveredArtist, selectedArtist, connectionCounts, modeLabel, keyboardAnnouncement]);
 
-  // Clear keyboard announcement when hover/selection changes from mouse interaction
-  useEffect(() => {
-    if (hoveredArtist || selectedArtist) {
-      setKeyboardAnnouncement('');
-    }
-  }, [hoveredArtist, selectedArtist]);
-
   // Debounced live text: hover announcements are delayed 300ms to avoid flooding
-  // screen readers during rapid mouse movement. Mode changes go through immediately
-  // because they come from the modeLabel branch (no hoveredArtist / selectedArtist).
+  // screen readers during rapid mouse movement. Mode changes go through immediately.
   const [debouncedLiveText, setDebouncedLiveText] = useState('');
+  /* eslint-disable react-hooks/set-state-in-effect -- intentional debounce pattern */
   useEffect(() => {
-    // Mode changes (modeLabel) should be immediate — only debounce hover
     if (!hoveredArtist && !keyboardAnnouncement) {
-      setDebouncedLiveText(liveText);
+      setDebouncedLiveText(effectiveLiveText);
       return;
     }
-    const id = setTimeout(() => setDebouncedLiveText(liveText), 300);
+    const id = setTimeout(() => setDebouncedLiveText(effectiveLiveText), 300);
     return () => clearTimeout(id);
-  }, [liveText, hoveredArtist, keyboardAnnouncement]);
+  }, [effectiveLiveText, hoveredArtist, keyboardAnnouncement]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   return (
     <>
