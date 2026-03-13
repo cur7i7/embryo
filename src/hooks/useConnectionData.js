@@ -30,20 +30,9 @@ export function useConnectionData() {
           byArtist.get(target_id).push(conn);
         }
 
-        // Build connectionCounts keyed by both ID and name for backward
-        // compatibility (CanvasOverlay looks up counts by artist name).
         const counts = new Map();
         for (const [id, conns] of byArtist) {
           counts.set(id, conns.length);
-        }
-        for (const conn of filtered) {
-          const { source_id, source_name, target_id, target_name } = conn;
-          if (source_name && !counts.has(source_name)) {
-            counts.set(source_name, counts.get(source_id) || 0);
-          }
-          if (target_name && !counts.has(target_name)) {
-            counts.set(target_name, counts.get(target_id) || 0);
-          }
         }
 
         console.log(

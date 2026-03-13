@@ -203,6 +203,14 @@ export default function App() {
       } else {
         setSelectedArtist(null);
       }
+      if (h.lat && h.lng && mapRef.current) {
+        try {
+          mapRef.current.getMap().jumpTo({
+            center: [Number(h.lng), Number(h.lat)],
+            zoom: Number(h.z) || DEFAULT_ZOOM,
+          });
+        } catch { /* map not ready */ }
+      }
       setTimeout(() => { suppressHashSync.current = false; }, 600);
     };
     window.addEventListener('popstate', onPop);

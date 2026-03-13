@@ -188,7 +188,7 @@ export default function DetailPanel({
   const artistMap = React.useMemo(() => {
     const m = new Map();
     for (const a of (allArtists || [])) {
-      m.set(a.name, a);
+      m.set(a.id, a);
     }
     return m;
   }, [allArtists]);
@@ -526,9 +526,11 @@ export default function DetailPanel({
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {connections.map((conn, i) => {
+                  const connectedId =
+                    conn.source_id === artist.id ? conn.target_id : conn.source_id;
                   const connectedName =
-                    conn.source_name === artist.name ? conn.target_name : conn.source_name;
-                  const connectedArtist = artistMap.get(connectedName);
+                    conn.source_id === artist.id ? conn.target_name : conn.source_name;
+                  const connectedArtist = artistMap.get(connectedId);
                   const { color: connColor } = connectedArtist
                     ? getGenreBucket(connectedArtist.genres)
                     : { color: '#E8A99B' };

@@ -268,13 +268,11 @@ export default function CanvasOverlay({
     const connectedIds = new Set();
     if (activeArtist && connections && connections.length > 0) {
       for (const conn of connections) {
-        if (conn.source_name === activeArtist.name) {
-          const target = artistByNameRef.current.get(conn.target_name);
-          if (target) connectedIds.add(target.id);
+        if (conn.source_id === activeArtist.id) {
+          connectedIds.add(conn.target_id);
         }
-        if (conn.target_name === activeArtist.name) {
-          const source = artistByNameRef.current.get(conn.source_name);
-          if (source) connectedIds.add(source.id);
+        if (conn.target_id === activeArtist.id) {
+          connectedIds.add(conn.source_id);
         }
       }
     }
@@ -291,10 +289,9 @@ export default function CanvasOverlay({
       activeConnectionTypes && activeConnectionTypes.size > 0
     ) {
       for (const conn of connections) {
-        const { source_name, target_name, type, confidence } = conn;
-        // Look up artists by name for arc resolution
-        const srcArtist = artistByNameRef.current.get(source_name);
-        const tgtArtist = artistByNameRef.current.get(target_name);
+        const { source_id, target_id, type, confidence } = conn;
+        const srcArtist = artistByIdRef.current.get(source_id);
+        const tgtArtist = artistByIdRef.current.get(target_id);
         if (!srcArtist || !tgtArtist) continue;
         const srcPos = posMap.get(srcArtist.id);
         const tgtPos = posMap.get(tgtArtist.id);
@@ -315,7 +312,7 @@ export default function CanvasOverlay({
         const tgtColor = tgtMeta?.genreColor ?? getGenreBucket(tgtArtist?.genres).color;
 
         const isConnected =
-          conn.source_name === activeArtist.name || conn.target_name === activeArtist.name;
+          conn.source_id === activeArtist.id || conn.target_id === activeArtist.id;
 
         if (isConnected) {
           drawArcBloomed(ctx, srcPos.x, srcPos.y, tgtPos.x, tgtPos.y, srcColor, tgtColor, type, confidence ?? 0.5);
@@ -446,11 +443,11 @@ export default function CanvasOverlay({
             const opacity = opacityMap.get(artistId)?.opacity ?? 1;
             if (opacity <= 0) continue;
 
-            const connCount = (connectionCounts && connectionCounts.get(artistData.name)) || 0;
+            const connCount = (connectionCounts && connectionCounts.get(artistData.id)) || 0;
             const scaleFactor = validArtists.length > 200 ? 0.5 : 1;
             const baseRadius = (40 + Math.min(connCount * 3, 60)) * scaleFactor;
 
-            const isActive = activeArtist && artistData.name === activeArtist.name;
+            const isActive = activeArtist && artistData.id === activeArtist.id;
             const isConnected = connectedIds.has(artistId);
             const isPassive = activeArtist && !isActive && !isConnected;
 
@@ -545,7 +542,7 @@ export default function CanvasOverlay({
       const connArr = [];
       const restArr = [];
       for (const a of preSorted) {
-        if (activeArtist && a.name === activeArtist.name) activeArr.push(a);
+        if (activeArtist && a.id === activeArtist.id) activeArr.push(a);
         else if (connectedIds.has(a.id)) connArr.push(a);
         else restArr.push(a);
       }
@@ -568,7 +565,7 @@ export default function CanvasOverlay({
         const meta = artistMeta.get(artist.id);
         const genreColor = meta?.genreColor ?? getGenreBucket(artist.genres).color;
 
-        const isActive = activeArtist && artist.name === activeArtist.name;
+        const isActive = activeArtist && artist.id === activeArtist.id;
         const isConnected = connectedIds.has(artist.id);
         const isPassive = activeArtist && !isActive && !isConnected;
 
@@ -649,7 +646,7 @@ export default function CanvasOverlay({
     if (activeArtist) {
       const pos = posMapRef.current?.get(activeArtist.id);
       if (pos) {
-        const connCount = (connectionCounts && connectionCounts.get(activeArtist.name)) || 0;
+        const connCount = (connectionCounts && connectionCounts.get(activeArtist.id)) || 0;
         const baseRadius = 40 + Math.min(connCount * 3, 60);
         const radius = baseRadius * 1.5;
 
@@ -763,7 +760,7 @@ export default function CanvasOverlay({
     const byId = new Map();
     const byName = new Map();
     for (const artist of valid) {
-      newArtistMap.set(artist.name, artist);
+      newArtistMap.set(artist.id, artist);
       byId.set(artist.id, artist);
       byName.set(artist.name, artist);
     }
@@ -775,8 +772,8 @@ export default function CanvasOverlay({
     // Active/connected priority is applied at render time via a cheap partition.
     const cc = connectionCountsRef.current;
     const sorted = [...valid].sort((a, b) => {
-      const aCount = (cc && cc.get(a.name)) || 0;
-      const bCount = (cc && cc.get(b.name)) || 0;
+      const aCount = (cc && cc.get(a.id)) || 0;
+      const bCount = (cc && cc.get(b.id)) || 0;
       return bCount - aCount;
     });
     presortedArtistsRef.current = sorted;
@@ -897,7 +894,7 @@ export default function CanvasOverlay({
     } else {
       // Cluster/city mode: dynamic hit radius based on orb size
       const artist = artistByIdRef.current.get(nearestId);
-      const connCount = (connectionCountsRef.current?.get(artist?.name)) || 0;
+      const connCount = (connectionCountsRef.current?.get(artist?.id)) || 0;
       const scaleFactor = validArtistsRef.current.length > 200 ? 0.5 : 1;
       const baseRadius = (40 + Math.min(connCount * 3, 60)) * scaleFactor;
       hitRadius = Math.max(20, baseRadius * 0.4);
@@ -1012,6 +1009,7 @@ export default function CanvasOverlay({
       const my = e.point.y;
       if (handleClusterClick(mx, my)) return;
       if (handleCityClick(mx, my)) return;
+      if (renderModeRef.current === 'city') return;
       const hit = hitTest(mx, my);
       onSelectRef.current?.(hit ? hit.artist : null);
     };
