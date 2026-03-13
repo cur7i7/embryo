@@ -108,7 +108,7 @@ export default function DetailPanel({
   const closeButtonRef = useRef(null);
   const previousFocusRef = useRef(null);
   const [history, setHistory] = useState([]);
-  const artistKey = artist?.name;
+  const artistKey = artist?.id;
   const [imageError, setImageError] = useState(false);
   const [prevArtistKey, setPrevArtistKey] = useState(artistKey);
   if (prevArtistKey !== artistKey) {
@@ -137,7 +137,7 @@ export default function DetailPanel({
 
   // Track navigation history
   useEffect(() => {
-    if (artist && prevArtistRef.current && prevArtistRef.current.name !== artist.name) {
+    if (artist && prevArtistRef.current && prevArtistRef.current.id !== artist.id) {
       setHistory(prev => [...prev.slice(-9), prevArtistRef.current]);
     }
     prevArtistRef.current = artist;

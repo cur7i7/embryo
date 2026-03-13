@@ -101,7 +101,6 @@ export default function CanvasOverlay({
   // Pre-sorted by connection count (descending) — avoids O(n log n) per frame
   const presortedArtistsRef = useRef([]);
   const artistByIdRef = useRef(new Map());
-  const artistByNameRef = useRef(new Map());
 
   // Per-artist metadata cache: Map<id, { genreBucket, genreColor, pulseHash }>
   const artistMetaRef = useRef(new Map());
@@ -758,15 +757,12 @@ export default function CanvasOverlay({
     // Build O(1) lookup maps
     const newArtistMap = new Map();
     const byId = new Map();
-    const byName = new Map();
     for (const artist of valid) {
       newArtistMap.set(artist.id, artist);
       byId.set(artist.id, artist);
-      byName.set(artist.name, artist);
     }
     artistMapRef.current = newArtistMap;
     artistByIdRef.current = byId;
-    artistByNameRef.current = byName;
 
     // Pre-sort valid artists by connection count (descending) once, not per frame.
     // Active/connected priority is applied at render time via a cheap partition.
