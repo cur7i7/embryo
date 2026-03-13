@@ -3,7 +3,7 @@ import { getGenreBucket } from '../utils/genres.js';
 import { hexToRgba } from '../utils/rendering.js';
 import { flyToArtist } from '../utils/mapHelpers.js';
 
-const PANEL_WIDTH = 320;
+const PANEL_WIDTH = 'clamp(320px, 30vw, 420px)';
 
 function ConfidenceBar({ confidence }) {
   return (
