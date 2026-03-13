@@ -26,7 +26,8 @@ export function useArtistData() {
             !isNaN(lng) &&
             lng >= -180 &&
             lng <= 180;
-          if (validLat && validLng) {
+          // Also reject (0, 0) — "null island" in Gulf of Guinea, always bad data
+          if (validLat && validLng && !(lat === 0 && lng === 0)) {
             return { ...artist, birth_lat: lat, birth_lng: lng, _hasCoords: true };
           }
           return { ...artist, birth_lat: null, birth_lng: null, _hasCoords: false };

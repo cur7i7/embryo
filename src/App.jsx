@@ -104,6 +104,7 @@ export default function App() {
 
   const [hoveredArtist, setHoveredArtist] = useState(null);
   const [selectedArtist, setSelectedArtist] = useState(null);
+  const [filtersExpanded, setFiltersExpanded] = useState(false);
 
   const mapRef = useRef(null);
   const hashUpdateTimer = useRef(null);
@@ -482,20 +483,64 @@ export default function App() {
         </button>
       )}
 
-      <GenreFilters
-        activeGenres={activeGenres}
-        onToggleGenre={handleToggleGenre}
-        onSelectAll={handleSelectAllGenres}
-        isMobile={isMobile}
-      />
+      {/* Mobile: collapsible filters toggle */}
+      {isMobile && (
+        <button
+          onClick={() => setFiltersExpanded(prev => !prev)}
+          aria-expanded={filtersExpanded}
+          aria-controls="filter-panels"
+          style={{
+            position: 'fixed',
+            bottom: filtersExpanded ? `calc(168px + env(safe-area-inset-bottom))` : `calc(56px + env(safe-area-inset-bottom))`,
+            left: 12,
+            zIndex: 21,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 5,
+            padding: '6px 12px',
+            fontSize: 12,
+            fontWeight: 600,
+            fontFamily: '"DM Sans", sans-serif',
+            color: filtersExpanded ? '#C4326B' : '#5A5048',
+            backgroundColor: 'rgba(250, 243, 235, 0.92)',
+            backdropFilter: 'blur(6px)',
+            border: '1px solid rgba(224, 216, 204, 0.7)',
+            borderRadius: 16,
+            boxShadow: '0 2px 8px rgba(90, 80, 72, 0.10)',
+            cursor: 'pointer',
+            minHeight: 36,
+            transition: 'bottom 0.2s ease, color 0.15s ease',
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">
+            <rect x="1" y="2" width="12" height="1.5" rx="0.75" />
+            <rect x="3" y="6" width="8" height="1.5" rx="0.75" />
+            <rect x="5" y="10" width="4" height="1.5" rx="0.75" />
+          </svg>
+          Filters
+          {filtersExpanded ? ' ▾' : ' ▸'}
+        </button>
+      )}
 
-      <ConnectionFilters
-        activeConnectionTypes={activeConnectionTypes}
-        onToggleType={handleToggleConnectionType}
-        onSelectAll={handleSelectAllConnectionTypes}
-        typeCounts={connectionTypeCounts}
-        isMobile={isMobile}
-      />
+      {/* Filters — always visible on desktop, collapsible on mobile */}
+      {(!isMobile || filtersExpanded) && (
+        <div id="filter-panels">
+          <GenreFilters
+            activeGenres={activeGenres}
+            onToggleGenre={handleToggleGenre}
+            onSelectAll={handleSelectAllGenres}
+            isMobile={isMobile}
+          />
+
+          <ConnectionFilters
+            activeConnectionTypes={activeConnectionTypes}
+            onToggleType={handleToggleConnectionType}
+            onSelectAll={handleSelectAllConnectionTypes}
+            typeCounts={connectionTypeCounts}
+            isMobile={isMobile}
+          />
+        </div>
+      )}
 
       <Timeline
         artists={allArtists}

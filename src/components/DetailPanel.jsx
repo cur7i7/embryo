@@ -258,6 +258,28 @@ export default function DetailPanel({
       ref={(el) => { if (el) { isOpen ? el.removeAttribute('inert') : el.setAttribute('inert', ''); } }}
       onKeyDown={handleTrapKeyDown}
     >
+      {/* Mobile drag handle indicator */}
+      {isMobile && (
+        <div
+          aria-hidden="true"
+          style={{
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            paddingTop: 4,
+            paddingBottom: 8,
+            marginBottom: -8,
+          }}
+        >
+          <div style={{
+            width: 32,
+            height: 4,
+            borderRadius: 2,
+            backgroundColor: 'rgba(90, 80, 72, 0.25)',
+          }} />
+        </div>
+      )}
+
       {/* Back button */}
       {history.length > 0 && (
         <button
