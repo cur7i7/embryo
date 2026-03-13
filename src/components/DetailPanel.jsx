@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { getGenreBucket } from '../utils/genres.js';
 import { hexToRgba } from '../utils/rendering.js';
+import { flyToArtist } from '../utils/mapHelpers.js';
 
 const PANEL_WIDTH = 320;
 
@@ -174,14 +175,7 @@ export default function DetailPanel({
   const handleConnectedArtistClick = useCallback((connArtist) => {
     if (!connArtist) return;
     onSelect?.(connArtist);
-    if (mapRef?.current && connArtist.birth_lng != null && connArtist.birth_lat != null) {
-      try {
-        mapRef.current.getMap().flyTo({
-          center: [connArtist.birth_lng, connArtist.birth_lat],
-          zoom: 6,
-        });
-      } catch (err) { if (import.meta.env.DEV) console.warn('DetailPanel flyTo failed:', err); }
-    }
+    flyToArtist(mapRef, connArtist, { zoom: 6 });
   }, [onSelect, mapRef]);
 
   // Build a fast lookup for allArtists

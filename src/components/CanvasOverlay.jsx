@@ -19,6 +19,19 @@ const BUCKET_COLORS = Object.values(GENRE_BUCKETS).map((b) => b.color);
 const ZOOM_CITY = 8;
 const ZOOM_INDIVIDUAL = 12;
 
+// Animation & rendering constants
+const FADE_DURATION = 400;             // ms for opacity 0→1 or 1→0 transition
+const CLUSTER_RADIUS_BASE = 40;        // cluster orb base radius (px)
+const CLUSTER_RADIUS_MAX = 100;        // cluster orb max radius (px)
+const ARTIST_RADIUS = 16;              // individual artist node radius (px)
+const ARTIST_ACTIVE_SCALE = 1.2;       // scale for active artist in individual mode
+const CLUSTER_ACTIVE_SCALE = 1.5;      // scale for active artist in cluster mode
+const ANIMATION_CYCLE_MS = 3000;       // particle / pulse animation cycle period (ms)
+const HIT_TEST_MIN_RADIUS = 22;        // minimum hit-test radius (44px touch target / 2)
+const SUPERCLUSTER_RADIUS = 60;        // Supercluster clustering radius
+const ARC_VIEWPORT_PAD = 100;          // arc viewport culling padding (px)
+const COLOCATION_OFFSET_RADIUS = 0.0008; // co-location spiral offset (degrees)
+
 export default function CanvasOverlay({
   mapRef,
   artists,
@@ -169,7 +182,6 @@ export default function CanvasOverlay({
     const now = ts ?? performance.now();
     const dt = lastRafTsRef.current != null ? now - lastRafTsRef.current : 16;
     lastRafTsRef.current = now;
-    const FADE_DURATION = 400; // ms for full 0->1 or 1->0 transition
     const fadeStep = dt / FADE_DURATION;
 
     const opacityMap = opacityMapRef.current;
@@ -303,11 +315,10 @@ export default function CanvasOverlay({
         if (!srcPos || !tgtPos) continue;
 
         // Arc viewport culling: skip arcs where BOTH endpoints are outside canvas
-        const arcPad = 100;
-        const srcOutside = srcPos.x < -arcPad || srcPos.x > cssWidth + arcPad ||
-                           srcPos.y < -arcPad || srcPos.y > cssHeight + arcPad;
-        const tgtOutside = tgtPos.x < -arcPad || tgtPos.x > cssWidth + arcPad ||
-                           tgtPos.y < -arcPad || tgtPos.y > cssHeight + arcPad;
+        const srcOutside = srcPos.x < -ARC_VIEWPORT_PAD || srcPos.x > cssWidth + ARC_VIEWPORT_PAD ||
+                           srcPos.y < -ARC_VIEWPORT_PAD || srcPos.y > cssHeight + ARC_VIEWPORT_PAD;
+        const tgtOutside = tgtPos.x < -ARC_VIEWPORT_PAD || tgtPos.x > cssWidth + ARC_VIEWPORT_PAD ||
+                           tgtPos.y < -ARC_VIEWPORT_PAD || tgtPos.y > cssHeight + ARC_VIEWPORT_PAD;
         if (srcOutside && tgtOutside) continue;
 
         const srcMeta = artistMeta.get(srcArtist.id);
@@ -325,7 +336,7 @@ export default function CanvasOverlay({
 
     // Connection particles for selected artist (skip when reduced motion)
     if (selectedArtist && selectedArcs.length > 0 && !reducedMotion) {
-      const t0 = (performance.now() / 3000) % 1;
+      const t0 = (performance.now() / ANIMATION_CYCLE_MS) % 1;
       for (let i = 0; i < selectedArcs.length; i++) {
         const arc = selectedArcs[i];
         const t = (t0 + i * (1 / selectedArcs.length)) % 1;
@@ -402,7 +413,7 @@ export default function CanvasOverlay({
 
           if (cluster.properties.cluster) {
             const count = cluster.properties.point_count;
-            const clusterRadius = Math.min(40 + Math.log2(count) * 12, 100);
+            const clusterRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log2(count) * 12, CLUSTER_RADIUS_MAX);
 
             const orbTexture = orbTextures[Math.abs(cluster.id) % orbTextures.length];
             ctx.globalAlpha = 0.85 * clusterAlpha;
@@ -441,7 +452,7 @@ export default function CanvasOverlay({
 
             const connCount = (connectionCounts && connectionCounts.get(artistData.id)) || 0;
             const scaleFactor = validArtists.length > 200 ? 0.5 : 1;
-            const baseRadius = (40 + Math.min(connCount * 3, 60)) * scaleFactor;
+            const baseRadius = (CLUSTER_RADIUS_BASE + Math.min(connCount * 3, 60)) * scaleFactor;
 
             const isActive = activeArtist && artistData.id === activeArtist.id;
             const isConnected = connectedIds.has(artistId);
@@ -455,12 +466,12 @@ export default function CanvasOverlay({
                 ? orbTextures[textureIndex]
                 : orbTextures[orbTextures.length - 1];
 
-            let radius = isActive ? baseRadius * 1.5 : baseRadius;
+            let radius = isActive ? baseRadius * CLUSTER_ACTIVE_SCALE : baseRadius;
             if (!isActive && !isConnected && !hasActiveTransitions) {
               let pulseFactor = 1;
               if (!reducedMotion) {
                 const hash = meta?.pulseHash ?? 0;
-                const phase = ((performance.now() / 3000) + hash * 0.1) % 1;
+                const phase = ((performance.now() / ANIMATION_CYCLE_MS) + hash * 0.1) % 1;
                 pulseFactor = 1 + 0.05 * Math.sin(phase * Math.PI * 2);
               }
               radius *= pulseFactor;
@@ -578,7 +589,7 @@ export default function CanvasOverlay({
             : `${artist.birth_year}\u2013`;
         }
 
-        const r = 16 * (state === 'active' ? 1.2 : 1);
+        const r = ARTIST_RADIUS * (state === 'active' ? ARTIST_ACTIVE_SCALE : 1);
 
         // Always show labels for hovered/active/connected; collision-check the rest
         const isImportant = isActive || isConnected;
@@ -629,7 +640,7 @@ export default function CanvasOverlay({
           }
         }
 
-        drawArtistNode(ctx, point.x, point.y, 16, genreColor, artist.name, years, state, opacity * individualAlpha, showLabel);
+        drawArtistNode(ctx, point.x, point.y, ARTIST_RADIUS, genreColor, artist.name, years, state, opacity * individualAlpha, showLabel);
       }
     }
 
@@ -644,8 +655,8 @@ export default function CanvasOverlay({
       if (pos) {
         const connCount = (connectionCounts && connectionCounts.get(activeArtist.id)) || 0;
         const isIndividual = renderModeRef.current === 'individual';
-        const baseRadius = isIndividual ? 16 : 40 + Math.min(connCount * 3, 60);
-        const radius = baseRadius * (isIndividual ? 1.2 : 1.5);
+        const baseRadius = isIndividual ? ARTIST_RADIUS : CLUSTER_RADIUS_BASE + Math.min(connCount * 3, 60);
+        const radius = baseRadius * (isIndividual ? ARTIST_ACTIVE_SCALE : CLUSTER_ACTIVE_SCALE);
 
         const meta = artistMeta.get(activeArtist.id);
         const bucket = meta?.genreBucket ?? getGenreBucket(activeArtist.genres).bucket;
@@ -777,7 +788,7 @@ export default function CanvasOverlay({
     cityGroupsRef.current = buildCityGroups(valid);
 
     // Rebuild Supercluster index
-    const index = new Supercluster({ radius: 60, maxZoom: 16 });
+    const index = new Supercluster({ radius: SUPERCLUSTER_RADIUS, maxZoom: 16 });
     index.load(
       valid.map((a) => ({
         type: 'Feature',
@@ -816,7 +827,7 @@ export default function CanvasOverlay({
           newOffsets.set(group[i].id, { dlat: 0, dlng: 0 });
         } else {
           const angle = i * (2 * Math.PI / count);
-          const radius = 0.0008 * Math.ceil(i / 6);
+          const radius = COLOCATION_OFFSET_RADIUS * Math.ceil(i / 6);
           newOffsets.set(group[i].id, { dlat: Math.sin(angle) * radius, dlng: Math.cos(angle) * radius });
         }
       }
@@ -897,14 +908,14 @@ export default function CanvasOverlay({
     // Hit radius depends on render mode
     let hitRadius;
     if (mode === 'individual') {
-      // 22px radius = 44px touch target per WCAG
-      hitRadius = 22;
+      // HIT_TEST_MIN_RADIUS = 44px touch target / 2 per WCAG
+      hitRadius = HIT_TEST_MIN_RADIUS;
     } else {
       // Cluster/city mode: dynamic hit radius based on orb size
       const artist = artistByIdRef.current.get(nearestId);
       const connCount = (connectionCountsRef.current?.get(artist?.id)) || 0;
       const scaleFactor = validArtistsRef.current.length > 200 ? 0.5 : 1;
-      const baseRadius = (40 + Math.min(connCount * 3, 60)) * scaleFactor;
+      const baseRadius = (CLUSTER_RADIUS_BASE + Math.min(connCount * 3, 60)) * scaleFactor;
       hitRadius = Math.max(20, baseRadius * 0.4);
     }
 
@@ -937,7 +948,7 @@ export default function CanvasOverlay({
       const dx = pt.x - mx;
       const dy = pt.y - my;
       const count = cluster.properties.point_count;
-      const clusterRadius = Math.min(40 + Math.log2(count) * 12, 100);
+      const clusterRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log2(count) * 12, CLUSTER_RADIUS_MAX);
       if (Math.sqrt(dx * dx + dy * dy) <= clusterRadius) {
         try {
           const expansionZoom = index.getClusterExpansionZoom(cluster.id);
@@ -962,7 +973,7 @@ export default function CanvasOverlay({
     for (const [, { x, y, radius, group }] of cityPosMap) {
       const dx = x - mx;
       const dy = y - my;
-      if (Math.sqrt(dx * dx + dy * dy) <= Math.max(radius, 22)) {
+      if (Math.sqrt(dx * dx + dy * dy) <= Math.max(radius, HIT_TEST_MIN_RADIUS)) {
         map.flyTo({ center: [group.lng, group.lat], zoom: 13 });
         return true;
       }
@@ -986,7 +997,7 @@ export default function CanvasOverlay({
           for (const [, { x, y, radius }] of cityPosMap) {
             const dx = x - mx;
             const dy = y - my;
-            if (Math.sqrt(dx * dx + dy * dy) <= Math.max(radius, 22)) {
+            if (Math.sqrt(dx * dx + dy * dy) <= Math.max(radius, HIT_TEST_MIN_RADIUS)) {
               onHoverRef.current?.(null);
               map.getCanvas().style.cursor = 'pointer';
               return;

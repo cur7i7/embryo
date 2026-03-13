@@ -8,6 +8,7 @@ import SearchBar from './components/SearchBar.jsx';
 import { useArtistData } from './hooks/useArtistData.js';
 import { useConnectionData } from './hooks/useConnectionData.js';
 import { GENRE_BUCKETS, getGenreBucket } from './utils/genres.js';
+import { flyToArtist } from './utils/mapHelpers.js';
 
 const DEFAULT_RANGE = [1400, 2025];
 const DEFAULT_CENTER = [10, 48];
@@ -110,19 +111,13 @@ export default function App() {
     if (artist) {
       setSelectedArtist(artist);
       // Fly to artist after map is ready
-      const flyToArtist = () => {
-        if (mapRef.current && artist.birth_lng != null && artist.birth_lat != null) {
-          try {
-            const z = Number(_initialHash.z) || 6;
-            mapRef.current.getMap().flyTo({ center: [artist.birth_lng, artist.birth_lat], zoom: z });
-          } catch { /* map not ready */ }
-        }
-      };
+      const z = Number(_initialHash.z) || 6;
+      const doFlyTo = () => flyToArtist(mapRef, artist, { zoom: z });
       const map = mapRef.current?.getMap?.();
       if (map?.loaded?.()) {
-        flyToArtist();
+        doFlyTo();
       } else if (map) {
-        map.on('load', flyToArtist);
+        map.on('load', doFlyTo);
       }
     }
     pendingArtistId.current = null;
@@ -282,14 +277,7 @@ export default function App() {
     });
 
     // Fly to artist
-    if (mapRef.current && artist.birth_lng != null && artist.birth_lat != null) {
-      try {
-        mapRef.current.getMap().flyTo({
-          center: [artist.birth_lng, artist.birth_lat],
-          zoom: Math.max(mapRef.current?.getMap?.()?.getZoom?.() || 6, 6),
-        });
-      } catch { /* map not ready */ }
-    }
+    flyToArtist(mapRef, artist);
   }, []);
 
   // Auto-expand timeline when artist is selected but outside range
