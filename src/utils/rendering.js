@@ -13,6 +13,7 @@ export function drawArc(ctx, x1, y1, x2, y2, color1, color2, type, confidence, d
   const midX = (x1 + x2) / 2;
   const midY = (y1 + y2) / 2;
   const dist = Math.hypot(x2 - x1, y2 - y1);
+  if (dist < 1) return;
   const bulge = dist * 0.25; // control point offset for curvature
   // Perpendicular offset for the control point
   const dx = x2 - x1;
@@ -53,7 +54,7 @@ export function drawArc(ctx, x1, y1, x2, y2, color1, color2, type, confidence, d
   ctx.restore();
 }
 
-export function drawOrb(ctx, x, y, radius, genreColor, peachColor = '#FFAB91') {
+export function drawOrb(ctx, x, y, radius, genreColor, peachColor = '#EEC1A2') {
   // 1. Primary gradient — genre color dissolving to transparent
   const primary = ctx.createRadialGradient(x, y, 0, x, y, radius);
   primary.addColorStop(0, genreColor + '47');   // ~28% opacity
@@ -120,6 +121,104 @@ export function preRenderOrbTexture(genreColor, size = 200) {
   const r = size / 2;
   drawOrb(ctx, cx, cy, r, genreColor);
   return canvas;
+}
+
+/**
+ * Draw a small glowing particle at position t (0–1) along the quadratic
+ * Bézier that matches the arc drawn by drawArc / drawArcBloomed.
+ */
+/**
+ * Draw an individual artist node: outlined circle + name + years.
+ *
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {number} x - screen x
+ * @param {number} y - screen y
+ * @param {number} radius - base radius (16 default)
+ * @param {string} genreColor - hex color for the genre
+ * @param {string} name - artist name
+ * @param {string} years - formatted year string e.g. "1756–1791" or "1985–"
+ * @param {'default'|'active'|'connected'|'dimmed'} state
+ * @param {number} alpha - overall opacity (0–1), used for cross-fade
+ */
+export function drawArtistNode(ctx, x, y, radius, genreColor, name, years, state = 'default', alpha = 1) {
+  if (alpha <= 0) return;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  const scale = state === 'active' ? 1.2 : 1;
+  const r = radius * scale;
+  const strokeWidth = state === 'active' ? 3 : 2;
+
+  // Dimmed state: reduce opacity
+  if (state === 'dimmed') {
+    ctx.globalAlpha = alpha * 0.4;
+  }
+
+  // Circle fill: genre color at 10% opacity
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fillStyle = hexToRgba(genreColor, 0.1);
+  ctx.fill();
+
+  // Circle stroke
+  ctx.lineWidth = strokeWidth;
+  ctx.strokeStyle = genreColor;
+  ctx.stroke();
+
+  // Truncate name > 20 chars
+  const displayName = name.length > 20 ? name.slice(0, 19) + '\u2026' : name;
+
+  // Name label below circle
+  ctx.font = '600 12px "DM Sans", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  ctx.fillStyle = '#3E3530';
+  ctx.fillText(displayName, x, y + r + 6);
+
+  // Years below name
+  if (years) {
+    ctx.font = '400 10px "DM Sans", sans-serif';
+    ctx.fillStyle = '#7A6E65';
+    ctx.fillText(years, x, y + r + 22);
+  }
+
+  ctx.restore();
+}
+
+/**
+ * Draw a city-group boundary circle with label and artist count.
+ *
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {number} x - screen x
+ * @param {number} y - screen y
+ * @param {string} city - city name
+ * @param {number} count - number of artists
+ * @param {number} radius - boundary circle radius
+ * @param {number} alpha - overall opacity (0–1), used for cross-fade
+ */
+export function drawCityGroup(ctx, x, y, city, count, radius, alpha = 1) {
+  if (alpha <= 0) return;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  // Dashed boundary circle
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.setLineDash([4, 4]);
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(62,53,48,0.25)';
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // City label + count centered above the boundary circle
+  const label = `${city} (${count})`;
+  ctx.font = '600 13px "DM Sans", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'bottom';
+  ctx.fillStyle = '#3E3530';
+  ctx.fillText(label, x, y - radius - 6);
+
+  ctx.restore();
 }
 
 /**
