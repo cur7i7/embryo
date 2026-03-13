@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback, useState } from 'react';
+import React, { useRef, useEffect, useCallback, useState, useMemo } from 'react';
 import Supercluster from 'supercluster';
 import { GENRE_BUCKETS, getGenreBucket } from '../utils/genres.js';
 import {
@@ -92,7 +92,7 @@ export default function CanvasOverlay({
   // Focused artist index for keyboard navigation
   const focusedArtistIndexRef = useRef(-1);
 
-  // Last input type for DPR-scaled hit radius (Codex 4.3)
+  // Last input type for DPR-scaled hit radius
   const lastInputTypeRef = useRef('mouse');
 
   // Supercluster index ref
@@ -101,11 +101,14 @@ export default function CanvasOverlay({
   // City groups ref (rebuilt when artists change)
   const cityGroupsRef = useRef(new Map());
   const cityPosMapRef = useRef(new Map()); // projected city positions for hit testing
-  const hoveredCityKeyRef = useRef(null);  // currently hovered city key for highlight (Task 8c)
+  const hoveredCityKeyRef = useRef(null);  // currently hovered city key for highlight
 
   // Current render mode for hit testing
   const renderModeRef = useRef('cluster');
   const [renderModeState, setRenderModeState] = useState('cluster');
+
+  // Keyboard navigation announcement for cluster/city modes
+  const [keyboardAnnouncement, setKeyboardAnnouncement] = useState('');
 
   // Display offsets for co-located artists
   const displayOffsetsRef = useRef(new Map());
@@ -121,7 +124,6 @@ export default function CanvasOverlay({
   // Store latest props in refs to avoid render/startRaf recreation
   const artistsRef = useRef(artists);
   const connectionCountsRef = useRef(connectionCounts);
-  const connectionsRef = useRef(connections);
   const connectionsByArtistRef = useRef(connectionsByArtist);
   const activeConnectionTypesRef = useRef(activeConnectionTypes);
   const hoveredArtistRef = useRef(hoveredArtist);
@@ -141,8 +143,9 @@ export default function CanvasOverlay({
   // Track which connectionCounts was used for the last presorted array
   const lastSortedCountsRef = useRef(null);
 
-  // Filter signature to avoid redundant Supercluster/cityGroup rebuilds (Codex 2.5)
-  const filterSignatureRef = useRef('');
+  // Monotonic filter version to avoid redundant Supercluster/cityGroup rebuilds
+  const filterVersionRef = useRef(0);
+  const prevArtistsRef = useRef(null);
 
   // Initialize textures once on mount
   useEffect(() => {
@@ -262,11 +265,13 @@ export default function CanvasOverlay({
       }
     }
 
-    // Only keep rAF running for actual animations; when reduced motion is on
-    // and there are no opacity transitions, a static selection doesn't need rAF.
-    // Also keep running while the map is moving (pan/zoom/resize).
+    // Only keep rAF running when something is visually animating:
+    // active opacity transitions, map movement, or particle/pulse animations
+    // (which only run for selected artists with arcs, not static hover).
+    const hasParticlesOrPulses = !reducedMotion && !!selectedArtistRef.current && selectedArcs.length > 0;
+    const hasPulsingOrbs = !reducedMotion && clusterAlpha > 0 && !activeArtist;
     needsAnimRef.current = hasActiveTransitions || mapMovingRef.current ||
-      (!reducedMotion && (!!hoveredArtistRef.current || !!selectedArtistRef.current));
+      hasParticlesOrPulses || hasPulsingOrbs;
     // Clear the map-moving flag after this frame; onMapEvent will re-set it if
     // another move event fires before the next rAF callback.
     mapMovingRef.current = false;
@@ -400,7 +405,7 @@ export default function CanvasOverlay({
     if (renderMode !== renderModeRef._prev) {
       renderModeRef._prev = renderMode;
       setRenderModeState(renderMode);
-      // Reset keyboard focus index when render mode changes (Codex 4.4)
+      // Reset keyboard focus index when render mode changes
       focusedArtistIndexRef.current = -1;
     }
 
@@ -420,7 +425,7 @@ export default function CanvasOverlay({
         clusterAlpha = 1;
       } else if (currentZoom < ZOOM_CITY + 0.5) {
         const t = (currentZoom - (ZOOM_CITY - 0.5));  // 0->1
-        // Codex 6.5: quadratic ease-out on the fading mode reduces double-draw overlap artifacts
+        // Quadratic ease-out on the fading mode reduces double-draw overlap artifacts
         clusterAlpha = (1 - t) * (1 - t);
         cityAlpha = 1 - clusterAlpha;
       } else if (currentZoom < ZOOM_INDIVIDUAL - 0.5) {
@@ -428,7 +433,7 @@ export default function CanvasOverlay({
       } else if (currentZoom < ZOOM_INDIVIDUAL + 0.5) {
         // City <-> Individual cross-fade around ZOOM_INDIVIDUAL (11.5-12.5)
         const t = (currentZoom - (ZOOM_INDIVIDUAL - 0.5));  // 0->1
-        // Codex 6.5: quadratic ease-out on the fading mode reduces double-draw overlap artifacts
+        // Quadratic ease-out on the fading mode reduces double-draw overlap artifacts
         cityAlpha = (1 - t) * (1 - t);
         individualAlpha = 1 - cityAlpha;
       } else {
@@ -445,7 +450,7 @@ export default function CanvasOverlay({
     ctx.setLineDash([]);
 
     // --- Cluster mode rendering ---
-    // Collect cluster positions/radii for pill collision avoidance (Task 8a)
+    // Collect cluster positions/radii for pill collision avoidance
     const clusterPositions = [];
 
     if (clusterAlpha > 0) {
@@ -494,7 +499,7 @@ export default function CanvasOverlay({
             ctx.fillText(countStr, x, y);
             ctx.restore();
 
-            // Track cluster position for pill collision (Task 8a)
+            // Track cluster position for pill collision
             clusterPositions.push({ x, y, radius: clusterRadius });
           } else {
             const artistId = cluster.properties.artistId;
@@ -535,7 +540,7 @@ export default function CanvasOverlay({
             ctx.globalAlpha = baseAlpha * opacity * clusterAlpha;
             ctx.drawImage(orbTexture, x - radius, y - radius, radius * 2, radius * 2);
 
-            // Track individual-in-cluster position for pill collision (Task 8a)
+            // Track individual-in-cluster position for pill collision
             clusterPositions.push({ x, y, radius });
           }
         }
@@ -554,10 +559,12 @@ export default function CanvasOverlay({
       // Use pre-sorted city groups from Effect A (P3: avoid per-frame sort)
       const sortedCityEntries = sortedCityGroupsRef.current;
 
-      // Codex 6.2: density-aware label budget — count cities in viewport first
+      // Project all city groups once and count visible cities for density budget
+      const cityProjections = new Map();
       let citiesInViewport = 0;
-      for (const [, group] of sortedCityEntries) {
+      for (const [key, group] of sortedCityEntries) {
         const pt = map.project([group.lng, group.lat]);
+        cityProjections.set(key, pt);
         const r = Math.max(30, Math.sqrt(group.artists.length) * 12);
         if (pt.x >= -r && pt.x <= cssWidth + r && pt.y >= -r && pt.y <= cssHeight + r) {
           citiesInViewport++;
@@ -573,7 +580,7 @@ export default function CanvasOverlay({
       const cityOccupiedRects = [];
 
       for (const [key, group] of sortedCityEntries) {
-        const point = map.project([group.lng, group.lat]);
+        const point = cityProjections.get(key);
         const { x, y } = point;
 
         const cityRadius = Math.max(30, Math.sqrt(group.artists.length) * 12);
@@ -583,7 +590,7 @@ export default function CanvasOverlay({
         cityPosMap.set(key, { x, y, radius: cityRadius, group });
 
         // Collision detection for city labels — include count text in width
-        // Codex 6.2: also suppress label once density budget is reached
+        // Also suppress label once density budget is reached
         let showLabel = cityLabelsShown < cityLabelBudget;
         ctx.font = '600 13px "DM Sans", sans-serif';
         const cityNameW = ctx.measureText(group.city).width;
@@ -598,7 +605,7 @@ export default function CanvasOverlay({
           h: textHeight,
         };
 
-        // Only run collision check if budget still allows a label (Codex 6.2)
+        // Only run collision check if budget still allows a label
         if (showLabel) {
           for (const occ of cityOccupiedRects) {
             if (overlaps(labelRect, occ)) {
@@ -609,10 +616,10 @@ export default function CanvasOverlay({
         }
         if (showLabel) {
           cityOccupiedRects.push(labelRect);
-          cityLabelsShown++; // Codex 6.2: track against density budget
+          cityLabelsShown++;
         }
 
-        // Codex 6.4: text backplate for city label readability over map texture
+        // Text backplate for city label readability over map texture
         // Drawn here (before drawCityGroup) so it sits beneath the text layer.
         if (showLabel) {
           ctx.save();
@@ -631,7 +638,7 @@ export default function CanvasOverlay({
           ctx.restore();
         }
 
-        // City hover highlight ring (Task 8c)
+        // City hover highlight ring
         if (key === hoveredCityKeyRef.current) {
           ctx.save();
           ctx.globalAlpha = cityAlpha;
@@ -655,28 +662,23 @@ export default function CanvasOverlay({
 
     // --- Individual mode rendering ---
     if (individualAlpha > 0) {
-      // Use pre-sorted array (by connection count) and partition active/connected to front.
-      // This avoids an O(n log n) sort every frame for 30K artists.
+      // Only partition artists that are visible in the viewport (posMap already
+      // contains only projected positions for artists within geographic bounds).
       const preSorted = presortedArtistsRef.current;
       const activeArr = [];
       const connArr = [];
       const restArr = [];
       for (const a of preSorted) {
+        if (!posMap.has(a.id)) continue; // skip off-screen artists
         if (activeArtist && a.id === activeArtist.id) activeArr.push(a);
         else if (connectedIds.has(a.id)) connArr.push(a);
         else restArr.push(a);
       }
       const sortedArtists = activeArr.concat(connArr, restArr);
 
-      // --- Density-aware label suppression (Task 8b) ---
-      // Count visible artists in viewport for density threshold
-      let visibleCount = 0;
-      for (const a of sortedArtists) {
-        const pt = posMap.get(a.id);
-        if (pt && pt.x >= -60 && pt.x <= cssWidth + 60 && pt.y >= -60 && pt.y <= cssHeight + 60) {
-          visibleCount++;
-        }
-      }
+      // Density-aware label suppression: use sortedArtists length directly
+      // since it already contains only viewport-visible artists
+      const visibleCount = sortedArtists.length;
       // Determine max labels based on density
       let maxLabels;
       if (visibleCount <= 30) maxLabels = Infinity;
@@ -727,7 +729,7 @@ export default function CanvasOverlay({
         let labelOffset = 0; // vertical offset for collision-adjusted important labels (S1)
 
         if (!isImportant) {
-          // Density-aware suppression: skip labels once cap reached (Task 8b)
+          // Density-aware suppression: skip labels once cap reached
           if (labelsShown >= maxLabels) {
             showLabel = false;
           } else {
@@ -831,7 +833,7 @@ export default function CanvasOverlay({
         const pillH = 50;
         const pillW = maxW + pillPad * 2;
 
-        // --- Pill collision avoidance (Task 8a) ---
+        // --- Pill collision avoidance ---
         // AABB overlap check between pill rect and a circle's bounding box
         const pillOverlapsCircle = (px, py, cx, cy, cr) =>
           px < cx + cr && px + pillW > cx - cr && py < cy + cr && py + pillH > cy - cr;
@@ -983,12 +985,12 @@ export default function CanvasOverlay({
     }
     artistByIdRef.current = byId;
 
-    // Filter signature versioning (Codex 2.5): avoid redundant Supercluster/cityGroup
-    // rebuilds when the same artist set is passed due to unrelated re-renders.
-    const sig = valid.length + '_' + (valid[0]?.id ?? '') + '_' + (valid[valid.length - 1]?.id ?? '');
-    const sigChanged = sig !== filterSignatureRef.current;
+    // Increment filter version whenever the artists array reference changes,
+    // ensuring spatial index rebuilds even when artists are added/removed in the middle.
+    const sigChanged = artists !== prevArtistsRef.current;
     if (sigChanged) {
-      filterSignatureRef.current = sig;
+      filterVersionRef.current += 1;
+      prevArtistsRef.current = artists;
     }
 
     // Pre-sort valid artists by connection count (descending) once, not per frame.
@@ -1069,7 +1071,6 @@ export default function CanvasOverlay({
   // -------------------------------------------------------------------
   useEffect(() => {
     connectionCountsRef.current = connectionCounts;
-    connectionsRef.current = connections;
     connectionsByArtistRef.current = connectionsByArtist;
     activeConnectionTypesRef.current = activeConnectionTypes;
     hoveredArtistRef.current = hoveredArtist;
@@ -1130,7 +1131,7 @@ export default function CanvasOverlay({
       }
     }
 
-    // Hit radius depends on render mode, DPR, and input type (Codex 4.3)
+    // Hit radius depends on render mode, DPR, and input type
     const dpr = window.devicePixelRatio || 1;
     const inputScale = lastInputTypeRef.current === 'touch' ? 1.5 : 1.0;
     let hitRadius;
@@ -1220,7 +1221,7 @@ export default function CanvasOverlay({
       const mx = e.point.x;
       const my = e.point.y;
 
-      // In city mode, check city group hover for pointer cursor + highlight (Task 8c)
+      // In city mode, check city group hover for pointer cursor + highlight
       if (renderModeRef.current === 'city') {
         const cityPosMap = cityPosMapRef.current;
         let foundCityKey = null;
@@ -1333,7 +1334,7 @@ export default function CanvasOverlay({
       const map = mapRef.current?.getMap?.();
 
       if (mode === 'cluster') {
-        // Expand focused cluster (Codex 4.4)
+        // Expand focused cluster
         const cluster = focusedArtistIndexRef._focusedCluster;
         const index = scIndexRef.current;
         if (cluster && cluster.properties.cluster && index && map) {
@@ -1346,7 +1347,7 @@ export default function CanvasOverlay({
       }
 
       if (mode === 'city') {
-        // Fly to focused city at zoom 13 (Codex 4.4)
+        // Fly to focused city at zoom 13
         const focused = focusedArtistIndexRef._focusedCity;
         if (focused && map) {
           const { entry } = focused;
@@ -1363,7 +1364,7 @@ export default function CanvasOverlay({
       return;
     }
 
-    // ArrowLeft/ArrowRight to cycle through visible candidates based on render mode (Codex 4.4)
+    // ArrowLeft/ArrowRight to cycle through visible candidates based on render mode
     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
       e.preventDefault();
 
@@ -1374,7 +1375,7 @@ export default function CanvasOverlay({
       const map = mapRef.current?.getMap?.();
 
       if (mode === 'cluster') {
-        // Cycle through cluster centers visible on screen (Codex 4.4)
+        // Cycle through cluster centers visible on screen
         const index = scIndexRef.current;
         if (!map || !index) return;
         const bounds = map.getBounds();
@@ -1401,14 +1402,15 @@ export default function CanvasOverlay({
         }
         focusedArtistIndexRef.current = idx;
 
-        // On Enter/Space the cluster should expand; here just announce focus
+        // Announce focused cluster/leaf via ARIA live region
         const { cluster } = visibleClusters[idx];
-        const label = cluster.properties.cluster
+        const clusterLabel = cluster.properties.cluster
           ? `Cluster of ${cluster.properties.point_count} artists`
           : cluster.properties.name || 'Artist';
-        // Use the ARIA live region by triggering a synthetic hover on a non-cluster leaf
+        setKeyboardAnnouncement(clusterLabel);
+        // Also trigger synthetic hover on leaf nodes for visual feedback
         if (!cluster.properties.cluster) {
-          const artist = artistByIdRef.current.get(cluster.properties.id);
+          const artist = artistByIdRef.current.get(cluster.properties.artistId);
           if (artist) onHoverRef.current?.(artist);
         } else {
           onHoverRef.current?.(null);
@@ -1421,7 +1423,7 @@ export default function CanvasOverlay({
       }
 
       if (mode === 'city') {
-        // Cycle through city group centers visible on screen (Codex 4.4)
+        // Cycle through city group centers visible on screen
         const cityPosMap = cityPosMapRef.current;
         if (!cityPosMap || cityPosMap.size === 0) return;
         const visibleCities = [];
@@ -1440,6 +1442,9 @@ export default function CanvasOverlay({
         }
         focusedArtistIndexRef.current = idx;
 
+        // Announce focused city via ARIA live region
+        const { entry: cityEntry } = visibleCities[idx];
+        setKeyboardAnnouncement(`${cityEntry.group.city}, ${cityEntry.group.artists.length} artists`);
         // Store focused city for Enter handling
         focusedArtistIndexRef._focusedCity = visibleCities[idx];
         needsAnimRef.current = true;
@@ -1478,22 +1483,30 @@ export default function CanvasOverlay({
     }
   }, [startRaf, mapRef]);
 
-  // ARIA live region text for hovered/selected artist + zoom mode
+  // ARIA live region text for hovered/selected artist + zoom mode.
+  // Memoized from props/state to avoid reading refs during render.
   const modeLabel = renderModeState === 'cluster' ? 'Cluster view' : renderModeState === 'city' ? 'City view' : 'Individual view';
-  const liveText = hoveredArtist
-    ? (() => {
-        const meta = artistMetaRef.current.get(hoveredArtist.id);
-        const genre = meta?.genreBucket || '';
-        const year = hoveredArtist.birth_year || 'unknown year';
-        const city = hoveredArtist.birth_city ? ', ' + hoveredArtist.birth_city : '';
-        return `${hoveredArtist.name}${genre ? ', ' + genre : ''}, ${year}${city}`;
-      })()
-    : selectedArtist
-      ? (() => {
-          const count = connectionCountsRef.current?.get(selectedArtist.id) ?? 0;
-          return `Selected: ${selectedArtist.name}. ${count} connection${count === 1 ? '' : 's'}.`;
-        })()
-      : modeLabel;
+  const liveText = useMemo(() => {
+    if (keyboardAnnouncement) return keyboardAnnouncement;
+    if (hoveredArtist) {
+      const genre = hoveredArtist.genres ? getGenreBucket(hoveredArtist.genres).bucket : '';
+      const year = hoveredArtist.birth_year || 'unknown year';
+      const city = hoveredArtist.birth_city ? ', ' + hoveredArtist.birth_city : '';
+      return `${hoveredArtist.name}${genre ? ', ' + genre : ''}, ${year}${city}`;
+    }
+    if (selectedArtist) {
+      const count = connectionCounts?.get(selectedArtist.id) ?? 0;
+      return `Selected: ${selectedArtist.name}. ${count} connection${count === 1 ? '' : 's'}.`;
+    }
+    return modeLabel;
+  }, [hoveredArtist, selectedArtist, connectionCounts, modeLabel, keyboardAnnouncement]);
+
+  // Clear keyboard announcement when hover/selection changes from mouse interaction
+  useEffect(() => {
+    if (hoveredArtist || selectedArtist) {
+      setKeyboardAnnouncement('');
+    }
+  }, [hoveredArtist, selectedArtist]);
 
   // Debounced live text: hover announcements are delayed 300ms to avoid flooding
   // screen readers during rapid mouse movement. Mode changes go through immediately
@@ -1501,13 +1514,13 @@ export default function CanvasOverlay({
   const [debouncedLiveText, setDebouncedLiveText] = useState('');
   useEffect(() => {
     // Mode changes (modeLabel) should be immediate — only debounce hover
-    if (!hoveredArtist) {
+    if (!hoveredArtist && !keyboardAnnouncement) {
       setDebouncedLiveText(liveText);
       return;
     }
     const id = setTimeout(() => setDebouncedLiveText(liveText), 300);
     return () => clearTimeout(id);
-  }, [liveText, hoveredArtist]);
+  }, [liveText, hoveredArtist, keyboardAnnouncement]);
 
   return (
     <>
