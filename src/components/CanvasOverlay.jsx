@@ -643,8 +643,9 @@ export default function CanvasOverlay({
       const pos = posMapRef.current?.get(activeArtist.id);
       if (pos) {
         const connCount = (connectionCounts && connectionCounts.get(activeArtist.id)) || 0;
-        const baseRadius = 40 + Math.min(connCount * 3, 60);
-        const radius = baseRadius * 1.5;
+        const isIndividual = renderModeRef.current === 'individual';
+        const baseRadius = isIndividual ? 16 : 40 + Math.min(connCount * 3, 60);
+        const radius = baseRadius * (isIndividual ? 1.2 : 1.5);
 
         const meta = artistMeta.get(activeArtist.id);
         const bucket = meta?.genreBucket ?? getGenreBucket(activeArtist.genres).bucket;

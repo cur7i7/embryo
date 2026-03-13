@@ -100,7 +100,7 @@ export default function ConnectionFilters({ activeConnectionTypes, onToggleType,
               fontWeight: isActive ? 600 : 400,
               lineHeight: 1,
               letterSpacing: '0.02em',
-              color: isActive ? ACCENT : '#7A6E65',
+              color: isActive ? ACCENT : '#5A5048',
               backgroundColor: isActive ? 'rgba(90,80,72,0.08)' : 'transparent',
               border: isActive ? `1.5px solid ${ACCENT}` : '1px solid rgba(90,80,72,0.12)',
               borderRadius: '6px',
@@ -125,7 +125,7 @@ export default function ConnectionFilters({ activeConnectionTypes, onToggleType,
               if (!isActive) {
                 e.currentTarget.style.backgroundColor = 'transparent';
                 e.currentTarget.style.borderColor = 'rgba(90,80,72,0.12)';
-                e.currentTarget.style.color = '#7A6E65';
+                e.currentTarget.style.color = '#5A5048';
               }
             }}
             onFocus={(e) => { e.currentTarget.style.boxShadow = '0 0 0 2px rgba(90,80,72,0.3)'; }}
@@ -138,7 +138,7 @@ export default function ConnectionFilters({ activeConnectionTypes, onToggleType,
                 style={{
                   fontSize: isMobile ? '11px' : '9px',
                   fontWeight: 400,
-                  color: '#7A6E65',
+                  color: '#5A5048',
                 }}
               >
                 {count >= 1000 ? `${(count / 1000).toFixed(1)}k` : count}

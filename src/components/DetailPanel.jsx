@@ -288,7 +288,7 @@ export default function DetailPanel({
             border: 'none',
             borderRadius: '50%',
             backgroundColor: 'rgba(122, 110, 101, 0.12)',
-            color: '#7A6E65',
+            color: '#5A5048',
             fontSize: 18,
             cursor: 'pointer',
             display: 'flex',
@@ -314,7 +314,7 @@ export default function DetailPanel({
           border: 'none',
           borderRadius: '50%',
           backgroundColor: 'rgba(122, 110, 101, 0.12)',
-          color: '#7A6E65',
+          color: '#5A5048',
           fontSize: 18,
           cursor: 'pointer',
           display: 'flex',
@@ -421,7 +421,7 @@ export default function DetailPanel({
             <span>{bucket}</span>
             {location && (
               <>
-                <span style={{ color: '#8A7E75' }} aria-hidden="true">·</span>
+                <span style={{ color: '#5A5048' }} aria-hidden="true">·</span>
                 <span>{location}</span>
               </>
             )}
@@ -565,7 +565,7 @@ export default function DetailPanel({
                             fontFamily: '"DM Sans", sans-serif',
                             fontSize: 13,
                             fontWeight: 600,
-                            color: connectedArtist ? '#3E3530' : '#7A6E65',
+                            color: connectedArtist ? '#3E3530' : '#5A5048',
                             cursor: connectedArtist ? 'pointer' : 'default',
                             textDecoration: connectedArtist ? 'underline' : 'none',
                             textDecorationColor: hexToRgba(connColor, 0.4),
