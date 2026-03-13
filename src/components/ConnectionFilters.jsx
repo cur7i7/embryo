@@ -1,4 +1,5 @@
 import React from 'react';
+import { useIsPointerFine } from '../hooks/useIsPointerFine.js';
 
 const CONNECTION_TYPES = [
   { key: 'teacher', label: 'Teacher' },
@@ -11,6 +12,7 @@ const ACCENT = '#5A5048';
 
 export default function ConnectionFilters({ activeConnectionTypes, onToggleType, onSelectAll, typeCounts, isMobile = false }) {
   const allActive = activeConnectionTypes.size === CONNECTION_TYPES.length;
+  const isPointerFine = useIsPointerFine();
 
   return (
     <div style={{
@@ -46,17 +48,16 @@ export default function ConnectionFilters({ activeConnectionTypes, onToggleType,
         title="Show all connection types"
         style={{
           fontFamily: '"DM Sans", sans-serif',
-          fontSize: 'clamp(10px, 1.4vw, 12px)',
+          fontSize: isPointerFine ? 11 : 'clamp(10px, 1.4vw, 12px)',
           fontWeight: 600,
           lineHeight: 1,
           letterSpacing: '0.03em',
-          textTransform: 'uppercase',
           color: allActive ? '#FAF3EB' : '#6B5F55',
           backgroundColor: allActive ? ACCENT : 'transparent',
           border: allActive ? `1px solid ${ACCENT}` : '1px solid rgba(90,80,72,0.15)',
-          borderRadius: '6px',
-          padding: isMobile ? '6px 10px' : '4px 8px',
-          minHeight: '44px',
+          borderRadius: isPointerFine ? 999 : '6px',
+          padding: isPointerFine ? '3px 8px' : (isMobile ? '6px 10px' : '4px 8px'),
+          minHeight: isPointerFine ? 30 : 44,
           cursor: 'pointer',
           transition: 'all 0.15s ease',
           outline: 'none',
@@ -95,16 +96,16 @@ export default function ConnectionFilters({ activeConnectionTypes, onToggleType,
             title={`${label} connections (${count.toLocaleString()})`}
             style={{
               fontFamily: '"DM Sans", sans-serif',
-              fontSize: 'clamp(10px, 1.4vw, 12px)',
+              fontSize: isPointerFine ? 11 : 'clamp(10px, 1.4vw, 12px)',
               fontWeight: isActive ? 600 : 400,
               lineHeight: 1,
               letterSpacing: '0.02em',
               color: isActive ? ACCENT : '#5A5048',
               backgroundColor: isActive ? 'rgba(90,80,72,0.08)' : 'transparent',
               border: isActive ? `1.5px solid ${ACCENT}` : '1px solid rgba(90,80,72,0.12)',
-              borderRadius: '6px',
-              padding: isMobile ? '6px 9px' : '4px 7px',
-              minHeight: '44px',
+              borderRadius: isPointerFine ? 999 : '6px',
+              padding: isPointerFine ? '3px 8px' : (isMobile ? '6px 9px' : '4px 7px'),
+              minHeight: isPointerFine ? 30 : 44,
               cursor: 'pointer',
               transition: 'all 0.15s ease',
               outline: 'none',

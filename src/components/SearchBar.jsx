@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import Fuse from 'fuse.js';
 import { getGenreBucket } from '../utils/genres.js';
+import { useIsPointerFine } from '../hooks/useIsPointerFine.js';
 
 const MAX_RESULTS = 8;
 
@@ -10,6 +11,7 @@ export default function SearchBar({ artists, allArtists, onSelect, isMobile = fa
   const [isOpen, setIsOpen] = useState(false);
   const [hasFocus, setHasFocus] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const isPointerFine = useIsPointerFine();
   const inputRef = useRef(null);
   const dropdownRef = useRef(null);
   const blurTimeoutRef = useRef(null);
@@ -187,12 +189,12 @@ export default function SearchBar({ artists, allArtists, onSelect, isMobile = fa
             color: '#3E3530',
             backgroundColor: 'rgba(250, 243, 235, 0.95)',
             border: '1px solid rgba(224, 216, 204, 0.8)',
-            borderRadius: (isOpen || (hasFocus && query.trim().length >= 2 && results.length === 0)) ? '10px 10px 0 0' : 10,
+            borderRadius: (isOpen || (hasFocus && query.trim().length >= 2 && results.length === 0)) ? '999px 999px 0 0' : 999,
             outline: 'none',
             boxShadow: '0 2px 12px rgba(90, 80, 72, 0.10)',
             backdropFilter: 'blur(8px)',
             transition: 'border-color 0.15s ease, border-radius 0.15s ease',
-            minHeight: 44,
+            minHeight: isPointerFine ? 36 : 44,
           }}
           onFocusCapture={e => { if (e.target.matches(':focus-visible')) { e.target.style.borderColor = 'rgba(168, 144, 128, 0.9)'; e.target.style.boxShadow = '0 0 0 3px rgba(168, 144, 128, 0.4)'; } }}
           onBlurCapture={e => { e.target.style.borderColor = 'rgba(224, 216, 204, 0.8)'; e.target.style.boxShadow = '0 2px 12px rgba(90, 80, 72, 0.10)'; }}
@@ -251,7 +253,7 @@ export default function SearchBar({ artists, allArtists, onSelect, isMobile = fa
             backgroundColor: 'rgba(250, 243, 235, 0.98)',
             border: '1px solid rgba(224, 216, 204, 0.8)',
             borderTop: 'none',
-            borderRadius: '0 0 10px 10px',
+            borderRadius: '0 0 999px 999px',
             boxShadow: '0 4px 16px rgba(90, 80, 72, 0.14)',
             backdropFilter: 'blur(8px)',
             maxHeight: 320,
@@ -279,8 +281,8 @@ export default function SearchBar({ artists, allArtists, onSelect, isMobile = fa
                   display: 'flex',
                   alignItems: 'center',
                   gap: 10,
-                  padding: '9px 14px',
-                  minHeight: 44,
+                  padding: isPointerFine ? '6px 14px' : '9px 14px',
+                  minHeight: isPointerFine ? 36 : 44,
                   cursor: 'pointer',
                   backgroundColor: isActive ? 'rgba(168, 144, 128, 0.10)' : 'transparent',
                   borderBottom: i < results.length - 1 ? '1px solid rgba(224, 216, 204, 0.4)' : 'none',
@@ -343,7 +345,7 @@ export default function SearchBar({ artists, allArtists, onSelect, isMobile = fa
             backgroundColor: 'rgba(250, 243, 235, 0.98)',
             border: '1px solid rgba(224, 216, 204, 0.8)',
             borderTop: 'none',
-            borderRadius: '0 0 10px 10px',
+            borderRadius: '0 0 999px 999px',
             boxShadow: '0 4px 16px rgba(90, 80, 72, 0.14)',
             backdropFilter: 'blur(8px)',
             zIndex: 21,

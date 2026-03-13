@@ -1,5 +1,6 @@
 import React from 'react';
 import { GENRE_BUCKETS } from '../utils/genres.js';
+import { useIsPointerFine } from '../hooks/useIsPointerFine.js';
 
 const BUCKET_NAMES = Object.keys(GENRE_BUCKETS);
 
@@ -28,6 +29,7 @@ const GENRE_SHAPES = {
 
 export default function GenreFilters({ activeGenres, onToggleGenre, onSelectAll, isMobile = false }) {
   const allActive = activeGenres.size === BUCKET_NAMES.length;
+  const isPointerFine = useIsPointerFine();
 
   return (
     <>
@@ -64,16 +66,16 @@ export default function GenreFilters({ activeGenres, onToggleGenre, onSelectAll,
         aria-pressed={allActive}
         style={{
           fontFamily: '"DM Sans", sans-serif',
-          fontSize: 'clamp(11px, 1.5vw, 13px)',
+          fontSize: isPointerFine ? 12 : 'clamp(11px, 1.5vw, 13px)',
           fontWeight: 600,
           lineHeight: 1,
           letterSpacing: '0.02em',
           color: allActive ? '#FAF3EB' : '#5A5048',
           backgroundColor: allActive ? '#5A5048' : 'transparent',
           border: allActive ? '1px solid #5A5048' : '1px solid rgba(90,80,72,0.2)',
-          borderRadius: '8px',
-          padding: isMobile ? '6px 12px' : '5px 10px',
-          minHeight: '44px',
+          borderRadius: isPointerFine ? 999 : '8px',
+          padding: isPointerFine ? '3px 10px' : (isMobile ? '6px 12px' : '5px 10px'),
+          minHeight: isPointerFine ? 30 : 44,
           cursor: 'pointer',
           transition: 'all 0.15s ease',
           outline: 'none',
@@ -111,17 +113,16 @@ export default function GenreFilters({ activeGenres, onToggleGenre, onSelectAll,
             aria-pressed={isActive}
             style={{
               fontFamily: '"DM Sans", sans-serif',
-              fontSize: 'clamp(11px, 1.5vw, 13px)',
+              fontSize: isPointerFine ? 12 : 'clamp(11px, 1.5vw, 13px)',
               fontWeight: isActive ? 600 : 500,
               lineHeight: 1,
               letterSpacing: '0.01em',
               color: isActive ? '#3E3530' : '#6B5F55',
-              backgroundColor: isActive ? `${color}12` : 'transparent',
+              backgroundColor: isActive ? `${color}1F` : 'transparent',
               border: isActive ? `1.5px solid ${color}` : '1px solid rgba(90,80,72,0.15)',
-              borderLeft: isActive ? `3px solid ${color}` : undefined,
-              borderRadius: '8px',
-              padding: isMobile ? '6px 11px' : '5px 9px',
-              minHeight: '44px',
+              borderRadius: isPointerFine ? 999 : '8px',
+              padding: isPointerFine ? '3px 10px' : (isMobile ? '6px 11px' : '5px 9px'),
+              minHeight: isPointerFine ? 30 : 44,
               cursor: 'pointer',
               transition: 'all 0.15s ease',
               outline: 'none',
