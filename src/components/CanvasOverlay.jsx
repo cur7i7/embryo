@@ -403,14 +403,16 @@ export default function CanvasOverlay({
         clusterAlpha = 1;
       } else if (currentZoom < ZOOM_CITY + 0.5) {
         const t = (currentZoom - (ZOOM_CITY - 0.5));  // 0->1
-        clusterAlpha = 1 - t;
+        // Codex 6.5: quadratic ease-out on the fading mode reduces double-draw overlap artifacts
+        clusterAlpha = (1 - t) * (1 - t);
         cityAlpha = t;
       } else if (currentZoom < ZOOM_INDIVIDUAL - 0.5) {
         cityAlpha = 1;
       } else if (currentZoom < ZOOM_INDIVIDUAL + 0.5) {
         // City <-> Individual cross-fade around ZOOM_INDIVIDUAL (11.5-12.5)
         const t = (currentZoom - (ZOOM_INDIVIDUAL - 0.5));  // 0->1
-        cityAlpha = 1 - t;
+        // Codex 6.5: quadratic ease-out on the fading mode reduces double-draw overlap artifacts
+        cityAlpha = (1 - t) * (1 - t);
         individualAlpha = t;
       } else {
         individualAlpha = 1;
@@ -535,6 +537,23 @@ export default function CanvasOverlay({
       const sortedCityEntries = [...cityGroups.entries()].sort(
         (a, b) => b[1].artists.length - a[1].artists.length
       );
+
+      // Codex 6.2: density-aware label budget — count cities in viewport first
+      let citiesInViewport = 0;
+      for (const [, group] of sortedCityEntries) {
+        const pt = map.project([group.lng, group.lat]);
+        const r = Math.max(30, Math.sqrt(group.artists.length) * 12);
+        if (pt.x >= -r && pt.x <= cssWidth + r && pt.y >= -r && pt.y <= cssHeight + r) {
+          citiesInViewport++;
+        }
+      }
+      let cityLabelBudget;
+      if (citiesInViewport <= 15) cityLabelBudget = Infinity;
+      else if (citiesInViewport <= 40) cityLabelBudget = 20;
+      else if (citiesInViewport <= 80) cityLabelBudget = 12;
+      else cityLabelBudget = 8;
+      let cityLabelsShown = 0;
+
       const cityOccupiedRects = [];
 
       for (const [key, group] of sortedCityEntries) {
@@ -548,7 +567,8 @@ export default function CanvasOverlay({
         cityPosMap.set(key, { x, y, radius: cityRadius, group });
 
         // Collision detection for city labels — include count text in width
-        let showLabel = true;
+        // Codex 6.2: also suppress label once density budget is reached
+        let showLabel = cityLabelsShown < cityLabelBudget;
         ctx.font = '600 13px "DM Sans", sans-serif';
         const cityNameW = ctx.measureText(group.city).width;
         ctx.font = '400 11px "DM Sans", sans-serif';
@@ -565,14 +585,37 @@ export default function CanvasOverlay({
         const overlaps = (r1, r2) =>
           r1.x < r2.x + r2.w && r1.x + r1.w > r2.x && r1.y < r2.y + r2.h && r1.y + r1.h > r2.y;
 
-        for (const occ of cityOccupiedRects) {
-          if (overlaps(labelRect, occ)) {
-            showLabel = false;
-            break;
+        // Only run collision check if budget still allows a label (Codex 6.2)
+        if (showLabel) {
+          for (const occ of cityOccupiedRects) {
+            if (overlaps(labelRect, occ)) {
+              showLabel = false;
+              break;
+            }
           }
         }
         if (showLabel) {
           cityOccupiedRects.push(labelRect);
+          cityLabelsShown++; // Codex 6.2: track against density budget
+        }
+
+        // Codex 6.4: text backplate for city label readability over map texture
+        // Drawn here (before drawCityGroup) so it sits beneath the text layer.
+        if (showLabel) {
+          ctx.save();
+          ctx.globalAlpha = cityAlpha * 0.82;
+          ctx.fillStyle = 'rgba(250, 243, 235, 0.8)';
+          const bpPad = 3;
+          ctx.beginPath();
+          ctx.roundRect(
+            labelRect.x - bpPad,
+            labelRect.y - bpPad,
+            labelRect.w + bpPad * 2,
+            labelRect.h + bpPad * 2,
+            3
+          );
+          ctx.fill();
+          ctx.restore();
         }
 
         // City hover highlight ring (Task 8c)
