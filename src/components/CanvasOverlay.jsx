@@ -64,6 +64,9 @@ export default function CanvasOverlay({
   // Track whether an animation loop should be running
   const needsAnimRef = useRef(false);
 
+  // Frame counter for periodic opacityMap cleanup
+  const frameCountRef = useRef(0);
+
   // Prefers-reduced-motion
   const prefersReducedMotionRef = useRef(false);
   useEffect(() => {
@@ -78,15 +81,11 @@ export default function CanvasOverlay({
   const grainFullRef = useRef(null);
   const grainSizeRef = useRef({ w: 0, h: 0 });
 
-  // artistMap ref (rebuilt when artists change)
-  const artistMapRef = useRef(new Map());
-
   // Focused artist index for keyboard navigation
   const focusedArtistIndexRef = useRef(-1);
 
   // Supercluster index ref
   const scIndexRef = useRef(null);
-  const scArtistsRef = useRef(null); // the array used to build the last index
 
   // City groups ref (rebuilt when artists change)
   const cityGroupsRef = useRef(new Map());
@@ -227,6 +226,16 @@ export default function CanvasOverlay({
     if (opacityMap.size > validArtists.length * 2) {
       for (const [id, entry] of opacityMap) {
         if (entry.opacity === 0 && entry.target === 0) opacityMap.delete(id);
+      }
+    }
+
+    // Aggressive sweep every 60 frames: remove entries not in current valid set
+    frameCountRef.current += 1;
+    if (frameCountRef.current % 60 === 0) {
+      for (const id of opacityMap.keys()) {
+        if (!currentIds.has(id)) {
+          opacityMap.delete(id);
+        }
       }
     }
 
@@ -763,14 +772,11 @@ export default function CanvasOverlay({
     const valid = (artists || []).filter(a => a.birth_lat != null && a.birth_lng != null);
     validArtistsRef.current = valid;
 
-    // Build O(1) lookup maps
-    const newArtistMap = new Map();
+    // Build O(1) lookup map
     const byId = new Map();
     for (const artist of valid) {
-      newArtistMap.set(artist.id, artist);
       byId.set(artist.id, artist);
     }
-    artistMapRef.current = newArtistMap;
     artistByIdRef.current = byId;
 
     // Pre-sort valid artists by connection count (descending) once, not per frame.
@@ -797,7 +803,6 @@ export default function CanvasOverlay({
       }))
     );
     scIndexRef.current = index;
-    scArtistsRef.current = artists;
 
     // Precompute per-artist metadata (genre bucket, color, pulse hash)
     const newMeta = new Map();
@@ -1140,7 +1145,7 @@ export default function CanvasOverlay({
       <div
         tabIndex={0}
         onKeyDown={handleKeyDown}
-        role="application"
+        role="region"
         aria-label="Musician map navigation. Use arrow keys to browse artists, Enter to select."
         aria-roledescription="musician map"
         style={{

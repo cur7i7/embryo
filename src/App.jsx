@@ -118,6 +118,7 @@ export default function App() {
         doFlyTo();
       } else if (map) {
         map.on('load', doFlyTo);
+        return () => map.off('load', doFlyTo);
       }
     }
     pendingArtistId.current = null;
@@ -142,6 +143,7 @@ export default function App() {
         jumpToPos();
       } else if (map) {
         map.on('load', jumpToPos);
+        return () => map.off('load', jumpToPos);
       }
     }
   }, []);
@@ -413,10 +415,7 @@ export default function App() {
       <SearchBar
         artists={allArtists}
         onSelect={handleSelect}
-        mapRef={mapRef}
         isMobile={isMobile}
-        rangeStart={timeline.rangeStart}
-        rangeEnd={timeline.rangeEnd}
       />
 
       {/* Reset view button — only visible when filters are non-default */}
