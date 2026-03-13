@@ -90,6 +90,80 @@ export default function Map({
       >
         Skip to timeline controls
       </a>
+      <a
+        href="#search-input"
+        onClick={(e) => {
+          e.preventDefault();
+          document.querySelector('input[type="search"]')?.focus();
+        }}
+        style={{
+          position: 'absolute',
+          left: '-9999px',
+          top: 'auto',
+          width: '1px',
+          height: '1px',
+          overflow: 'hidden',
+          zIndex: 100,
+        }}
+        onFocus={(e) => {
+          e.currentTarget.style.left = '16px';
+          e.currentTarget.style.top = '16px';
+          e.currentTarget.style.width = 'auto';
+          e.currentTarget.style.height = 'auto';
+          e.currentTarget.style.padding = '8px 16px';
+          e.currentTarget.style.backgroundColor = '#FAF3EB';
+          e.currentTarget.style.border = '2px solid #D83E7F';
+          e.currentTarget.style.borderRadius = '8px';
+          e.currentTarget.style.color = '#3E3530';
+          e.currentTarget.style.fontFamily = '"DM Sans", sans-serif';
+          e.currentTarget.style.fontSize = '14px';
+          e.currentTarget.style.textDecoration = 'none';
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.left = '-9999px';
+          e.currentTarget.style.width = '1px';
+          e.currentTarget.style.height = '1px';
+        }}
+      >
+        Skip to search
+      </a>
+      <a
+        href="#genre-filters"
+        onClick={(e) => {
+          e.preventDefault();
+          document.querySelector('[role="group"][aria-label="Filter by genre"] button')?.focus();
+        }}
+        style={{
+          position: 'absolute',
+          left: '-9999px',
+          top: 'auto',
+          width: '1px',
+          height: '1px',
+          overflow: 'hidden',
+          zIndex: 100,
+        }}
+        onFocus={(e) => {
+          e.currentTarget.style.left = '16px';
+          e.currentTarget.style.top = '16px';
+          e.currentTarget.style.width = 'auto';
+          e.currentTarget.style.height = 'auto';
+          e.currentTarget.style.padding = '8px 16px';
+          e.currentTarget.style.backgroundColor = '#FAF3EB';
+          e.currentTarget.style.border = '2px solid #D83E7F';
+          e.currentTarget.style.borderRadius = '8px';
+          e.currentTarget.style.color = '#3E3530';
+          e.currentTarget.style.fontFamily = '"DM Sans", sans-serif';
+          e.currentTarget.style.fontSize = '14px';
+          e.currentTarget.style.textDecoration = 'none';
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.left = '-9999px';
+          e.currentTarget.style.width = '1px';
+          e.currentTarget.style.height = '1px';
+        }}
+      >
+        Skip to genre filters
+      </a>
       <MapGL
         ref={mapRef}
         initialViewState={{
