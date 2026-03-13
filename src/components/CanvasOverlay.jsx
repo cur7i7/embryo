@@ -752,6 +752,13 @@ export default function CanvasOverlay({
         }
       }
 
+      // B3: In cluster mode, skip individual artist hit testing
+      if (renderModeRef.current === 'cluster') {
+        onHoverRef.current?.(null);
+        map.getCanvas().style.cursor = '';
+        return;
+      }
+
       const hit = hitTest(mx, my);
       if (hit) {
         onHoverRef.current?.(hit.artist);

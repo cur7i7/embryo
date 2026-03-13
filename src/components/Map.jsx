@@ -52,7 +52,7 @@ export default function Map({
   ).length;
 
   return (
-    <div style={{ width: '100vw', height: '100vh', backgroundColor: '#FAF3EB', position: 'relative' }}>
+    <div role="application" aria-label="Interactive world map showing musicians from 1400 to 2025. Use search or timeline to explore." style={{ width: '100vw', height: '100vh', backgroundColor: '#FAF3EB', position: 'relative' }}>
       <a
         href="#timeline-controls"
         onClick={(e) => {
