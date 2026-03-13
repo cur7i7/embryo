@@ -90,6 +90,7 @@ export default function CanvasOverlay({
   // City groups ref (rebuilt when artists change)
   const cityGroupsRef = useRef(new Map());
   const cityPosMapRef = useRef(new Map()); // projected city positions for hit testing
+  const hoveredCityKeyRef = useRef(null);  // currently hovered city key for highlight (Task 8c)
 
   // Current render mode for hit testing
   const renderModeRef = useRef('cluster');
@@ -406,6 +407,9 @@ export default function CanvasOverlay({
     ctx.globalCompositeOperation = 'source-over';
 
     // --- Cluster mode rendering ---
+    // Collect cluster positions/radii for pill collision avoidance (Task 8a)
+    const clusterPositions = [];
+
     if (clusterAlpha > 0) {
       const index = scIndexRef.current;
       if (index) {
@@ -451,6 +455,9 @@ export default function CanvasOverlay({
             ctx.fillStyle = '#FAF3EB';
             ctx.fillText(countStr, x, y);
             ctx.restore();
+
+            // Track cluster position for pill collision (Task 8a)
+            clusterPositions.push({ x, y, radius: clusterRadius });
           } else {
             const artistId = cluster.properties.artistId;
             const artistData = artistById.get(artistId);
@@ -489,6 +496,9 @@ export default function CanvasOverlay({
             const baseAlpha = isPassive ? 0.4 : 1.0;
             ctx.globalAlpha = baseAlpha * opacity * clusterAlpha;
             ctx.drawImage(orbTexture, x - radius, y - radius, radius * 2, radius * 2);
+
+            // Track individual-in-cluster position for pill collision (Task 8a)
+            clusterPositions.push({ x, y, radius });
           }
         }
       }
@@ -544,6 +554,18 @@ export default function CanvasOverlay({
           cityOccupiedRects.push(labelRect);
         }
 
+        // City hover highlight ring (Task 8c)
+        if (key === hoveredCityKeyRef.current) {
+          ctx.save();
+          ctx.globalAlpha = cityAlpha;
+          ctx.beginPath();
+          ctx.arc(x, y, cityRadius + 3, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(250, 243, 235, 0.6)';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.restore();
+        }
+
         drawCityGroup(ctx, x, y, showLabel ? group.city : null, group.artists.length, cityRadius, cityAlpha);
       }
     }
@@ -563,6 +585,23 @@ export default function CanvasOverlay({
         else restArr.push(a);
       }
       const sortedArtists = activeArr.concat(connArr, restArr);
+
+      // --- Density-aware label suppression (Task 8b) ---
+      // Count visible artists in viewport for density threshold
+      let visibleCount = 0;
+      for (const a of sortedArtists) {
+        const pt = posMap.get(a.id);
+        if (pt && pt.x >= -60 && pt.x <= cssWidth + 60 && pt.y >= -60 && pt.y <= cssHeight + 60) {
+          visibleCount++;
+        }
+      }
+      // Determine max labels based on density
+      let maxLabels;
+      if (visibleCount <= 30) maxLabels = Infinity;
+      else if (visibleCount <= 100) maxLabels = 30;
+      else if (visibleCount <= 300) maxLabels = 20;
+      else maxLabels = 10;
+      let labelsShown = 0;
 
       // Label collision detection — occupied rects for AABB test
       const occupiedRects = [];
@@ -605,35 +644,41 @@ export default function CanvasOverlay({
         let showLabel = true;
 
         if (!isImportant) {
-          // Compute label bounding boxes
-          const displayName = artist.name.length > 20 ? artist.name.slice(0, 19) + '\u2026' : artist.name;
-          ctx.font = '600 12px "DM Sans", sans-serif';
-          const nameW = ctx.measureText(displayName).width;
-          ctx.font = '400 10px "DM Sans", sans-serif';
-          const yearsW = years ? ctx.measureText(years).width : 0;
-
-          const nameRect = { x: point.x - nameW / 2 - 4, y: point.y + r + 2, w: nameW + 8, h: 16 };
-          const yearsRect = years
-            ? { x: point.x - yearsW / 2 - 4, y: point.y + r + 18, w: yearsW + 8, h: 14 }
-            : null;
-
-          // AABB overlap test
-          const overlaps = (r1, r2) =>
-            r1.x < r2.x + r2.w && r1.x + r1.w > r2.x && r1.y < r2.y + r2.h && r1.y + r1.h > r2.y;
-
-          let hasOverlap = false;
-          for (const occ of occupiedRects) {
-            if (overlaps(nameRect, occ) || (yearsRect && overlaps(yearsRect, occ))) {
-              hasOverlap = true;
-              break;
-            }
-          }
-
-          if (hasOverlap) {
+          // Density-aware suppression: skip labels once cap reached (Task 8b)
+          if (labelsShown >= maxLabels) {
             showLabel = false;
           } else {
-            occupiedRects.push(nameRect);
-            if (yearsRect) occupiedRects.push(yearsRect);
+            // Compute label bounding boxes
+            const displayName = artist.name.length > 20 ? artist.name.slice(0, 19) + '\u2026' : artist.name;
+            ctx.font = '600 12px "DM Sans", sans-serif';
+            const nameW = ctx.measureText(displayName).width;
+            ctx.font = '400 10px "DM Sans", sans-serif';
+            const yearsW = years ? ctx.measureText(years).width : 0;
+
+            const nameRect = { x: point.x - nameW / 2 - 4, y: point.y + r + 2, w: nameW + 8, h: 16 };
+            const yearsRect = years
+              ? { x: point.x - yearsW / 2 - 4, y: point.y + r + 18, w: yearsW + 8, h: 14 }
+              : null;
+
+            // AABB overlap test
+            const overlaps = (r1, r2) =>
+              r1.x < r2.x + r2.w && r1.x + r1.w > r2.x && r1.y < r2.y + r2.h && r1.y + r1.h > r2.y;
+
+            let hasOverlap = false;
+            for (const occ of occupiedRects) {
+              if (overlaps(nameRect, occ) || (yearsRect && overlaps(yearsRect, occ))) {
+                hasOverlap = true;
+                break;
+              }
+            }
+
+            if (hasOverlap) {
+              showLabel = false;
+            } else {
+              occupiedRects.push(nameRect);
+              if (yearsRect) occupiedRects.push(yearsRect);
+              labelsShown++;
+            }
           }
         } else {
           // Important artists always get labels — register their rects to block others
@@ -680,13 +725,58 @@ export default function CanvasOverlay({
         const maxW = Math.max(labelW, sublabelW);
         const pillPad = 10;
         const pillH = 40;
-        const pillX = pos.x - maxW / 2 - pillPad;
-        // Flip pill below if too close to top of viewport
-        let pillY = pos.y - radius - 52;
-        if (pos.y - radius - 52 < 10) {
-          pillY = pos.y + radius + 12;
-        }
         const pillW = maxW + pillPad * 2;
+
+        // --- Pill collision avoidance (Task 8a) ---
+        // AABB overlap check between pill rect and a circle's bounding box
+        const pillOverlapsCircle = (px, py, cx, cy, cr) =>
+          px < cx + cr && px + pillW > cx - cr && py < cy + cr && py + pillH > cy - cr;
+
+        // Check pill rect against all cluster and city positions
+        const pillCollidesAny = (px, py) => {
+          for (const cp of clusterPositions) {
+            if (pillOverlapsCircle(px, py, cp.x, cp.y, cp.radius)) return true;
+          }
+          for (const [, cp] of cityPosMap) {
+            if (pillOverlapsCircle(px, py, cp.x, cp.y, cp.radius)) return true;
+          }
+          return false;
+        };
+
+        // Try positions: above, below, left, right; fallback to above
+        const aboveX = pos.x - maxW / 2 - pillPad;
+        const aboveY = pos.y - radius - 52;
+        const belowY = pos.y + radius + 12;
+        const leftX = pos.x - pillW - radius;
+        const leftY = pos.y - pillH / 2;
+        const rightX = pos.x + radius + pillPad;
+        const rightY = pos.y - pillH / 2;
+
+        let pillX = aboveX;
+        let pillY = aboveY;
+
+        if (pillY < 10 || pillCollidesAny(pillX, pillY)) {
+          // Try below
+          if (!pillCollidesAny(aboveX, belowY) && belowY + pillH < cssHeight - 10) {
+            pillX = aboveX;
+            pillY = belowY;
+          }
+          // Try left
+          else if (!pillCollidesAny(leftX, leftY) && leftX > 0) {
+            pillX = leftX;
+            pillY = leftY;
+          }
+          // Try right
+          else if (!pillCollidesAny(rightX, rightY) && rightX + pillW < cssWidth) {
+            pillX = rightX;
+            pillY = rightY;
+          }
+          // else keep original above position
+          else {
+            pillX = aboveX;
+            pillY = aboveY < 10 ? belowY : aboveY;
+          }
+        }
 
         ctx.fillStyle = 'rgba(250, 243, 235, 0.92)';
         ctx.beginPath();
@@ -995,19 +1085,29 @@ export default function CanvasOverlay({
       const mx = e.point.x;
       const my = e.point.y;
 
-      // In city mode, check city group hover for pointer cursor
+      // In city mode, check city group hover for pointer cursor + highlight (Task 8c)
       if (renderModeRef.current === 'city') {
         const cityPosMap = cityPosMapRef.current;
+        let foundCityKey = null;
         if (cityPosMap && cityPosMap.size > 0) {
-          for (const [, { x, y, radius }] of cityPosMap) {
+          for (const [key, { x, y, radius }] of cityPosMap) {
             const dx = x - mx;
             const dy = y - my;
             if (Math.sqrt(dx * dx + dy * dy) <= Math.max(radius, HIT_TEST_MIN_RADIUS)) {
-              onHoverRef.current?.(null);
-              map.getCanvas().style.cursor = 'pointer';
-              return;
+              foundCityKey = key;
+              break;
             }
           }
+        }
+        if (foundCityKey !== hoveredCityKeyRef.current) {
+          hoveredCityKeyRef.current = foundCityKey;
+          needsAnimRef.current = true;
+          startRaf();
+        }
+        if (foundCityKey) {
+          onHoverRef.current?.(null);
+          map.getCanvas().style.cursor = 'pointer';
+          return;
         }
       }
 
@@ -1041,6 +1141,11 @@ export default function CanvasOverlay({
     const handleMapMouseLeave = () => {
       onHoverRef.current?.(null);
       map.getCanvas().style.cursor = '';
+      if (hoveredCityKeyRef.current !== null) {
+        hoveredCityKeyRef.current = null;
+        needsAnimRef.current = true;
+        startRaf();
+      }
     };
 
     const onMapEvent = () => {
