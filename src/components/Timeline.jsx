@@ -43,10 +43,18 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
   // YS: Editable year input state
   const [editingStart, setEditingStart] = useState(false);
   const [editingEnd, setEditingEnd] = useState(false);
-  const [editingYear, setEditingYear] = useState(false);
   const [startInput, setStartInput] = useState('');
   const [endInput, setEndInput] = useState('');
-  const [yearInput, setYearInput] = useState('');
+
+  // Year mode: always-visible input value
+  const [yearInputValue, setYearInputValue] = useState(String(rangeEnd));
+
+  // Sync yearInputValue when rangeEnd changes externally (play button, URL, etc.)
+  useEffect(() => {
+    if (mode === 'year') {
+      setYearInputValue(String(rangeEnd));
+    }
+  }, [rangeEnd, mode]);
 
   // A4: Debounced live region text
   const [liveText, setLiveText] = useState('');
@@ -188,6 +196,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
     if (mode === 'range') {
       // Switch to year mode: collapse to rangeEnd
       setMode('year');
+      setYearInputValue(String(rangeEnd));
       onRangeChange(rangeEnd, rangeEnd);
     } else {
       // Switch to range mode: expand to [1400, selectedYear]
@@ -361,375 +370,382 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
 
       {/* Timeline area */}
       <div
-        ref={containerRef}
         role="group"
         aria-label={isYearMode ? 'Timeline year selector' : 'Timeline year range'}
         style={{
           flex: 1,
           height: isMobile ? '42px' : '48px',
           position: 'relative',
-          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
         }}
-        title={isYearMode ? 'Click to select a year' : (rangeEnd - rangeStart >= 2025 - 1400 ? 'Click to zoom into a century' : 'Click to center the range here')}
-        onClick={handleClick}
       >
-        {/* Histogram bars */}
-        <div
-          style={{
-            position: 'absolute',
-            left: padLeft,
-            right: padRight,
-            top: 0,
-            bottom: isMobile ? 12 : 14,
-            display: 'flex',
-            alignItems: 'flex-end',
-            gap: '1px',
-          }}
-        >
-          {decades.map((decade) => {
-            const count = bins[decade] || 0;
-            const heightPct = (count / maxCount) * 100;
-            const inRange = isYearMode
-              ? decade <= selectedYear
-              : (decade >= rangeStart && decade < rangeEnd);
-            return (
-              <div
-                key={decade}
-                aria-hidden="true"
-                style={{
-                  flex: 1,
-                  height: `${Math.max(2, heightPct)}%`,
-                  background: 'linear-gradient(to top, #D83E7F, #FFBA52)',
-                  opacity: inRange ? 0.65 : 0.25,
-                  borderRadius: '2px 2px 0 0',
-                  transition: 'opacity 0.15s',
-                }}
-              />
-            );
-          })}
-        </div>
-
-        {/* Selected range / year overlay */}
-        <div
-          style={{
-            position: 'absolute',
-            left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${fillLeftPercent / 100})`,
-            width: `calc((100% - ${padLeft + padRight}px) * ${(fillRightPercent - fillLeftPercent) / 100})`,
-            top: 0,
-            bottom: isMobile ? 12 : 14,
-            background: 'linear-gradient(to right, rgba(216,62,127,0.08), rgba(212,41,94,0.08))',
-            border: '1px solid rgba(216,62,127,0.2)',
-            borderRadius: '2px',
-            pointerEvents: 'none',
-          }}
-        />
-
-        {/* Left handle — only in range mode */}
-        {!isYearMode && (
-          <div
-            role="slider"
-            aria-label="Range start year"
-            aria-orientation="horizontal"
-            aria-valuemin={MIN_YEAR}
-            aria-valuemax={MAX_YEAR}
-            aria-valuenow={rangeStart}
-            aria-valuetext={`Year ${rangeStart}`}
-            tabIndex={0}
-            onPointerDown={(e) => handlePointerDown(e, 'left')}
-            onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) { e.currentTarget.style.outline = '2px solid #D83E7F'; e.currentTarget.style.outlineOffset = '2px'; } }}
-            onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
-            onKeyDown={(e) => {
-              if (e.key === 'ArrowLeft') onRangeChange(Math.max(MIN_YEAR, rangeStart - 10), rangeEnd);
-              if (e.key === 'ArrowRight') onRangeChange(Math.min(rangeEnd - 10, rangeStart + 10), rangeEnd);
-              if (e.key === 'Home') onRangeChange(MIN_YEAR, rangeEnd);
-              if (e.key === 'End') onRangeChange(Math.min(rangeEnd - 10, MAX_YEAR - 10), rangeEnd);
-              if (e.key === 'PageUp') onRangeChange(Math.max(MIN_YEAR, rangeStart - 50), rangeEnd);
-              if (e.key === 'PageDown') onRangeChange(Math.min(rangeEnd - 10, rangeStart + 50), rangeEnd);
-            }}
-            style={{
-              position: 'absolute',
-              left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${leftPercent / 100} - 22px)`,
-              top: 0,
-              bottom: isMobile ? 12 : 14,
-              width: '44px',
-              cursor: 'ew-resize',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 5,
-            }}
-          >
-            <div
-              style={{
-                width: '4px',
-                height: '100%',
-                backgroundColor: '#D83E7F',
-                borderRadius: '2px',
-                boxShadow: '0 0 8px rgba(216, 62, 127, 0.6)',
-              }}
-            />
-          </div>
-        )}
-
-        {/* Right handle (range mode) / Year handle (year mode) */}
-        <div
-          role="slider"
-          aria-label={isYearMode ? 'Selected year' : 'Range end year'}
-          aria-orientation="horizontal"
-          aria-valuemin={MIN_YEAR}
-          aria-valuemax={MAX_YEAR}
-          aria-valuenow={isYearMode ? selectedYear : rangeEnd}
-          aria-valuetext={isYearMode ? `Year ${selectedYear}` : `Year ${rangeEnd}`}
-          tabIndex={0}
-          onPointerDown={(e) => handlePointerDown(e, isYearMode ? 'year' : 'right')}
-          onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) { e.currentTarget.style.outline = '2px solid #D83E7F'; e.currentTarget.style.outlineOffset = '2px'; } }}
-          onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
-          onKeyDown={(e) => {
-            if (isYearMode) {
-              if (e.key === 'ArrowLeft') onRangeChange(Math.max(MIN_YEAR, selectedYear - 10), Math.max(MIN_YEAR, selectedYear - 10));
-              if (e.key === 'ArrowRight') onRangeChange(Math.min(MAX_YEAR, selectedYear + 10), Math.min(MAX_YEAR, selectedYear + 10));
-              if (e.key === 'Home') onRangeChange(MIN_YEAR, MIN_YEAR);
-              if (e.key === 'End') onRangeChange(MAX_YEAR, MAX_YEAR);
-              if (e.key === 'PageUp') onRangeChange(Math.max(MIN_YEAR, selectedYear - 50), Math.max(MIN_YEAR, selectedYear - 50));
-              if (e.key === 'PageDown') onRangeChange(Math.min(MAX_YEAR, selectedYear + 50), Math.min(MAX_YEAR, selectedYear + 50));
-            } else {
-              if (e.key === 'ArrowLeft') onRangeChange(rangeStart, Math.max(rangeStart + 10, rangeEnd - 10));
-              if (e.key === 'ArrowRight') onRangeChange(rangeStart, Math.min(MAX_YEAR, rangeEnd + 10));
-              if (e.key === 'Home') onRangeChange(rangeStart, Math.max(rangeStart + 10, MIN_YEAR + 10));
-              if (e.key === 'End') onRangeChange(rangeStart, MAX_YEAR);
-              if (e.key === 'PageUp') onRangeChange(rangeStart, Math.max(rangeStart + 10, rangeEnd - 50));
-              if (e.key === 'PageDown') onRangeChange(rangeStart, Math.min(MAX_YEAR, rangeEnd + 50));
-            }
-          }}
-          style={{
-            position: 'absolute',
-            left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${rightPercent / 100} - 22px)`,
-            top: 0,
-            bottom: isMobile ? 12 : 14,
-            width: '44px',
-            cursor: 'ew-resize',
+        {/* Year mode: prominent text input */}
+        {isYearMode && (
+          <div style={{
+            flex: 1,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 5,
-          }}
-        >
-          <div
-            style={{
-              width: isYearMode ? 12 : 4,
-              height: isYearMode ? 12 : '100%',
-              backgroundColor: '#D4295E',
-              borderRadius: isYearMode ? '50%' : '2px',
-              boxShadow: isYearMode ? '0 0 12px rgba(212, 41, 94, 0.7)' : '0 0 8px rgba(212, 41, 94, 0.6)',
-            }}
-          />
-        </div>
-
-        {/* C: Year mode — prominent year label centered above handle */}
-        {isYearMode && (
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${rightPercent / 100})`,
-              bottom: isMobile ? 14 : 16,
-              transform: 'translateX(-50%)',
-              fontSize: 16,
-              fontFamily: '"Instrument Serif", serif',
-              fontWeight: 400,
-              color: '#C4326B',
-              whiteSpace: 'nowrap',
-              pointerEvents: 'none',
-            }}
-          >
-            {selectedYear}
+            gap: 8,
+          }}>
+            <label
+              htmlFor="year-input"
+              style={{
+                fontSize: 13,
+                fontFamily: '"DM Sans", sans-serif',
+                fontWeight: 500,
+                color: '#6B5F55',
+              }}
+            >
+              Show year
+            </label>
+            <input
+              id="year-input"
+              type="number"
+              min={MIN_YEAR}
+              max={MAX_YEAR}
+              step={10}
+              value={yearInputValue}
+              onChange={(e) => setYearInputValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const val = parseInt(yearInputValue);
+                  if (!isNaN(val)) {
+                    const clamped = Math.max(MIN_YEAR, Math.min(MAX_YEAR, Math.round(val / 10) * 10));
+                    onRangeChange(clamped, clamped);
+                    setYearInputValue(String(clamped));
+                  }
+                }
+              }}
+              onBlur={() => {
+                const val = parseInt(yearInputValue);
+                if (!isNaN(val)) {
+                  const clamped = Math.max(MIN_YEAR, Math.min(MAX_YEAR, Math.round(val / 10) * 10));
+                  onRangeChange(clamped, clamped);
+                  setYearInputValue(String(clamped));
+                }
+              }}
+              aria-label="Select year to display"
+              style={{
+                width: 80,
+                height: 36,
+                minHeight: 44,
+                padding: '0 8px',
+                fontSize: 18,
+                fontFamily: '"Instrument Serif", serif',
+                fontWeight: 400,
+                color: '#C4326B',
+                backgroundColor: 'rgba(250,243,235,0.95)',
+                border: '1px solid rgba(196,50,107,0.3)',
+                borderRadius: 8,
+                textAlign: 'center',
+                outline: 'none',
+                boxSizing: 'border-box',
+              }}
+            />
+            <span style={{
+              fontSize: 11,
+              fontFamily: '"DM Sans", sans-serif',
+              color: '#8A7F75',
+            }}>
+              {MIN_YEAR}–{MAX_YEAR}
+            </span>
           </div>
         )}
 
-        {/* Year labels (static reference marks) */}
-        <div
-          style={{
-            position: 'absolute',
-            left: padLeft,
-            right: padRight,
-            bottom: 0,
-            height: '16px',
-            display: 'flex',
-            alignItems: 'center',
-          }}
-        >
-          {yearLabels.map((year) => {
-            const pct = yearToPercent(year);
-            // Hide static label when it overlaps with the editable range endpoint labels
-            if (isYearMode) {
-              if (Math.abs(year - selectedYear) < 15) return null;
-            } else {
-              const nearStart = Math.abs(year - rangeStart) < 15;
-              const nearEnd = Math.abs(year - rangeEnd) < 15;
-              if (nearStart || nearEnd) return null;
-            }
-            return (
-              <span
-                key={year}
-                style={{
-                  position: 'absolute',
-                  left: `${pct}%`,
-                  transform: 'translateX(-50%)',
-                  fontSize: '11px',
-                  fontFamily: '"DM Sans", sans-serif',
-                  fontWeight: 500,
-                  color: '#6B5F55',
-                  letterSpacing: '0.02em',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {year}
-              </span>
-            );
-          })}
-        </div>
-
-        {/* Year mode: single editable year input */}
-        {isYearMode && (
-          editingYear ? (
-            <input
-              type="number"
-              min={MIN_YEAR}
-              max={MAX_YEAR}
-              step={10}
-              value={yearInput}
-              onChange={(e) => setYearInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  const val = Math.max(MIN_YEAR, Math.min(MAX_YEAR, Math.round(parseInt(yearInput) / 10) * 10));
-                  if (!isNaN(val)) onRangeChange(val, val);
-                  setEditingYear(false);
-                }
-                if (e.key === 'Escape') setEditingYear(false);
-              }}
-              onBlur={() => {
-                const val = Math.max(MIN_YEAR, Math.min(MAX_YEAR, Math.round(parseInt(yearInput) / 10) * 10));
-                if (!isNaN(val)) onRangeChange(val, val);
-                setEditingYear(false);
-              }}
-              autoFocus
-              aria-label="Set year"
+        {/* Range mode: histogram slider */}
+        {!isYearMode && (
+          <div
+            ref={containerRef}
+            style={{
+              flex: 1,
+              height: '100%',
+              position: 'relative',
+              cursor: 'pointer',
+            }}
+            title={rangeEnd - rangeStart >= 2025 - 1400 ? 'Click to zoom into a century' : 'Click to center the range here'}
+            onClick={handleClick}
+          >
+            {/* Histogram bars */}
+            <div
               style={{
-                position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${rightPercent / 100} - 30px)`,
-                bottom: 16, width: 56, height: 24, minHeight: 44, padding: '0 4px',
-                fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
-                color: '#C4326B', backgroundColor: 'rgba(250,243,235,0.95)',
-                border: '1px solid #C4326B', borderRadius: 4, textAlign: 'center', outline: 'none',
-                zIndex: 10,
+                position: 'absolute',
+                left: padLeft,
+                right: padRight,
+                top: 0,
+                bottom: isMobile ? 12 : 14,
+                display: 'flex',
+                alignItems: 'flex-end',
+                gap: '1px',
+              }}
+            >
+              {decades.map((decade) => {
+                const count = bins[decade] || 0;
+                const heightPct = (count / maxCount) * 100;
+                const inRange = decade >= rangeStart && decade < rangeEnd;
+                return (
+                  <div
+                    key={decade}
+                    aria-hidden="true"
+                    style={{
+                      flex: 1,
+                      height: `${Math.max(2, heightPct)}%`,
+                      background: 'linear-gradient(to top, #D83E7F, #FFBA52)',
+                      opacity: inRange ? 0.65 : 0.25,
+                      borderRadius: '2px 2px 0 0',
+                      transition: 'opacity 0.15s',
+                    }}
+                  />
+                );
+              })}
+            </div>
+
+            {/* Selected range overlay */}
+            <div
+              style={{
+                position: 'absolute',
+                left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${fillLeftPercent / 100})`,
+                width: `calc((100% - ${padLeft + padRight}px) * ${(fillRightPercent - fillLeftPercent) / 100})`,
+                top: 0,
+                bottom: isMobile ? 12 : 14,
+                background: 'linear-gradient(to right, rgba(216,62,127,0.08), rgba(212,41,94,0.08))',
+                border: '1px solid rgba(216,62,127,0.2)',
+                borderRadius: '2px',
+                pointerEvents: 'none',
               }}
             />
-          ) : null
-        )}
 
-        {/* Range mode: Editable start year display */}
-        {!isYearMode && (
-          editingStart ? (
-            <input
-              type="number"
-              min={MIN_YEAR}
-              max={rangeEnd - 10}
-              step={10}
-              value={startInput}
-              onChange={(e) => setStartInput(e.target.value)}
+            {/* Left handle */}
+            <div
+              role="slider"
+              aria-label="Range start year"
+              aria-orientation="horizontal"
+              aria-valuemin={MIN_YEAR}
+              aria-valuemax={MAX_YEAR}
+              aria-valuenow={rangeStart}
+              aria-valuetext={`Year ${rangeStart}`}
+              tabIndex={0}
+              onPointerDown={(e) => handlePointerDown(e, 'left')}
+              onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) { e.currentTarget.style.outline = '2px solid #D83E7F'; e.currentTarget.style.outlineOffset = '2px'; } }}
+              onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') {
+                if (e.key === 'ArrowLeft') onRangeChange(Math.max(MIN_YEAR, rangeStart - 10), rangeEnd);
+                if (e.key === 'ArrowRight') onRangeChange(Math.min(rangeEnd - 10, rangeStart + 10), rangeEnd);
+                if (e.key === 'Home') onRangeChange(MIN_YEAR, rangeEnd);
+                if (e.key === 'End') onRangeChange(Math.min(rangeEnd - 10, MAX_YEAR - 10), rangeEnd);
+                if (e.key === 'PageUp') onRangeChange(Math.max(MIN_YEAR, rangeStart - 50), rangeEnd);
+                if (e.key === 'PageDown') onRangeChange(Math.min(rangeEnd - 10, rangeStart + 50), rangeEnd);
+              }}
+              style={{
+                position: 'absolute',
+                left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${leftPercent / 100} - 22px)`,
+                top: 0,
+                bottom: isMobile ? 12 : 14,
+                width: '44px',
+                cursor: 'ew-resize',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 5,
+              }}
+            >
+              <div
+                style={{
+                  width: '4px',
+                  height: '100%',
+                  backgroundColor: '#D83E7F',
+                  borderRadius: '2px',
+                  boxShadow: '0 0 8px rgba(216, 62, 127, 0.6)',
+                }}
+              />
+            </div>
+
+            {/* Right handle */}
+            <div
+              role="slider"
+              aria-label="Range end year"
+              aria-orientation="horizontal"
+              aria-valuemin={MIN_YEAR}
+              aria-valuemax={MAX_YEAR}
+              aria-valuenow={rangeEnd}
+              aria-valuetext={`Year ${rangeEnd}`}
+              tabIndex={0}
+              onPointerDown={(e) => handlePointerDown(e, 'right')}
+              onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) { e.currentTarget.style.outline = '2px solid #D83E7F'; e.currentTarget.style.outlineOffset = '2px'; } }}
+              onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowLeft') onRangeChange(rangeStart, Math.max(rangeStart + 10, rangeEnd - 10));
+                if (e.key === 'ArrowRight') onRangeChange(rangeStart, Math.min(MAX_YEAR, rangeEnd + 10));
+                if (e.key === 'Home') onRangeChange(rangeStart, Math.max(rangeStart + 10, MIN_YEAR + 10));
+                if (e.key === 'End') onRangeChange(rangeStart, MAX_YEAR);
+                if (e.key === 'PageUp') onRangeChange(rangeStart, Math.max(rangeStart + 10, rangeEnd - 50));
+                if (e.key === 'PageDown') onRangeChange(rangeStart, Math.min(MAX_YEAR, rangeEnd + 50));
+              }}
+              style={{
+                position: 'absolute',
+                left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${rightPercent / 100} - 22px)`,
+                top: 0,
+                bottom: isMobile ? 12 : 14,
+                width: '44px',
+                cursor: 'ew-resize',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 5,
+              }}
+            >
+              <div
+                style={{
+                  width: 4,
+                  height: '100%',
+                  backgroundColor: '#D4295E',
+                  borderRadius: '2px',
+                  boxShadow: '0 0 8px rgba(212, 41, 94, 0.6)',
+                }}
+              />
+            </div>
+
+            {/* Year labels (static reference marks) */}
+            <div
+              style={{
+                position: 'absolute',
+                left: padLeft,
+                right: padRight,
+                bottom: 0,
+                height: '16px',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              {yearLabels.map((year) => {
+                const pct = yearToPercent(year);
+                const nearStart = Math.abs(year - rangeStart) < 15;
+                const nearEnd = Math.abs(year - rangeEnd) < 15;
+                if (nearStart || nearEnd) return null;
+                return (
+                  <span
+                    key={year}
+                    style={{
+                      position: 'absolute',
+                      left: `${pct}%`,
+                      transform: 'translateX(-50%)',
+                      fontSize: '11px',
+                      fontFamily: '"DM Sans", sans-serif',
+                      fontWeight: 500,
+                      color: '#6B5F55',
+                      letterSpacing: '0.02em',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {year}
+                  </span>
+                );
+              })}
+            </div>
+
+            {/* Range mode: Editable start year display */}
+            {editingStart ? (
+              <input
+                type="number"
+                min={MIN_YEAR}
+                max={rangeEnd - 10}
+                step={10}
+                value={startInput}
+                onChange={(e) => setStartInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const val = Math.max(MIN_YEAR, Math.min(rangeEnd - 10, Math.round(parseInt(startInput) / 10) * 10));
+                    if (!isNaN(val)) onRangeChange(val, rangeEnd);
+                    setEditingStart(false);
+                  }
+                  if (e.key === 'Escape') setEditingStart(false);
+                }}
+                onBlur={() => {
                   const val = Math.max(MIN_YEAR, Math.min(rangeEnd - 10, Math.round(parseInt(startInput) / 10) * 10));
                   if (!isNaN(val)) onRangeChange(val, rangeEnd);
                   setEditingStart(false);
-                }
-                if (e.key === 'Escape') setEditingStart(false);
-              }}
-              onBlur={() => {
-                const val = Math.max(MIN_YEAR, Math.min(rangeEnd - 10, Math.round(parseInt(startInput) / 10) * 10));
-                if (!isNaN(val)) onRangeChange(val, rangeEnd);
-                setEditingStart(false);
-              }}
-              autoFocus
-              aria-label="Set start year"
-              style={{
-                position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${leftPercent / 100} - 30px)`,
-                bottom: 16, width: 56, height: 24, minHeight: 44, padding: '0 4px',
-                fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
-                color: '#C4326B', backgroundColor: 'rgba(250,243,235,0.95)',
-                border: '1px solid #C4326B', borderRadius: 4, textAlign: 'center', outline: 'none',
-                zIndex: 10,
-              }}
-            />
-          ) : (
-            <button
-              onClick={() => { setStartInput(String(rangeStart)); setEditingStart(true); }}
-              aria-label={`Start year: ${rangeStart}. Click to edit`}
-              style={{
-                position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${leftPercent / 100} - 20px)`,
-                bottom: 16, background: 'none', border: 'none', cursor: 'pointer',
-                fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
-                color: '#C4326B', padding: '2px 4px', minHeight: 44, display: 'flex', alignItems: 'center',
-                outline: 'none',
-              }}
-              onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 2px rgba(196,50,107,0.4)'; }}
-              onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
-            >
-              {rangeStart}
-            </button>
-          )
-        )}
+                }}
+                autoFocus
+                aria-label="Set start year"
+                style={{
+                  position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${leftPercent / 100} - 30px)`,
+                  bottom: 16, width: 56, height: 24, minHeight: 44, padding: '0 4px',
+                  fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
+                  color: '#C4326B', backgroundColor: 'rgba(250,243,235,0.95)',
+                  border: '1px solid #C4326B', borderRadius: 4, textAlign: 'center', outline: 'none',
+                  zIndex: 10,
+                }}
+              />
+            ) : (
+              <button
+                onClick={() => { setStartInput(String(rangeStart)); setEditingStart(true); }}
+                aria-label={`Start year: ${rangeStart}. Click to edit`}
+                style={{
+                  position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${leftPercent / 100} - 20px)`,
+                  bottom: 16, background: 'none', border: 'none', cursor: 'pointer',
+                  fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
+                  color: '#C4326B', padding: '2px 4px', minHeight: 44, display: 'flex', alignItems: 'center',
+                  outline: 'none',
+                }}
+                onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 2px rgba(196,50,107,0.4)'; }}
+                onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
+              >
+                {rangeStart}
+              </button>
+            )}
 
-        {/* Range mode: Editable end year display */}
-        {!isYearMode && (
-          editingEnd ? (
-            <input
-              type="number"
-              min={rangeStart + 10}
-              max={MAX_YEAR}
-              step={10}
-              value={endInput}
-              onChange={(e) => setEndInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
+            {/* Range mode: Editable end year display */}
+            {editingEnd ? (
+              <input
+                type="number"
+                min={rangeStart + 10}
+                max={MAX_YEAR}
+                step={10}
+                value={endInput}
+                onChange={(e) => setEndInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const val = Math.min(MAX_YEAR, Math.max(rangeStart + 10, Math.round(parseInt(endInput) / 10) * 10));
+                    if (!isNaN(val)) onRangeChange(rangeStart, val);
+                    setEditingEnd(false);
+                  }
+                  if (e.key === 'Escape') setEditingEnd(false);
+                }}
+                onBlur={() => {
                   const val = Math.min(MAX_YEAR, Math.max(rangeStart + 10, Math.round(parseInt(endInput) / 10) * 10));
                   if (!isNaN(val)) onRangeChange(rangeStart, val);
                   setEditingEnd(false);
-                }
-                if (e.key === 'Escape') setEditingEnd(false);
-              }}
-              onBlur={() => {
-                const val = Math.min(MAX_YEAR, Math.max(rangeStart + 10, Math.round(parseInt(endInput) / 10) * 10));
-                if (!isNaN(val)) onRangeChange(rangeStart, val);
-                setEditingEnd(false);
-              }}
-              autoFocus
-              aria-label="Set end year"
-              style={{
-                position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${rightPercent / 100} - 30px)`,
-                bottom: 16, width: 56, height: 24, minHeight: 44, padding: '0 4px',
-                fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
-                color: '#C4326B', backgroundColor: 'rgba(250,243,235,0.95)',
-                border: '1px solid #C4326B', borderRadius: 4, textAlign: 'center', outline: 'none',
-                zIndex: 10,
-              }}
-            />
-          ) : (
-            <button
-              onClick={() => { setEndInput(String(rangeEnd)); setEditingEnd(true); }}
-              aria-label={`End year: ${rangeEnd}. Click to edit`}
-              style={{
-                position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${rightPercent / 100} - 20px)`,
-                bottom: 16, background: 'none', border: 'none', cursor: 'pointer',
-                fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
-                color: '#C4326B', padding: '2px 4px', minHeight: 44, display: 'flex', alignItems: 'center',
-                outline: 'none',
-              }}
-              onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 2px rgba(196,50,107,0.4)'; }}
-              onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
-            >
-              {rangeEnd}
-            </button>
-          )
+                }}
+                autoFocus
+                aria-label="Set end year"
+                style={{
+                  position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${rightPercent / 100} - 30px)`,
+                  bottom: 16, width: 56, height: 24, minHeight: 44, padding: '0 4px',
+                  fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
+                  color: '#C4326B', backgroundColor: 'rgba(250,243,235,0.95)',
+                  border: '1px solid #C4326B', borderRadius: 4, textAlign: 'center', outline: 'none',
+                  zIndex: 10,
+                }}
+              />
+            ) : (
+              <button
+                onClick={() => { setEndInput(String(rangeEnd)); setEditingEnd(true); }}
+                aria-label={`End year: ${rangeEnd}. Click to edit`}
+                style={{
+                  position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${rightPercent / 100} - 20px)`,
+                  bottom: 16, background: 'none', border: 'none', cursor: 'pointer',
+                  fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
+                  color: '#C4326B', padding: '2px 4px', minHeight: 44, display: 'flex', alignItems: 'center',
+                  outline: 'none',
+                }}
+                onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 2px rgba(196,50,107,0.4)'; }}
+                onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
+              >
+                {rangeEnd}
+              </button>
+            )}
+          </div>
         )}
       </div>
 

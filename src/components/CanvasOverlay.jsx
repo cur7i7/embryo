@@ -723,7 +723,7 @@ export default function CanvasOverlay({
 
         // Always show labels for hovered/active/connected; collision-check the rest
         const isImportant = isActive || isConnected;
-        let showLabel = true;
+        let showLabel = !isActive;
         let labelOffset = 0; // vertical offset for collision-adjusted important labels (S1)
 
         if (!isImportant) {
