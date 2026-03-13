@@ -109,12 +109,9 @@ export default function DetailPanel({
   const previousFocusRef = useRef(null);
   const [history, setHistory] = useState([]);
   const artistKey = artist?.id;
-  const [imageError, setImageError] = useState(false);
-  const [prevArtistKey, setPrevArtistKey] = useState(artistKey);
-  if (prevArtistKey !== artistKey) {
-    setPrevArtistKey(artistKey);
-    setImageError(false);
-  }
+  const [imageErrorState, setImageErrorState] = useState({ key: artistKey, error: false });
+  const imageError = imageErrorState.key === artistKey ? imageErrorState.error : false;
+  const setImageError = (val) => setImageErrorState({ key: artistKey, error: val });
   // A12: prefers-reduced-motion
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(
     () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
@@ -185,7 +182,7 @@ export default function DetailPanel({
     return m;
   }, [allArtists]);
 
-  const { bucket, color } = artist ? getGenreBucket(artist.genres) : { bucket: 'Other', color: '#E8A99B' };
+  const { bucket, color } = artist ? getGenreBucket(artist.genres) : getGenreBucket([]);
 
   const lifespan = artist
     ? artist.birth_year
@@ -524,9 +521,7 @@ export default function DetailPanel({
                   const connectedName =
                     conn.source_id === artist.id ? conn.target_name : conn.source_name;
                   const connectedArtist = artistMap.get(connectedId);
-                  const { color: connColor } = connectedArtist
-                    ? getGenreBucket(connectedArtist.genres)
-                    : { color: '#E8A99B' };
+                  const { color: connColor } = getGenreBucket(connectedArtist?.genres);
 
                   return (
                     <div
