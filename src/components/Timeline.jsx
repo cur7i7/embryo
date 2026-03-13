@@ -155,7 +155,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
       id="timeline-controls"
       style={{
         position: 'fixed',
-        bottom: 0,
+        bottom: `calc(0px + env(safe-area-inset-bottom))`,
         left: 0,
         right: 0,
         height: isMobile ? '56px' : '52px',

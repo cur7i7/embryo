@@ -216,7 +216,7 @@ export default function DetailPanel({
   const panelStyle = isMobile
     ? {
         position: 'fixed',
-        bottom: 80,
+        bottom: `calc(80px + env(safe-area-inset-bottom))`,
         left: 0,
         right: 0,
         width: '100%',

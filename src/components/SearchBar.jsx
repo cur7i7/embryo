@@ -124,7 +124,7 @@ export default function SearchBar({ artists, onSelect, isMobile = false }) {
     <div
       style={{
         position: 'fixed',
-        top: 16,
+        top: `calc(16px + env(safe-area-inset-top))`,
         right: 16,
         left: isMobile ? 16 : 'auto',
         zIndex: 20,

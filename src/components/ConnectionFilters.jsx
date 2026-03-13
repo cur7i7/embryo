@@ -13,15 +13,17 @@ export default function ConnectionFilters({ activeConnectionTypes, onToggleType,
   const allActive = activeConnectionTypes.size === CONNECTION_TYPES.length;
 
   return (
+    <div style={{
+      position: 'fixed',
+      bottom: isMobile ? `calc(100px + env(safe-area-inset-bottom))` : `calc(56px + env(safe-area-inset-bottom))`,
+      left: isMobile ? '0' : '16px',
+      right: isMobile ? '0' : 'auto',
+      zIndex: 20,
+    }}>
     <div
       role="group"
       aria-label="Filter connections by type"
       style={{
-        position: 'fixed',
-        bottom: isMobile ? '100px' : '56px',
-        left: isMobile ? '0' : '16px',
-        right: isMobile ? '0' : 'auto',
-        zIndex: 20,
         display: 'flex',
         alignItems: 'center',
         gap: '3px',
@@ -145,6 +147,21 @@ export default function ConnectionFilters({ activeConnectionTypes, onToggleType,
           </button>
         );
       })}
+    </div>
+    {isMobile && (
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          bottom: 0,
+          width: 24,
+          background: 'linear-gradient(to right, rgba(250,243,235,0), rgba(250,243,235,0.88))',
+          pointerEvents: 'none',
+        }}
+      />
+    )}
     </div>
   );
 }

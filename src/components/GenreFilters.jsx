@@ -8,16 +8,18 @@ export default function GenreFilters({ activeGenres, onToggleGenre, onSelectAll,
 
   return (
     <>
+    <div style={{
+      position: 'fixed',
+      bottom: isMobile ? `calc(132px + env(safe-area-inset-bottom))` : `calc(88px + env(safe-area-inset-bottom))`,
+      left: isMobile ? '0' : '16px',
+      right: isMobile ? '0' : 'auto',
+      zIndex: 20,
+    }}>
     <div
       id="genre-filters"
       role="group"
       aria-label="Filter by genre"
       style={{
-        position: 'fixed',
-        bottom: isMobile ? '132px' : '88px',
-        left: isMobile ? '0' : '16px',
-        right: isMobile ? '0' : 'auto',
-        zIndex: 20,
         display: 'flex',
         alignItems: 'center',
         gap: '4px',
@@ -138,6 +140,22 @@ export default function GenreFilters({ activeGenres, onToggleGenre, onSelectAll,
           </button>
         );
       })}
+    </div>
+    {isMobile && (
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          bottom: 0,
+          width: 24,
+          background: 'linear-gradient(to right, rgba(250,243,235,0), rgba(250,243,235,0.88))',
+          pointerEvents: 'none',
+          borderRadius: '0 0 0 0',
+        }}
+      />
+    )}
     </div>
     <div
       role="status"
