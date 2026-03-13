@@ -133,8 +133,8 @@ export default function ConnectionFilters({ activeConnectionTypes, onToggleType,
                 aria-hidden="true"
                 style={{
                   marginLeft: '4px',
-                  fontSize: '10px',
-                  opacity: isActive ? 0.9 : 0.75,
+                  fontSize: '12px',
+                  opacity: 1,
                   fontWeight: 400,
                 }}
               >

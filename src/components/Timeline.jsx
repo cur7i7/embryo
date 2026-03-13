@@ -3,7 +3,8 @@ import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react'
 const MIN_YEAR = 1400;
 const MAX_YEAR = 2025;
 const DECADE = 10;
-const YEAR_LABELS = [1400, 1500, 1600, 1700, 1800, 1900, 2000, 2025];
+const YEAR_LABELS_FULL = [1400, 1500, 1600, 1700, 1800, 1900, 2000, 2025];
+const YEAR_LABELS_NARROW = [1400, 1600, 1800, 2025];
 
 function buildBins(artists) {
   const bins = {};
@@ -24,6 +25,15 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
   const containerRef = useRef(null);
   const dragging = useRef(null); // 'left' | 'right' | null
   const didDrag = useRef(false);
+
+  // Viewport-aware year labels: fewer on narrow screens to prevent overlap
+  const [windowWidth, setWindowWidth] = useState(() => window.innerWidth);
+  useEffect(() => {
+    const handler = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+  const yearLabels = windowWidth < 500 ? YEAR_LABELS_NARROW : YEAR_LABELS_FULL;
 
   // YS: Editable year input state
   const [editingStart, setEditingStart] = useState(false);
@@ -364,7 +374,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
             alignItems: 'center',
           }}
         >
-          {YEAR_LABELS.map((year) => {
+          {yearLabels.map((year) => {
             const pct = yearToPercent(year);
             return (
               <span
@@ -415,8 +425,8 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
               position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${leftPercent / 100} - 30px)`,
               bottom: 0, width: 56, height: 24, minHeight: 44, padding: '0 4px',
               fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
-              color: '#D83E7F', backgroundColor: 'rgba(250,243,235,0.95)',
-              border: '1px solid #D83E7F', borderRadius: 4, textAlign: 'center', outline: 'none',
+              color: '#C4326B', backgroundColor: 'rgba(250,243,235,0.95)',
+              border: '1px solid #C4326B', borderRadius: 4, textAlign: 'center', outline: 'none',
               zIndex: 10,
             }}
           />
@@ -428,7 +438,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
               position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${leftPercent / 100} - 20px)`,
               bottom: 0, background: 'none', border: 'none', cursor: 'pointer',
               fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
-              color: '#D83E7F', padding: '2px 4px', minHeight: 44, display: 'flex', alignItems: 'center',
+              color: '#C4326B', padding: '2px 4px', minHeight: 44, display: 'flex', alignItems: 'center',
             }}
           >
             {rangeStart}
@@ -463,8 +473,8 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
               position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${rightPercent / 100} - 30px)`,
               bottom: 0, width: 56, height: 24, minHeight: 44, padding: '0 4px',
               fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
-              color: '#D83E7F', backgroundColor: 'rgba(250,243,235,0.95)',
-              border: '1px solid #D83E7F', borderRadius: 4, textAlign: 'center', outline: 'none',
+              color: '#C4326B', backgroundColor: 'rgba(250,243,235,0.95)',
+              border: '1px solid #C4326B', borderRadius: 4, textAlign: 'center', outline: 'none',
               zIndex: 10,
             }}
           />
@@ -476,7 +486,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
               position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${rightPercent / 100} - 20px)`,
               bottom: 0, background: 'none', border: 'none', cursor: 'pointer',
               fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
-              color: '#D83E7F', padding: '2px 4px', minHeight: 44, display: 'flex', alignItems: 'center',
+              color: '#C4326B', padding: '2px 4px', minHeight: 44, display: 'flex', alignItems: 'center',
             }}
           >
             {rangeEnd}

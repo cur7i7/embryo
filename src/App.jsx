@@ -188,7 +188,7 @@ export default function App() {
   }
 
   return (
-    <main style={{ width: '100vw', height: '100vh', overflow: 'hidden' }}>
+    <main style={{ width: '100vw', minHeight: '100vh', height: '100dvh', overflow: 'hidden' }}>
       <Map
         mapRef={mapRef}
         artists={filteredArtists}

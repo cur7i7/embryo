@@ -88,8 +88,8 @@ export default function GenreFilters({ activeGenres, onToggleGenre, onSelectAll,
             aria-pressed={isActive}
             style={{
               fontFamily: '"DM Sans", sans-serif',
-              fontSize: isActive ? '14px' : '12px',
-              fontWeight: isActive ? 600 : 400,
+              fontSize: '13px',
+              fontWeight: isActive ? 600 : 500,
               lineHeight: 1,
               color: isActive ? activeTextColor : '#5A5048',
               backgroundColor: isActive ? color : 'transparent',

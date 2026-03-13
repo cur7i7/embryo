@@ -178,7 +178,7 @@ export default function SearchBar({ artists, onSelect, isMobile = false }) {
             color: '#3E3530',
             backgroundColor: 'rgba(250, 243, 235, 0.95)',
             border: '1px solid rgba(224, 216, 204, 0.8)',
-            borderRadius: isOpen ? '10px 10px 0 0' : 10,
+            borderRadius: (isOpen || (query.trim().length >= 2 && results.length === 0)) ? '10px 10px 0 0' : 10,
             outline: 'none',
             boxShadow: '0 2px 12px rgba(90, 80, 72, 0.10)',
             backdropFilter: 'blur(8px)',
@@ -314,9 +314,29 @@ export default function SearchBar({ artists, onSelect, isMobile = false }) {
           })}
         </ul>
       )}
-      {query.trim().length >= 2 && results.length === 0 && !isOpen && (
-        <div role="status" aria-live="polite" style={{position:'absolute',width:1,height:1,overflow:'hidden',clip:'rect(0,0,0,0)',whiteSpace:'nowrap'}}>
-          No musicians found for &quot;{query}&quot;
+      {query.trim().length >= 2 && results.length === 0 && (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            right: 0,
+            padding: '12px 14px',
+            fontSize: 13,
+            fontFamily: '"DM Sans", sans-serif',
+            color: '#6B5F55',
+            backgroundColor: 'rgba(250, 243, 235, 0.98)',
+            border: '1px solid rgba(224, 216, 204, 0.8)',
+            borderTop: 'none',
+            borderRadius: '0 0 10px 10px',
+            boxShadow: '0 4px 16px rgba(90, 80, 72, 0.14)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 21,
+          }}
+        >
+          No artists found
         </div>
       )}
     </div>
