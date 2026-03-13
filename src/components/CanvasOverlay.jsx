@@ -485,11 +485,12 @@ export default function CanvasOverlay({
         let showLabel = true;
         ctx.font = '600 12px "DM Sans", sans-serif';
         const labelW = ctx.measureText(group.city).width;
+        const textHeight = 16;
         const labelRect = {
           x: x - labelW / 2 - 4,
-          y: y + cityRadius + 2,
+          y: y - cityRadius - 6 - textHeight,
           w: labelW + 8,
-          h: 16,
+          h: textHeight,
         };
 
         const overlaps = (r1, r2) =>
@@ -1100,11 +1101,9 @@ export default function CanvasOverlay({
         }}
         onFocus={(e) => {
           e.currentTarget.style.boxShadow = 'inset 0 0 0 3px rgba(216,62,127,0.5)';
-          e.currentTarget.style.pointerEvents = 'auto';
         }}
         onBlur={(e) => {
           e.currentTarget.style.boxShadow = 'none';
-          e.currentTarget.style.pointerEvents = 'none';
         }}
       />
       {/* Screen reader live region for artist announcements */}
