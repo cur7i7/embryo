@@ -10,11 +10,39 @@ import { useConnectionData } from './hooks/useConnectionData.js';
 import { GENRE_BUCKETS, getGenreBucket } from './utils/genres.js';
 
 const DEFAULT_RANGE = [1400, 2025];
+const DEFAULT_CENTER = [10, 48];
+const DEFAULT_ZOOM = 2;
 const PLAY_INTERVAL_MS = 2000;
-const PLAY_STEP = 10; // 1 decade per tick
+const PLAY_STEP = 10;
 
+const ALL_GENRE_KEYS = Object.keys(GENRE_BUCKETS);
 const ALL_CONNECTION_TYPES = new Set(['teacher', 'influence', 'peer', 'collaboration']);
 
+// ---------------------------------------------------------------------------
+// URL hash helpers
+// ---------------------------------------------------------------------------
+function parseHash() {
+  const hash = window.location.hash.slice(1);
+  if (!hash) return {};
+  const params = {};
+  for (const part of hash.split('&')) {
+    const [k, v] = part.split('=');
+    if (k && v) params[decodeURIComponent(k)] = decodeURIComponent(v);
+  }
+  return params;
+}
+
+function buildHash(obj) {
+  const parts = [];
+  for (const [k, v] of Object.entries(obj)) {
+    if (v != null && v !== '') parts.push(`${encodeURIComponent(k)}=${encodeURIComponent(v)}`);
+  }
+  return parts.length ? '#' + parts.join('&') : '';
+}
+
+// ---------------------------------------------------------------------------
+// Reducer
+// ---------------------------------------------------------------------------
 function timelineReducer(state, action) {
   switch (action.type) {
     case 'SET_RANGE':
@@ -35,6 +63,9 @@ function timelineReducer(state, action) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Hooks
+// ---------------------------------------------------------------------------
 function useIsMobile(breakpoint = 768) {
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < breakpoint);
   useEffect(() => {
@@ -45,30 +76,117 @@ function useIsMobile(breakpoint = 768) {
   return isMobile;
 }
 
+// ---------------------------------------------------------------------------
+// App
+// ---------------------------------------------------------------------------
 export default function App() {
   const isMobile = useIsMobile();
   const { artists: allArtists, loading: artistsLoading, error: artistsError } = useArtistData();
   const { connections, connectionsByArtist, connectionCounts, loading: connectionsLoading, error: connectionsError } = useConnectionData();
 
+  // Parse hash for initial state
+  const initialHash = useRef(parseHash());
+
   const [timeline, dispatch] = useReducer(timelineReducer, {
-    rangeStart: DEFAULT_RANGE[0],
-    rangeEnd: DEFAULT_RANGE[1],
+    rangeStart: Number(initialHash.current.start) || DEFAULT_RANGE[0],
+    rangeEnd: Number(initialHash.current.end) || DEFAULT_RANGE[1],
     isPlaying: false,
   });
 
-  const [activeGenres, setActiveGenres] = useState(new Set(Object.keys(GENRE_BUCKETS)));
+  const [activeGenres, setActiveGenres] = useState(new Set(ALL_GENRE_KEYS));
   const [activeConnectionTypes, setActiveConnectionTypes] = useState(new Set(ALL_CONNECTION_TYPES));
 
-  // Hover and selection state
   const [hoveredArtist, setHoveredArtist] = useState(null);
   const [selectedArtist, setSelectedArtist] = useState(null);
 
-  // mapRef lifted to App level so SearchBar and DetailPanel can use flyTo
   const mapRef = useRef(null);
+  const hashUpdateTimer = useRef(null);
+  const suppressHashSync = useRef(false);
+
+  // ---- Hash → state: restore artist selection after data loads ----
+  const pendingArtistId = useRef(initialHash.current.artist || null);
+  useEffect(() => {
+    if (!pendingArtistId.current || !allArtists.length) return;
+    const artist = allArtists.find(a => a.id === pendingArtistId.current);
+    if (artist) {
+      setSelectedArtist(artist);
+      // Fly to artist after map is ready
+      setTimeout(() => {
+        if (mapRef.current && artist.birth_lng != null && artist.birth_lat != null) {
+          try {
+            const z = Number(initialHash.current.z) || 6;
+            mapRef.current.getMap().flyTo({ center: [artist.birth_lng, artist.birth_lat], zoom: z });
+          } catch { /* map not ready */ }
+        }
+      }, 500);
+    }
+    pendingArtistId.current = null;
+  }, [allArtists]);
+
+  // ---- Hash → state: restore map position after mount ----
+  useEffect(() => {
+    const h = initialHash.current;
+    if (h.lat && h.lng) {
+      setTimeout(() => {
+        if (mapRef.current) {
+          try {
+            mapRef.current.getMap().jumpTo({
+              center: [Number(h.lng), Number(h.lat)],
+              zoom: Number(h.z) || DEFAULT_ZOOM,
+            });
+          } catch { /* map not ready */ }
+        }
+      }, 300);
+    }
+  }, []);
+
+  // ---- State → hash: debounced sync ----
+  useEffect(() => {
+    if (suppressHashSync.current) return;
+    clearTimeout(hashUpdateTimer.current);
+    hashUpdateTimer.current = setTimeout(() => {
+      const map = mapRef.current?.getMap?.();
+      const center = map?.getCenter?.();
+      const zoom = map?.getZoom?.();
+      const obj = {};
+      if (center) {
+        obj.lat = center.lat.toFixed(2);
+        obj.lng = center.lng.toFixed(2);
+      }
+      if (zoom != null) obj.z = zoom.toFixed(1);
+      if (timeline.rangeStart !== DEFAULT_RANGE[0]) obj.start = timeline.rangeStart;
+      if (timeline.rangeEnd !== DEFAULT_RANGE[1]) obj.end = timeline.rangeEnd;
+      if (selectedArtist) obj.artist = selectedArtist.id;
+      const hash = buildHash(obj);
+      if (window.location.hash !== hash) {
+        window.history.replaceState(null, '', hash || window.location.pathname);
+      }
+    }, 500);
+    return () => clearTimeout(hashUpdateTimer.current);
+  }, [timeline.rangeStart, timeline.rangeEnd, selectedArtist]);
+
+  // ---- Popstate (back/forward) ----
+  useEffect(() => {
+    const onPop = () => {
+      suppressHashSync.current = true;
+      const h = parseHash();
+      if (h.start || h.end) {
+        dispatch({ type: 'SET_RANGE', start: Number(h.start) || DEFAULT_RANGE[0], end: Number(h.end) || DEFAULT_RANGE[1] });
+      }
+      if (h.artist && allArtists.length) {
+        const a = allArtists.find(x => x.id === h.artist);
+        if (a) setSelectedArtist(a);
+      } else {
+        setSelectedArtist(null);
+      }
+      setTimeout(() => { suppressHashSync.current = false; }, 600);
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, [allArtists]);
 
   const handleRangeChange = useCallback((start, end) => dispatch({ type: 'SET_RANGE', start, end }), []);
 
-  // Playback: advance window by 1 decade every 2 seconds, keeping window width constant
   useEffect(() => {
     if (!timeline.isPlaying) return;
     const id = setInterval(() => dispatch({ type: 'PLAY_TICK' }), PLAY_INTERVAL_MS);
@@ -82,7 +200,7 @@ export default function App() {
       const next = new Set(prev);
       if (next.has(bucketName)) {
         next.delete(bucketName);
-        if (next.size === 0) return prev; // don't allow empty — keep last genre selected
+        if (next.size === 0) return prev;
       } else {
         next.add(bucketName);
       }
@@ -91,7 +209,7 @@ export default function App() {
   }, []);
 
   const handleSelectAllGenres = useCallback(() => {
-    setActiveGenres(new Set(Object.keys(GENRE_BUCKETS)));
+    setActiveGenres(new Set(ALL_GENRE_KEYS));
   }, []);
 
   const handleToggleConnectionType = useCallback((type) => {
@@ -99,7 +217,7 @@ export default function App() {
       const next = new Set(prev);
       if (next.has(type)) {
         next.delete(type);
-        if (next.size === 0) return prev; // don't allow empty
+        if (next.size === 0) return prev;
       } else {
         next.add(type);
       }
@@ -115,26 +233,65 @@ export default function App() {
     setHoveredArtist(artist);
   }, []);
 
+  // Select artist — auto-expand filters if the artist is outside current view
   const handleSelect = useCallback((artist) => {
     setSelectedArtist(artist);
-    if (artist && mapRef.current && artist.birth_lng != null && artist.birth_lat != null) {
+    if (!artist) return;
+
+    // Auto-expand timeline to include artist's active period
+    const aStart = artist.active_start ?? artist.birth_year;
+    const aEnd = artist.active_end ?? artist.death_year ?? 2025;
+    if (aStart != null) {
+      dispatch((prev) => {
+        // useReducer dispatch with function not supported — use SET_RANGE
+        return { type: 'SET_RANGE', start: prev.rangeStart, end: prev.rangeEnd };
+      });
+    }
+
+    // We need current timeline state — read from reducer won't work in callback.
+    // Instead, do the expand check imperatively via setState pattern.
+    // This is handled below via a separate effect.
+
+    // Auto-expand genre filter
+    const { bucket } = getGenreBucket(artist.genres);
+    setActiveGenres(prev => {
+      if (prev.has(bucket)) return prev;
+      const next = new Set(prev);
+      next.add(bucket);
+      return next;
+    });
+
+    // Fly to artist
+    if (mapRef.current && artist.birth_lng != null && artist.birth_lat != null) {
       try {
         mapRef.current.getMap().flyTo({
           center: [artist.birth_lng, artist.birth_lat],
           zoom: Math.max(mapRef.current?.getMap?.()?.getZoom?.() || 6, 6),
         });
-      } catch {
-        /* flyTo — map not ready */
-      }
+      } catch { /* map not ready */ }
     }
   }, []);
+
+  // Auto-expand timeline when artist is selected but outside range
+  useEffect(() => {
+    if (!selectedArtist) return;
+    const aStart = selectedArtist.active_start ?? selectedArtist.birth_year;
+    const aEnd = selectedArtist.active_end ?? selectedArtist.death_year ?? 2025;
+    if (aStart == null) return;
+    const needExpand = aStart > timeline.rangeEnd || aEnd < timeline.rangeStart;
+    if (needExpand) {
+      dispatch({
+        type: 'SET_RANGE',
+        start: Math.min(timeline.rangeStart, aStart - 10),
+        end: Math.max(timeline.rangeEnd, aEnd + 10),
+      });
+    }
+  }, [selectedArtist, timeline.rangeStart, timeline.rangeEnd]);
 
   const handleCloseDetail = useCallback(() => {
     setSelectedArtist(null);
   }, []);
 
-  // Filter artists by active range and genre.
-  // Rule: artist is visible when active_start <= rangeEnd AND active_end >= rangeStart
   const filteredArtists = useMemo(() => {
     if (!allArtists.length) return [];
     return allArtists.filter((a) => {
@@ -148,29 +305,59 @@ export default function App() {
     });
   }, [allArtists, timeline.rangeStart, timeline.rangeEnd, activeGenres]);
 
-  // Compute per-type connection counts for filter button labels
   const connectionTypeCounts = useMemo(() => {
     const counts = { teacher: 0, influence: 0, peer: 0, collaboration: 0 };
     for (const conn of connections) {
-      if (counts[conn.type] !== undefined) {
-        counts[conn.type]++;
-      }
+      if (counts[conn.type] !== undefined) counts[conn.type]++;
     }
     return counts;
   }, [connections]);
 
-  // Connections for selected artist
   const selectedArtistConnections = useMemo(() => {
     if (!selectedArtist) return [];
     return connectionsByArtist.get(selectedArtist.id) || [];
   }, [selectedArtist, connectionsByArtist]);
 
+  // ---- Reset view: detect non-default state ----
+  const isDefault = timeline.rangeStart === DEFAULT_RANGE[0]
+    && timeline.rangeEnd === DEFAULT_RANGE[1]
+    && activeGenres.size === ALL_GENRE_KEYS.length
+    && activeConnectionTypes.size === ALL_CONNECTION_TYPES.size
+    && !selectedArtist;
+
+  const handleReset = useCallback(() => {
+    dispatch({ type: 'SET_RANGE', start: DEFAULT_RANGE[0], end: DEFAULT_RANGE[1] });
+    setActiveGenres(new Set(ALL_GENRE_KEYS));
+    setActiveConnectionTypes(new Set(ALL_CONNECTION_TYPES));
+    setSelectedArtist(null);
+    if (mapRef.current) {
+      try {
+        mapRef.current.getMap().flyTo({ center: DEFAULT_CENTER, zoom: DEFAULT_ZOOM });
+      } catch { /* map not ready */ }
+    }
+  }, []);
+
+  // ---- Loading state ----
   if (artistsLoading || connectionsLoading) {
     return (
       <div role="status" aria-live="polite" style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FAF3EB', fontFamily: '"DM Sans", sans-serif' }}>
+        <style>{`
+          @keyframes embryo-pulse { 0%,100% { opacity: .4; } 50% { opacity: 1; } }
+          @keyframes embryo-bar { 0% { width: 0%; } 100% { width: 100%; } }
+        `}</style>
         <div style={{ textAlign: 'center', color: '#5A5048' }}>
-          <div style={{ fontSize: 18, fontWeight: 500, marginBottom: 8 }}>Loading musicians…</div>
-          <div style={{ fontSize: 13, color: '#6B5F55' }}>Preparing 31,069 artists</div>
+          <div style={{ fontSize: 20, fontWeight: 600, marginBottom: 6, letterSpacing: '0.04em', color: '#3E3530' }}>
+            EMBRYO
+          </div>
+          <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 16, animation: 'embryo-pulse 1.8s ease-in-out infinite' }}>
+            Loading musicians…
+          </div>
+          <div style={{ width: 180, height: 3, borderRadius: 2, backgroundColor: 'rgba(90,80,72,0.12)', overflow: 'hidden' }}>
+            <div style={{ height: '100%', borderRadius: 2, backgroundColor: '#C4326B', animation: 'embryo-bar 2.5s ease-in-out infinite' }} />
+          </div>
+          <div style={{ fontSize: 12, color: '#9A8E85', marginTop: 10 }}>
+            Preparing 31,069 artists
+          </div>
         </div>
       </div>
     );
@@ -211,6 +398,40 @@ export default function App() {
         rangeStart={timeline.rangeStart}
         rangeEnd={timeline.rangeEnd}
       />
+
+      {/* Reset view button — only visible when filters are non-default */}
+      {!isDefault && (
+        <button
+          onClick={handleReset}
+          aria-label="Reset view to defaults"
+          style={{
+            position: 'fixed',
+            top: 100,
+            left: 16,
+            zIndex: 15,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 5,
+            padding: '7px 14px',
+            fontSize: 13,
+            fontWeight: 500,
+            fontFamily: '"DM Sans", sans-serif',
+            color: '#5A5048',
+            backgroundColor: 'rgba(250, 243, 235, 0.92)',
+            backdropFilter: 'blur(6px)',
+            border: '1px solid rgba(224, 216, 204, 0.7)',
+            borderRadius: 20,
+            boxShadow: '0 2px 10px rgba(90, 80, 72, 0.10)',
+            cursor: 'pointer',
+            minHeight: 44,
+            minWidth: 44,
+            transition: 'opacity 0.2s ease',
+          }}
+        >
+          <span aria-hidden="true" style={{ fontSize: 15 }}>↺</span>
+          Reset
+        </button>
+      )}
 
       <GenreFilters
         activeGenres={activeGenres}
