@@ -6,7 +6,9 @@ export default function ArtistCount({ count, rangeStart, rangeEnd, isPlaying = f
   const label =
     rangeStart === 1400 && rangeEnd === 2025
       ? 'All years'
-      : `${rangeStart}\u2013${rangeEnd}`;
+      : rangeStart === rangeEnd
+        ? `${rangeStart}`
+        : `${rangeStart}\u2013${rangeEnd}`;
 
   const [announced, setAnnounced] = useState({ count, label });
   useEffect(() => {
