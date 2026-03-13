@@ -108,6 +108,12 @@ export default function DetailPanel({
   const closeButtonRef = useRef(null);
   const previousFocusRef = useRef(null);
   const [history, setHistory] = useState([]);
+  const [imageError, setImageError] = useState(false);
+
+  // Reset image error state when artist changes
+  useEffect(() => {
+    setImageError(false);
+  }, [artist?.name]);
   // A12: prefers-reduced-motion
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(
     () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
@@ -200,6 +206,11 @@ export default function DetailPanel({
     ? [artist.birth_city, artist.birth_country].filter(Boolean).join(', ')
     : '';
 
+  // Detect dvh support for mobile landscape fix
+  const supportsDvh = React.useMemo(() => {
+    try { return CSS.supports('height', '1dvh'); } catch { return false; }
+  }, []);
+
   // Panel style changes based on mobile
   const panelStyle = isMobile
     ? {
@@ -208,7 +219,9 @@ export default function DetailPanel({
         left: 0,
         right: 0,
         width: '100%',
-        height: 'calc(60vh - 80px)',
+        height: supportsDvh
+          ? 'clamp(200px, calc(60dvh - 80px), 70dvh)'
+          : 'clamp(200px, calc(60vh - 80px), 70vh)',
         backgroundColor: 'rgba(250, 243, 235, 0.98)',
         backdropFilter: 'blur(12px)',
         borderTop: '1px solid rgba(224, 216, 204, 0.8)',
@@ -319,39 +332,61 @@ export default function DetailPanel({
 
       {artist && (
         <>
-          {/* Genre gradient placeholder */}
+          {/* Artist image or genre gradient fallback */}
           <div
             style={{
               width: '100%',
-              height: 120,
               borderRadius: 12,
-              background: `linear-gradient(135deg, ${hexToRgba(color, 0.2)} 0%, ${hexToRgba(color, 0.4)} 50%, ${hexToRgba(color, 0.13)} 100%)`,
-              border: `1px solid ${hexToRgba(color, 0.27)}`,
               marginBottom: 16,
               marginTop: 4,
-              display: 'flex',
-              alignItems: 'flex-end',
-              padding: '10px 12px',
+              overflow: 'hidden',
+              position: 'relative',
+              ...(artist.image_url && !imageError
+                ? { display: 'flex', justifyContent: 'center', backgroundColor: hexToRgba(color, 0.08) }
+                : {
+                    height: 120,
+                    background: `linear-gradient(135deg, ${hexToRgba(color, 0.2)} 0%, ${hexToRgba(color, 0.4)} 50%, ${hexToRgba(color, 0.13)} 100%)`,
+                    border: `1px solid ${hexToRgba(color, 0.27)}`,
+                    display: 'flex',
+                    alignItems: 'flex-end',
+                    padding: '10px 12px',
+                  }),
             }}
-            aria-hidden="true"
+            aria-hidden={!(artist.image_url && !imageError)}
           >
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              {(artist.genres || []).slice(0, 3).map((g, i) => (
-                <span
-                  key={i}
-                  style={{
-                    fontSize: 11,
-                    padding: '2px 8px',
-                    borderRadius: 20,
-                    backgroundColor: 'rgba(250, 243, 235, 0.85)',
-                    color: '#3E3530',
-                    fontWeight: 500,
-                  }}
-                >
-                  {g}
-                </span>
-              ))}
-            </div>
+            {artist.image_url && !imageError ? (
+              <img
+                src={artist.image_url}
+                alt={`Portrait of ${artist.name}`}
+                loading="lazy"
+                onError={() => setImageError(true)}
+                style={{
+                  display: 'block',
+                  maxHeight: 200,
+                  width: '100%',
+                  objectFit: 'cover',
+                  borderRadius: 12,
+                }}
+              />
+            ) : (
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {(artist.genres || []).slice(0, 3).map((g, i) => (
+                  <span
+                    key={i}
+                    style={{
+                      fontSize: 11,
+                      padding: '2px 8px',
+                      borderRadius: 20,
+                      backgroundColor: 'rgba(250, 243, 235, 0.85)',
+                      color: '#3E3530',
+                      fontWeight: 500,
+                    }}
+                  >
+                    {g}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Name */}
@@ -579,26 +614,34 @@ export default function DetailPanel({
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 6,
-                  fontSize: 13,
-                  color: '#7A6E65',
+                  justifyContent: 'center',
+                  gap: 8,
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: '#3E3530',
                   textDecoration: 'none',
-                  padding: '8px 12px',
+                  padding: '10px 16px',
                   borderRadius: 8,
-                  border: '1px solid rgba(224, 216, 204, 0.6)',
-                  backgroundColor: 'rgba(255, 255, 255, 0.4)',
-                  transition: 'background-color 0.15s ease',
+                  border: '1px solid rgba(224, 216, 204, 0.8)',
+                  backgroundColor: 'rgba(255, 255, 255, 0.6)',
+                  transition: 'background-color 0.15s ease, box-shadow 0.15s ease',
+                  minHeight: 44,
                 }}
-                onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.7)'; }}
-                onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.4)'; }}
+                onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.85)'; e.currentTarget.style.boxShadow = '0 1px 4px rgba(90, 80, 72, 0.1)'; }}
+                onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.6)'; e.currentTarget.style.boxShadow = 'none'; }}
+                onFocus={e => { e.currentTarget.style.outline = '2px solid #5A5048'; e.currentTarget.style.outlineOffset = '2px'; }}
+                onBlur={e => { e.currentTarget.style.outline = 'none'; }}
                 aria-label={`Wikipedia article for ${artist.name} (opens in new tab)`}
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12.09 13.119c-.14 1.064-.496 2.4-1.063 3.783-.57 1.383-1.237 2.586-1.998 3.557-.762.97-1.478 1.456-2.14 1.456-.486 0-.9-.222-1.238-.669-.34-.446-.508-.959-.508-1.54 0-.376.06-.763.178-1.157l3.486-10.203c.108-.32.162-.62.162-.9 0-.533-.168-.933-.505-1.2-.337-.27-.91-.4-1.72-.4v-.64h5.962v.64c-.924 0-1.555.14-1.892.427-.337.285-.505.735-.505 1.35 0 .243.04.5.118.765l2.072 6.865 2.453-7.063c.087-.255.13-.5.13-.735 0-.588-.2-1.02-.6-1.296-.4-.275-.99-.413-1.77-.413v-.64h4.634v.64c-.67 0-1.2.22-1.593.66-.393.44-.73 1.12-1.012 2.04L12.09 13.12z" />
+                </svg>
+                Read on Wikipedia
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" style={{ opacity: 0.6 }}>
                   <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                   <polyline points="15 3 21 3 21 9" />
                   <line x1="10" y1="14" x2="21" y2="3" />
                 </svg>
-                Wikipedia
               </a>
             </>
           )}
