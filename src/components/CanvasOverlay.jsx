@@ -82,6 +82,9 @@ export default function CanvasOverlay({
   // --- Current render mode for hit testing (Task 6 will use) ---
   const renderModeRef = useRef('cluster');
 
+  // --- V3: Display offsets for co-located artists ---
+  const displayOffsetsRef = useRef(new Map());
+
   // --- B4: Store latest props in refs to avoid render/startRaf recreation ---
   const artistsRef = useRef(artists);
   const connectionCountsRef = useRef(connectionCounts);
@@ -197,6 +200,13 @@ export default function CanvasOverlay({
       }
     }
 
+    // B4: Prune stale opacity entries to prevent memory growth
+    if (opacityMap.size > validArtists.length * 2) {
+      for (const [key, entry] of opacityMap) {
+        if (entry.opacity === 0 && entry.target === 0) opacityMap.delete(key);
+      }
+    }
+
     // P01: Only keep rAF running for active transitions or interaction states
     needsAnimRef.current = hasActiveTransitions || !!hoveredArtistRef.current || !!selectedArtistRef.current;
 
@@ -205,8 +215,18 @@ export default function CanvasOverlay({
 
     // Always build a fresh posMap every frame — eliminates projection cache race condition
     const posMap = new Map();
+    const currentZoomForPos = map.getZoom();
+    const offsets = displayOffsetsRef.current;
     for (const artist of validArtists) {
-      const point = map.project([artist.birth_lng, artist.birth_lat]);
+      let lng = artist.birth_lng;
+      let lat = artist.birth_lat;
+      // V3: Apply spiral offsets in individual mode to spread co-located artists
+      if (currentZoomForPos >= ZOOM_INDIVIDUAL && offsets.has(artist.name)) {
+        const o = offsets.get(artist.name);
+        lng += o.dlng;
+        lat += o.dlat;
+      }
+      const point = map.project([lng, lat]);
       posMap.set(artist.name, point);
     }
     posMapRef.current = posMap;
@@ -435,7 +455,23 @@ export default function CanvasOverlay({
 
     // --- Individual mode rendering ---
     if (individualAlpha > 0) {
-      for (const artist of validArtists) {
+      // V1: Sort artists for label priority — active first, connected second, then by connection count
+      const sortedArtists = [...validArtists].sort((a, b) => {
+        const aActive = activeArtist && a.name === activeArtist.name ? 1 : 0;
+        const bActive = activeArtist && b.name === activeArtist.name ? 1 : 0;
+        if (aActive !== bActive) return bActive - aActive;
+        const aConn = connectedNames.has(a.name) ? 1 : 0;
+        const bConn = connectedNames.has(b.name) ? 1 : 0;
+        if (aConn !== bConn) return bConn - aConn;
+        const aCount = (connectionCounts && connectionCounts.get(a.name)) || 0;
+        const bCount = (connectionCounts && connectionCounts.get(b.name)) || 0;
+        return bCount - aCount;
+      });
+
+      // V1: Label collision detection — occupied rects for AABB test
+      const occupiedRects = [];
+
+      for (const artist of sortedArtists) {
         const point = posMap.get(artist.name);
         if (!point) continue;
 
@@ -466,7 +502,58 @@ export default function CanvasOverlay({
             : `${artist.birth_year}\u2013`;
         }
 
-        drawArtistNode(ctx, point.x, point.y, 16, genreColor, artist.name, years, state, opacity * individualAlpha);
+        const r = 16 * (state === 'active' ? 1.2 : 1);
+
+        // V1: Always show labels for hovered/active/connected; collision-check the rest
+        const isImportant = isActive || isConnected;
+        let showLabel = true;
+
+        if (!isImportant) {
+          // Compute label bounding boxes
+          const displayName = artist.name.length > 20 ? artist.name.slice(0, 19) + '\u2026' : artist.name;
+          ctx.font = '600 12px "DM Sans", sans-serif';
+          const nameW = ctx.measureText(displayName).width;
+          ctx.font = '400 10px "DM Sans", sans-serif';
+          const yearsW = years ? ctx.measureText(years).width : 0;
+
+          const nameRect = { x: point.x - nameW / 2 - 4, y: point.y + r + 2, w: nameW + 8, h: 16 };
+          const yearsRect = years
+            ? { x: point.x - yearsW / 2 - 4, y: point.y + r + 18, w: yearsW + 8, h: 14 }
+            : null;
+
+          // AABB overlap test
+          const overlaps = (r1, r2) =>
+            r1.x < r2.x + r2.w && r1.x + r1.w > r2.x && r1.y < r2.y + r2.h && r1.y + r1.h > r2.y;
+
+          let hasOverlap = false;
+          for (const occ of occupiedRects) {
+            if (overlaps(nameRect, occ) || (yearsRect && overlaps(yearsRect, occ))) {
+              hasOverlap = true;
+              break;
+            }
+          }
+
+          if (hasOverlap) {
+            showLabel = false;
+          } else {
+            occupiedRects.push(nameRect);
+            if (yearsRect) occupiedRects.push(yearsRect);
+          }
+        } else {
+          // Important artists always get labels — register their rects to block others
+          const displayName = artist.name.length > 20 ? artist.name.slice(0, 19) + '\u2026' : artist.name;
+          ctx.font = '600 12px "DM Sans", sans-serif';
+          const nameW = ctx.measureText(displayName).width;
+          ctx.font = '400 10px "DM Sans", sans-serif';
+          const yearsW = years ? ctx.measureText(years).width : 0;
+
+          occupiedRects.push({ x: point.x - nameW / 2 - 4, y: point.y + r + 2, w: nameW + 8, h: 16 });
+          if (years && yearsW > 0) {
+            occupiedRects.push({ x: point.x - yearsW / 2 - 4, y: point.y + r + 18, w: yearsW + 8, h: 14 });
+          }
+        }
+
+        drawArtistNode(ctx, point.x, point.y, 16, genreColor, artist.name, years, state, opacity * individualAlpha, showLabel);
       }
     }
 
@@ -495,7 +582,11 @@ export default function CanvasOverlay({
         const pillPad = 10;
         const pillH = 40;
         const pillX = pos.x - maxW / 2 - pillPad;
-        const pillY = pos.y - radius - 52;
+        // V2: Flip pill below if too close to top of viewport
+        let pillY = pos.y - radius - 52;
+        if (pos.y - radius - 52 < 10) {
+          pillY = pos.y + radius + 12;
+        }
         const pillW = maxW + pillPad * 2;
 
         ctx.fillStyle = 'rgba(250, 243, 235, 0.92)';
@@ -519,11 +610,11 @@ export default function CanvasOverlay({
         ctx.font = '600 14px "DM Sans", sans-serif';
         ctx.textAlign = 'center';
         ctx.fillStyle = '#3E3530';
-        ctx.fillText(label, pos.x, pos.y - radius - 26);
+        ctx.fillText(label, pos.x, pillY + 10);
 
         ctx.font = '400 11px "DM Sans", sans-serif';
         ctx.fillStyle = '#7A6E65';
-        ctx.fillText(sublabel, pos.x, pos.y - radius - 12);
+        ctx.fillText(sublabel, pos.x, pillY + 26);
       }
     }
 
@@ -592,6 +683,32 @@ export default function CanvasOverlay({
 
     // Rebuild city groups when artists change
     cityGroupsRef.current = buildCityGroups(valid);
+
+    // B6: Reset focused artist index when artists change
+    focusedArtistIndexRef.current = -1;
+
+    // V3: Build display offsets for co-located artists
+    const coordGroups = new Map();
+    for (const artist of valid) {
+      const key = Math.round(artist.birth_lat * 100) + ',' + Math.round(artist.birth_lng * 100);
+      if (!coordGroups.has(key)) coordGroups.set(key, []);
+      coordGroups.get(key).push(artist);
+    }
+    const newOffsets = new Map();
+    for (const [, group] of coordGroups) {
+      if (group.length < 2) continue;
+      const count = group.length;
+      for (let i = 0; i < count; i++) {
+        if (i === 0) {
+          newOffsets.set(group[i].name, { dlat: 0, dlng: 0 });
+        } else {
+          const angle = i * (2 * Math.PI / count);
+          const radius = 0.0008 * Math.ceil(i / 6);
+          newOffsets.set(group[i].name, { dlat: Math.sin(angle) * radius, dlng: Math.cos(angle) * radius });
+        }
+      }
+    }
+    displayOffsetsRef.current = newOffsets;
 
     // Trigger re-render when props change
     needsAnimRef.current = true;

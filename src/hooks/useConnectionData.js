@@ -18,6 +18,8 @@ export function useConnectionData() {
         const filtered = data.filter((c) => c.type !== 'rivalry');
 
         // Build connectionsByArtist: each artist maps to all connections they appear in
+        // TODO: connectionsByArtist is keyed by artist name which may not be unique
+        // across 31K records. Should migrate to artist.id-based keying.
         const byArtist = new Map();
         for (const conn of filtered) {
           const { source_name, target_name } = conn;

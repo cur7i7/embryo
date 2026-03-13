@@ -134,7 +134,7 @@ export default function ConnectionFilters({ activeConnectionTypes, onToggleType,
                 style={{
                   marginLeft: '4px',
                   fontSize: '10px',
-                  opacity: isActive ? 0.75 : 0.55,
+                  opacity: isActive ? 0.9 : 0.75,
                   fontWeight: 400,
                 }}
               >

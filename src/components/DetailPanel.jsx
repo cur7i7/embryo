@@ -106,12 +106,14 @@ export default function DetailPanel({
 }) {
   const isOpen = !!artist;
   const closeButtonRef = useRef(null);
+  const previousFocusRef = useRef(null);
   const [history, setHistory] = useState([]);
   const prevArtistRef = useRef(null);
 
   // Focus close button on panel open
   useEffect(() => {
     if (isOpen && closeButtonRef.current) {
+      previousFocusRef.current = document.activeElement;
       closeButtonRef.current.focus();
     }
   }, [isOpen]);
@@ -128,11 +130,29 @@ export default function DetailPanel({
   useEffect(() => {
     if (!isOpen) return;
     const handleKey = (e) => {
-      if (e.key === 'Escape') onClose?.();
+      if (e.key === 'Escape') {
+        previousFocusRef.current?.focus();
+        onClose?.();
+      }
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
   }, [isOpen, onClose]);
+
+  const handleTrapKeyDown = useCallback((e) => {
+    if (e.key !== 'Tab' || !isOpen) return;
+    const focusable = e.currentTarget.querySelectorAll('button, a, input, [tabindex]:not([tabindex="-1"])');
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }, [isOpen]);
 
   const handleConnectedArtistClick = useCallback((connArtist) => {
     if (!connArtist) return;
@@ -143,7 +163,7 @@ export default function DetailPanel({
           center: [connArtist.birth_lng, connArtist.birth_lat],
           zoom: 6,
         });
-      } catch (_) {}
+      } catch (err) { if (import.meta.env.DEV) console.warn('DetailPanel flyTo failed:', err); }
     }
   }, [onSelect, mapRef]);
 
@@ -223,6 +243,8 @@ export default function DetailPanel({
       role="complementary"
       aria-label={artist ? `Details for ${artist.name}` : 'Artist details'}
       aria-hidden={!isOpen}
+      ref={(el) => { if (el) { isOpen ? el.removeAttribute('inert') : el.setAttribute('inert', ''); } }}
+      onKeyDown={handleTrapKeyDown}
     >
       {/* Back button */}
       {history.length > 0 && (
@@ -257,7 +279,7 @@ export default function DetailPanel({
       {/* Close button */}
       <button
         ref={closeButtonRef}
-        onClick={onClose}
+        onClick={() => { previousFocusRef.current?.focus(); onClose?.(); }}
         aria-label="Close detail panel"
         style={{
           position: 'absolute',

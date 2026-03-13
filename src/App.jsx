@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useReducer, useMemo, useEffect, useRef, useCallback } from 'react';
 import Map from './components/Map.jsx';
 import Timeline from './components/Timeline.jsx';
 import GenreFilters from './components/GenreFilters.jsx';
@@ -15,6 +15,26 @@ const PLAY_STEP = 10; // 1 decade per tick
 
 const ALL_CONNECTION_TYPES = new Set(['teacher', 'influence', 'peer', 'collaboration']);
 
+function timelineReducer(state, action) {
+  switch (action.type) {
+    case 'SET_RANGE':
+      return { ...state, rangeStart: action.start, rangeEnd: action.end };
+    case 'PLAY_TICK': {
+      const w = state.rangeEnd - state.rangeStart;
+      const nextStart = state.rangeStart + PLAY_STEP;
+      const nextEnd = nextStart + w;
+      if (nextEnd >= 2025) {
+        return { rangeStart: 2025 - w, rangeEnd: 2025, isPlaying: false };
+      }
+      return { ...state, rangeStart: nextStart, rangeEnd: nextEnd };
+    }
+    case 'TOGGLE_PLAY':
+      return { ...state, isPlaying: !state.isPlaying };
+    default:
+      return state;
+  }
+}
+
 function useIsMobile(breakpoint = 768) {
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < breakpoint);
   useEffect(() => {
@@ -30,9 +50,12 @@ export default function App() {
   const { artists: allArtists, loading: artistsLoading, error: artistsError } = useArtistData();
   const { connections, connectionsByArtist, connectionCounts, loading: connectionsLoading, error: connectionsError } = useConnectionData();
 
-  const [rangeStart, setRangeStart] = useState(DEFAULT_RANGE[0]);
-  const [rangeEnd, setRangeEnd] = useState(DEFAULT_RANGE[1]);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [timeline, dispatch] = useReducer(timelineReducer, {
+    rangeStart: DEFAULT_RANGE[0],
+    rangeEnd: DEFAULT_RANGE[1],
+    isPlaying: false,
+  });
+
   const [activeGenres, setActiveGenres] = useState(new Set(Object.keys(GENRE_BUCKETS)));
   const [activeConnectionTypes, setActiveConnectionTypes] = useState(new Set(ALL_CONNECTION_TYPES));
 
@@ -43,49 +66,16 @@ export default function App() {
   // mapRef lifted to App level so SearchBar and DetailPanel can use flyTo
   const mapRef = useRef(null);
 
-  const windowWidth = useRef(rangeEnd - rangeStart);
-
-  const handleRangeChange = useCallback((start, end) => {
-    setRangeStart(start);
-    setRangeEnd(end);
-    windowWidth.current = end - start;
-  }, []);
+  const handleRangeChange = useCallback((start, end) => dispatch({ type: 'SET_RANGE', start, end }), []);
 
   // Playback: advance window by 1 decade every 2 seconds, keeping window width constant
   useEffect(() => {
-    if (!isPlaying) return;
-
-    const id = setInterval(() => {
-      setRangeStart((prevStart) => {
-        const w = windowWidth.current;
-        const nextStart = prevStart + PLAY_STEP;
-        const nextEnd = nextStart + w;
-
-        if (nextEnd >= 2025) {
-          // Stop at the end
-          setRangeEnd(2025);
-          setIsPlaying(false);
-          return 2025 - w;
-        }
-
-        setRangeEnd(nextEnd);
-        return nextStart;
-      });
-    }, PLAY_INTERVAL_MS);
-
+    if (!timeline.isPlaying) return;
+    const id = setInterval(() => dispatch({ type: 'PLAY_TICK' }), PLAY_INTERVAL_MS);
     return () => clearInterval(id);
-  }, [isPlaying]);
+  }, [timeline.isPlaying]);
 
-  // Keep windowWidth in sync when user drags (not during playback)
-  useEffect(() => {
-    if (!isPlaying) {
-      windowWidth.current = rangeEnd - rangeStart;
-    }
-  }, [rangeStart, rangeEnd, isPlaying]);
-
-  const handlePlayPause = useCallback(() => {
-    setIsPlaying((prev) => !prev);
-  }, []);
+  const handlePlayPause = useCallback(() => dispatch({ type: 'TOGGLE_PLAY' }), []);
 
   const handleToggleGenre = useCallback((bucketName) => {
     setActiveGenres(prev => {
@@ -151,12 +141,12 @@ export default function App() {
       const start = a.active_start ?? a.birth_year;
       const end = a.active_end ?? a.death_year ?? 2025;
       if (start == null) return false;
-      const inRange = start <= rangeEnd && end >= rangeStart;
+      const inRange = start <= timeline.rangeEnd && end >= timeline.rangeStart;
       if (!inRange) return false;
       const { bucket } = getGenreBucket(a.genres);
       return activeGenres.has(bucket);
     });
-  }, [allArtists, rangeStart, rangeEnd, activeGenres]);
+  }, [allArtists, timeline.rangeStart, timeline.rangeEnd, activeGenres]);
 
   // Compute per-type connection counts for filter button labels
   const connectionTypeCounts = useMemo(() => {
@@ -205,8 +195,8 @@ export default function App() {
         connectionCounts={connectionCounts}
         connections={connections}
         activeConnectionTypes={activeConnectionTypes}
-        rangeStart={rangeStart}
-        rangeEnd={rangeEnd}
+        rangeStart={timeline.rangeStart}
+        rangeEnd={timeline.rangeEnd}
         hoveredArtist={hoveredArtist}
         selectedArtist={selectedArtist}
         onHover={handleHover}
@@ -218,6 +208,8 @@ export default function App() {
         onSelect={handleSelect}
         mapRef={mapRef}
         isMobile={isMobile}
+        rangeStart={timeline.rangeStart}
+        rangeEnd={timeline.rangeEnd}
       />
 
       <GenreFilters
@@ -237,10 +229,10 @@ export default function App() {
 
       <Timeline
         artists={allArtists}
-        rangeStart={rangeStart}
-        rangeEnd={rangeEnd}
+        rangeStart={timeline.rangeStart}
+        rangeEnd={timeline.rangeEnd}
         onRangeChange={handleRangeChange}
-        isPlaying={isPlaying}
+        isPlaying={timeline.isPlaying}
         onPlayPause={handlePlayPause}
         isMobile={isMobile}
       />

@@ -13,13 +13,14 @@ export function getGenreBucket(genres) {
     return { bucket: 'Other', color: GENRE_BUCKETS.Other.color };
   }
 
-  const firstGenre = genres[0].toLowerCase();
-
-  for (const [bucketName, bucketData] of Object.entries(GENRE_BUCKETS)) {
-    if (bucketName === 'Other') continue;
-    for (const g of bucketData.genres) {
-      if (g.length >= 3 && (firstGenre.includes(g) || g.includes(firstGenre))) {
-        return { bucket: bucketName, color: bucketData.color };
+  for (const genre of genres) {
+    const lowerGenre = genre.toLowerCase();
+    for (const [bucketName, bucketData] of Object.entries(GENRE_BUCKETS)) {
+      if (bucketName === 'Other') continue;
+      for (const g of bucketData.genres) {
+        if (g.length >= 3 && (lowerGenre.includes(g) || g.includes(lowerGenre))) {
+          return { bucket: bucketName, color: bucketData.color };
+        }
       }
     }
   }

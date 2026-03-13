@@ -140,7 +140,7 @@ export function preRenderOrbTexture(genreColor, size = 200) {
  * @param {'default'|'active'|'connected'|'dimmed'} state
  * @param {number} alpha - overall opacity (0–1), used for cross-fade
  */
-export function drawArtistNode(ctx, x, y, radius, genreColor, name, years, state = 'default', alpha = 1) {
+export function drawArtistNode(ctx, x, y, radius, genreColor, name, years, state = 'default', alpha = 1, showLabel = true) {
   if (alpha <= 0) return;
   ctx.save();
   ctx.globalAlpha = alpha;
@@ -165,21 +165,59 @@ export function drawArtistNode(ctx, x, y, radius, genreColor, name, years, state
   ctx.strokeStyle = genreColor;
   ctx.stroke();
 
-  // Truncate name > 20 chars
-  const displayName = name.length > 20 ? name.slice(0, 19) + '\u2026' : name;
+  if (showLabel) {
+    // Truncate name > 20 chars
+    const displayName = name.length > 20 ? name.slice(0, 19) + '\u2026' : name;
 
-  // Name label below circle
-  ctx.font = '600 12px "DM Sans", sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'top';
-  ctx.fillStyle = '#3E3530';
-  ctx.fillText(displayName, x, y + r + 6);
+    // Measure text for background pill
+    ctx.font = '600 12px "DM Sans", sans-serif';
+    const nameW = ctx.measureText(displayName).width;
+    let totalH = 14; // name line height
+    let maxW = nameW;
+    let yearsW = 0;
+    if (years) {
+      ctx.font = '400 10px "DM Sans", sans-serif';
+      yearsW = ctx.measureText(years).width;
+      maxW = Math.max(nameW, yearsW);
+      totalH += 4 + 12; // gap + years line height
+    }
 
-  // Years below name
-  if (years) {
-    ctx.font = '400 10px "DM Sans", sans-serif';
-    ctx.fillStyle = '#7A6E65';
-    ctx.fillText(years, x, y + r + 22);
+    // Background pill behind labels
+    const padH = 6;
+    const padV = 3;
+    const pillX = x - maxW / 2 - padH;
+    const pillY = y + r + 2 - padV;
+    const pillW = maxW + padH * 2;
+    const pillH = totalH + padV * 2 + 4; // +4 for top offset from circle
+    const br = 4;
+
+    ctx.fillStyle = 'rgba(250, 243, 235, 0.82)';
+    ctx.beginPath();
+    ctx.moveTo(pillX + br, pillY);
+    ctx.lineTo(pillX + pillW - br, pillY);
+    ctx.quadraticCurveTo(pillX + pillW, pillY, pillX + pillW, pillY + br);
+    ctx.lineTo(pillX + pillW, pillY + pillH - br);
+    ctx.quadraticCurveTo(pillX + pillW, pillY + pillH, pillX + pillW - br, pillY + pillH);
+    ctx.lineTo(pillX + br, pillY + pillH);
+    ctx.quadraticCurveTo(pillX, pillY + pillH, pillX, pillY + pillH - br);
+    ctx.lineTo(pillX, pillY + br);
+    ctx.quadraticCurveTo(pillX, pillY, pillX + br, pillY);
+    ctx.closePath();
+    ctx.fill();
+
+    // Name label below circle
+    ctx.font = '600 12px "DM Sans", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = '#3E3530';
+    ctx.fillText(displayName, x, y + r + 6);
+
+    // Years below name
+    if (years) {
+      ctx.font = '400 10px "DM Sans", sans-serif';
+      ctx.fillStyle = '#7A6E65';
+      ctx.fillText(years, x, y + r + 22);
+    }
   }
 
   ctx.restore();

@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 
 const MIN_YEAR = 1400;
 const MAX_YEAR = 2025;
@@ -24,6 +24,21 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
   const containerRef = useRef(null);
   const dragging = useRef(null); // 'left' | 'right' | null
   const didDrag = useRef(false);
+
+  // YS: Editable year input state
+  const [editingStart, setEditingStart] = useState(false);
+  const [editingEnd, setEditingEnd] = useState(false);
+  const [startInput, setStartInput] = useState('');
+  const [endInput, setEndInput] = useState('');
+
+  // A4: Debounced live region text
+  const [liveText, setLiveText] = useState('');
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLiveText(`Showing years ${rangeStart} to ${rangeEnd}`);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [rangeStart, rangeEnd]);
 
   const bins = useMemo(() => buildBins(artists), [artists]);
 
@@ -51,14 +66,6 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
     return ((year - MIN_YEAR) / (MAX_YEAR - MIN_YEAR)) * 100;
   }, []);
 
-  const handlePointerDown = useCallback((e, handle) => {
-    e.preventDefault();
-    e.stopPropagation();
-    dragging.current = handle;
-    didDrag.current = false;
-    e.currentTarget.setPointerCapture(e.pointerId);
-  }, []);
-
   const handlePointerMove = useCallback((e) => {
     if (!dragging.current || !containerRef.current) return;
     didDrag.current = true;
@@ -82,6 +89,22 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
   const handlePointerUp = useCallback((e) => {
     dragging.current = null;
   }, []);
+
+  const handlePointerDown = useCallback((e, handle) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragging.current = handle;
+    didDrag.current = false;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const onMove = (ev) => handlePointerMove(ev);
+    const onUp = (ev) => {
+      handlePointerUp(ev);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  }, [handlePointerMove, handlePointerUp]);
 
   const handleClick = useCallback((e) => {
     if (didDrag.current) { didDrag.current = false; return; }
@@ -187,8 +210,6 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
           cursor: 'pointer',
         }}
         title={rangeEnd - rangeStart >= 2025 - 1400 ? "Click to zoom into a century" : "Click to center the range here"}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
         onClick={handleClick}
       >
         {/* Histogram bars */}
@@ -211,9 +232,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
             return (
               <div
                 key={decade}
-                role="presentation"
-                aria-label={`${decade}s: ${count} artists`}
-                title={`${decade}s: ${count} artists`}
+                aria-hidden="true"
                 style={{
                   flex: 1,
                   height: `${Math.max(2, heightPct)}%`,
@@ -246,6 +265,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
         <div
           role="slider"
           aria-label="Range start year"
+          aria-orientation="horizontal"
           aria-valuemin={MIN_YEAR}
           aria-valuemax={MAX_YEAR}
           aria-valuenow={rangeStart}
@@ -290,6 +310,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
         <div
           role="slider"
           aria-label="Range end year"
+          aria-orientation="horizontal"
           aria-valuemin={MIN_YEAR}
           aria-valuemax={MAX_YEAR}
           aria-valuenow={rangeEnd}
@@ -330,7 +351,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
           />
         </div>
 
-        {/* Year labels */}
+        {/* Year labels (static reference marks) */}
         <div
           style={{
             position: 'absolute',
@@ -364,6 +385,107 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
             );
           })}
         </div>
+
+        {/* Editable start year display */}
+        {editingStart ? (
+          <input
+            type="number"
+            min={MIN_YEAR}
+            max={rangeEnd - 10}
+            step={10}
+            value={startInput}
+            onChange={(e) => setStartInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                const val = Math.max(MIN_YEAR, Math.min(rangeEnd - 10, Math.round(parseInt(startInput) / 10) * 10));
+                if (!isNaN(val)) onRangeChange(val, rangeEnd);
+                setEditingStart(false);
+              }
+              if (e.key === 'Escape') setEditingStart(false);
+            }}
+            onBlur={() => {
+              const val = Math.max(MIN_YEAR, Math.min(rangeEnd - 10, Math.round(parseInt(startInput) / 10) * 10));
+              if (!isNaN(val)) onRangeChange(val, rangeEnd);
+              setEditingStart(false);
+            }}
+            autoFocus
+            aria-label="Set start year"
+            style={{
+              position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${leftPercent / 100} - 30px)`,
+              bottom: 0, width: 56, height: 24, minHeight: 44, padding: '0 4px',
+              fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
+              color: '#D83E7F', backgroundColor: 'rgba(250,243,235,0.95)',
+              border: '1px solid #D83E7F', borderRadius: 4, textAlign: 'center', outline: 'none',
+              zIndex: 10,
+            }}
+          />
+        ) : (
+          <button
+            onClick={() => { setStartInput(String(rangeStart)); setEditingStart(true); }}
+            aria-label={`Start year: ${rangeStart}. Click to edit`}
+            style={{
+              position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${leftPercent / 100} - 20px)`,
+              bottom: 0, background: 'none', border: 'none', cursor: 'pointer',
+              fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
+              color: '#D83E7F', padding: '2px 4px', minHeight: 44, display: 'flex', alignItems: 'center',
+            }}
+          >
+            {rangeStart}
+          </button>
+        )}
+
+        {/* Editable end year display */}
+        {editingEnd ? (
+          <input
+            type="number"
+            min={rangeStart + 10}
+            max={MAX_YEAR}
+            step={10}
+            value={endInput}
+            onChange={(e) => setEndInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                const val = Math.min(MAX_YEAR, Math.max(rangeStart + 10, Math.round(parseInt(endInput) / 10) * 10));
+                if (!isNaN(val)) onRangeChange(rangeStart, val);
+                setEditingEnd(false);
+              }
+              if (e.key === 'Escape') setEditingEnd(false);
+            }}
+            onBlur={() => {
+              const val = Math.min(MAX_YEAR, Math.max(rangeStart + 10, Math.round(parseInt(endInput) / 10) * 10));
+              if (!isNaN(val)) onRangeChange(rangeStart, val);
+              setEditingEnd(false);
+            }}
+            autoFocus
+            aria-label="Set end year"
+            style={{
+              position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${rightPercent / 100} - 30px)`,
+              bottom: 0, width: 56, height: 24, minHeight: 44, padding: '0 4px',
+              fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
+              color: '#D83E7F', backgroundColor: 'rgba(250,243,235,0.95)',
+              border: '1px solid #D83E7F', borderRadius: 4, textAlign: 'center', outline: 'none',
+              zIndex: 10,
+            }}
+          />
+        ) : (
+          <button
+            onClick={() => { setEndInput(String(rangeEnd)); setEditingEnd(true); }}
+            aria-label={`End year: ${rangeEnd}. Click to edit`}
+            style={{
+              position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${rightPercent / 100} - 20px)`,
+              bottom: 0, background: 'none', border: 'none', cursor: 'pointer',
+              fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
+              color: '#D83E7F', padding: '2px 4px', minHeight: 44, display: 'flex', alignItems: 'center',
+            }}
+          >
+            {rangeEnd}
+          </button>
+        )}
+      </div>
+
+      {/* A4: Visually-hidden live region for screen readers */}
+      <div role="status" aria-live="polite" style={{position:'absolute',width:1,height:1,overflow:'hidden',clip:'rect(0,0,0,0)',whiteSpace:'nowrap'}}>
+        {liveText}
       </div>
     </div>
   );

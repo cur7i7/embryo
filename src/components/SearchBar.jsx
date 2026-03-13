@@ -322,6 +322,11 @@ export default function SearchBar({ artists, onSelect, mapRef, isMobile = false 
           })}
         </ul>
       )}
+      {query.trim().length >= 2 && results.length === 0 && !isOpen && (
+        <div role="status" aria-live="polite" style={{position:'absolute',width:1,height:1,overflow:'hidden',clip:'rect(0,0,0,0)',whiteSpace:'nowrap'}}>
+          No musicians found for &quot;{query}&quot;
+        </div>
+      )}
     </div>
   );
 }
