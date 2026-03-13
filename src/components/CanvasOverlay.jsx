@@ -1374,10 +1374,33 @@ export default function CanvasOverlay({
   // ARIA live region text for hovered/selected artist + zoom mode
   const modeLabel = renderModeState === 'cluster' ? 'Cluster view' : renderModeState === 'city' ? 'City view' : 'Individual view';
   const liveText = hoveredArtist
-    ? `${hoveredArtist.name}, ${hoveredArtist.birth_year || 'unknown year'}${hoveredArtist.birth_city ? ', ' + hoveredArtist.birth_city : ''}`
+    ? (() => {
+        const meta = artistMetaRef.current.get(hoveredArtist.id);
+        const genre = meta?.genreBucket || '';
+        const year = hoveredArtist.birth_year || 'unknown year';
+        const city = hoveredArtist.birth_city ? ', ' + hoveredArtist.birth_city : '';
+        return `${hoveredArtist.name}${genre ? ', ' + genre : ''}, ${year}${city}`;
+      })()
     : selectedArtist
-      ? `Selected: ${selectedArtist.name}`
+      ? (() => {
+          const count = connectionCountsRef.current?.get(selectedArtist.id) ?? 0;
+          return `Selected: ${selectedArtist.name}. ${count} connection${count === 1 ? '' : 's'}.`;
+        })()
       : modeLabel;
+
+  // Debounced live text: hover announcements are delayed 300ms to avoid flooding
+  // screen readers during rapid mouse movement. Mode changes go through immediately
+  // because they come from the modeLabel branch (no hoveredArtist / selectedArtist).
+  const [debouncedLiveText, setDebouncedLiveText] = useState('');
+  useEffect(() => {
+    // Mode changes (modeLabel) should be immediate — only debounce hover
+    if (!hoveredArtist) {
+      setDebouncedLiveText(liveText);
+      return;
+    }
+    const id = setTimeout(() => setDebouncedLiveText(liveText), 300);
+    return () => clearTimeout(id);
+  }, [liveText, hoveredArtist]);
 
   return (
     <>
@@ -1430,7 +1453,7 @@ export default function CanvasOverlay({
           whiteSpace: 'nowrap',
         }}
       >
-        {liveText}
+        {debouncedLiveText}
       </div>
     </>
   );
