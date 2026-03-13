@@ -36,8 +36,7 @@ export default function ConnectionFilters({ activeConnectionTypes, onToggleType,
         boxShadow: '0 1px 6px rgba(90, 80, 72, 0.06)',
         overflowX: isMobile ? 'auto' : 'visible',
         WebkitOverflowScrolling: 'touch',
-        scrollbarWidth: 'none',
-        msOverflowStyle: 'none',
+        scrollbarWidth: 'thin',
       }}
     >
       {/* All button */}

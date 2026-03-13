@@ -17,7 +17,7 @@ export default function ArtistCount({ count, rangeStart, rangeEnd, isPlaying = f
     <div
       style={{
         position: 'absolute',
-        top: '56px',
+        top: 'calc(56px + env(safe-area-inset-top))',
         left: '16px',
         zIndex: 10,
         backgroundColor: 'rgba(250, 243, 235, 0.88)',

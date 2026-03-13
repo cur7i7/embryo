@@ -9,50 +9,6 @@ export function hexToRgba(hex, alpha) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-export function drawArc(ctx, x1, y1, x2, y2, color1, color2, type, confidence, dimmed = false) {
-  const midX = (x1 + x2) / 2;
-  const midY = (y1 + y2) / 2;
-  const dist = Math.hypot(x2 - x1, y2 - y1);
-  if (dist < 1) return;
-  const bulge = dist * 0.25; // control point offset for curvature
-  // Perpendicular offset for the control point
-  const dx = x2 - x1;
-  const dy = y2 - y1;
-  const nx = -dy / dist;
-  const ny = dx / dist;
-  const cpx = midX + nx * bulge;
-  const cpy = midY + ny * bulge;
-
-  // Opacity based on confidence; reduce when dimmed (something else is active)
-  let alpha = 0.06;
-  if (confidence > 0.8) alpha = 0.08;
-  if (confidence < 0.5) alpha = 0.04;
-  if (dimmed) alpha *= 0.4;
-
-  ctx.save();
-  ctx.lineWidth = 0.8;
-
-  // Dash pattern by type
-  if (type === 'teacher') {
-    ctx.setLineDash([4, 4]);
-  } else if (type === 'peer' || type === 'collaboration') {
-    ctx.setLineDash([8, 4]);
-  } else {
-    ctx.setLineDash([]);
-  }
-
-  // Gradient from source to target genre color
-  const gradient = ctx.createLinearGradient(x1, y1, x2, y2);
-  gradient.addColorStop(0, hexToRgba(color1, alpha));
-  gradient.addColorStop(1, hexToRgba(color2, alpha));
-  ctx.strokeStyle = gradient;
-
-  ctx.beginPath();
-  ctx.moveTo(x1, y1);
-  ctx.quadraticCurveTo(cpx, cpy, x2, y2);
-  ctx.stroke();
-  ctx.restore();
-}
 
 export function drawOrb(ctx, x, y, radius, genreColor, peachColor = '#EEC1A2') {
   // 1. Primary gradient — genre color dissolving to transparent
@@ -211,7 +167,7 @@ export function drawArtistNode(ctx, x, y, radius, genreColor, name, years, state
     // Years below name
     if (years) {
       ctx.font = '400 10px "DM Sans", sans-serif';
-      ctx.fillStyle = '#7A6E65';
+      ctx.fillStyle = '#6B5F55';
       ctx.fillText(years, x, y + r + 22 + labelOffsetY);
     }
   }
@@ -265,7 +221,7 @@ export function drawCityGroup(ctx, x, y, city, count, radius, alpha = 1) {
 
     // Draw count (lighter)
     ctx.font = '400 11px "DM Sans", sans-serif';
-    ctx.fillStyle = '#7A6E65';
+    ctx.fillStyle = '#6B5F55';
     ctx.fillText(countStr, x - totalWidth / 2 + cityWidth + countWidth / 2, labelY);
   }
 

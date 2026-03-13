@@ -911,7 +911,7 @@ export default function CanvasOverlay({
         ctx.fillText(label, pos.x, pillY + 20);
 
         ctx.font = '400 11px "DM Sans", sans-serif';
-        ctx.fillStyle = '#7A6E65';
+        ctx.fillStyle = '#6B5F55';
         ctx.fillText(sublabel, pos.x, pillY + 36);
       }
     }

@@ -55,8 +55,7 @@ export default function GenreFilters({ activeGenres, onToggleGenre, onSelectAll,
         boxShadow: '0 1px 8px rgba(90, 80, 72, 0.08)',
         overflowX: isMobile ? 'auto' : 'visible',
         WebkitOverflowScrolling: 'touch',
-        scrollbarWidth: 'none',
-        msOverflowStyle: 'none',
+        scrollbarWidth: 'thin',
       }}
     >
       {/* All button */}
