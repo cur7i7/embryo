@@ -77,6 +77,7 @@ export default function CanvasOverlay({
 
   // --- City groups ref (rebuilt when artists change) ---
   const cityGroupsRef = useRef(new Map());
+  const cityPosMapRef = useRef(new Map()); // projected city positions for hit testing
 
   // --- Current render mode for hit testing (Task 6 will use) ---
   const renderModeRef = useRef('cluster');
@@ -415,9 +416,10 @@ export default function CanvasOverlay({
     }
 
     // --- City mode rendering ---
+    const cityPosMap = new Map();
     if (cityAlpha > 0) {
       const cityGroups = cityGroupsRef.current;
-      for (const [, group] of cityGroups) {
+      for (const [key, group] of cityGroups) {
         const point = map.project([group.lng, group.lat]);
         const { x, y } = point;
 
@@ -425,9 +427,11 @@ export default function CanvasOverlay({
         // Viewport cull
         if (x < -cityRadius || x > cssWidth + cityRadius || y < -cityRadius || y > cssHeight + cityRadius) continue;
 
+        cityPosMap.set(key, { x, y, radius: cityRadius, group });
         drawCityGroup(ctx, x, y, group.city, group.artists.length, cityRadius, cityAlpha);
       }
     }
+    cityPosMapRef.current = cityPosMap;
 
     // --- Individual mode rendering ---
     if (individualAlpha > 0) {
@@ -615,6 +619,23 @@ export default function CanvasOverlay({
     const handleMapMouseMove = (e) => {
       const mx = e.point.x;
       const my = e.point.y;
+
+      // In city mode, check city group hover for pointer cursor
+      if (renderModeRef.current === 'city') {
+        const cityPosMap = cityPosMapRef.current;
+        if (cityPosMap && cityPosMap.size > 0) {
+          for (const [, { x, y, radius }] of cityPosMap) {
+            const dx = x - mx;
+            const dy = y - my;
+            if (Math.sqrt(dx * dx + dy * dy) <= Math.max(radius, 22)) {
+              onHoverRef.current?.(null);
+              map.getCanvas().style.cursor = 'pointer';
+              return;
+            }
+          }
+        }
+      }
+
       const hit = hitTest(mx, my);
       if (hit) {
         onHoverRef.current?.(hit.artist);
@@ -629,6 +650,7 @@ export default function CanvasOverlay({
       const mx = e.point.x;
       const my = e.point.y;
       if (handleClusterClick(mx, my)) return;
+      if (handleCityClick(mx, my)) return;
       const hit = hitTest(mx, my);
       onSelectRef.current?.(hit ? hit.artist : null);
     };
@@ -669,10 +691,11 @@ export default function CanvasOverlay({
   // Hit testing: mousemove, mouseleave, click
   // -------------------------------------------------------------------
 
-  // Helper: find nearest artist in posMap within given hit radius
+  // Helper: find nearest artist in posMap within hit radius
   // Returns { artist, dist } or null
   // B8: reads from artistsRef to avoid stale closure
   const hitTest = useCallback((mx, my) => {
+    const mode = renderModeRef.current;
     const posMap = posMapRef.current;
     if (!posMap || posMap.size === 0) return null;
 
@@ -689,12 +712,20 @@ export default function CanvasOverlay({
       }
     }
 
-    // UX08: Dynamic hit radius based on rendered orb size
-    const connCount = (connectionCountsRef.current?.get(nearest)) || 0;
-    const scaleFactor = (artistsRef.current || []).filter(a => a.birth_lat != null).length > 200 ? 0.5 : 1;
-    const baseRadius = (40 + Math.min(connCount * 3, 60)) * scaleFactor;
-    const HIT_RADIUS = Math.max(20, baseRadius * 0.4);
-    if (nearestDist <= HIT_RADIUS && nearest) {
+    // Hit radius depends on render mode
+    let hitRadius;
+    if (mode === 'individual') {
+      // 22px radius = 44px touch target per WCAG
+      hitRadius = 22;
+    } else {
+      // Cluster/city mode: dynamic hit radius based on orb size
+      const connCount = (connectionCountsRef.current?.get(nearest)) || 0;
+      const scaleFactor = (artistsRef.current || []).filter(a => a.birth_lat != null).length > 200 ? 0.5 : 1;
+      const baseRadius = (40 + Math.min(connCount * 3, 60)) * scaleFactor;
+      hitRadius = Math.max(20, baseRadius * 0.4);
+    }
+
+    if (nearestDist <= hitRadius && nearest) {
       const validArtists = (artistsRef.current || []).filter(
         (a) => a.birth_lat != null && a.birth_lng != null
       );
@@ -704,13 +735,12 @@ export default function CanvasOverlay({
     return null;
   }, []);
 
-  // Handle cluster clicks when clustering is active
+  // Handle cluster clicks when in cluster mode
   const handleClusterClick = useCallback((mx, my) => {
     const map = mapRef.current?.getMap?.();
     const index = scIndexRef.current;
     if (!map || !index) return false;
 
-    // Only handle cluster clicks in cluster mode
     if (renderModeRef.current !== 'cluster') return false;
 
     const bounds = map.getBounds();
@@ -733,6 +763,27 @@ export default function CanvasOverlay({
           const expansionZoom = index.getClusterExpansionZoom(cluster.id);
           map.flyTo({ center: cluster.geometry.coordinates, zoom: expansionZoom });
         } catch (_) {}
+        return true;
+      }
+    }
+    return false;
+  }, [mapRef]);
+
+  // Handle city group clicks when in city mode → fly to zoom 13
+  const handleCityClick = useCallback((mx, my) => {
+    const map = mapRef.current?.getMap?.();
+    if (!map) return false;
+
+    if (renderModeRef.current !== 'city') return false;
+
+    const cityPosMap = cityPosMapRef.current;
+    if (!cityPosMap || cityPosMap.size === 0) return false;
+
+    for (const [, { x, y, radius, group }] of cityPosMap) {
+      const dx = x - mx;
+      const dy = y - my;
+      if (Math.sqrt(dx * dx + dy * dy) <= Math.max(radius, 22)) {
+        map.flyTo({ center: [group.lng, group.lat], zoom: 13 });
         return true;
       }
     }
