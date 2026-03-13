@@ -33,6 +33,7 @@ export default function Map({
   artists,
   connectionCounts,
   connections,
+  connectionsByArtist,
   activeConnectionTypes,
   rangeStart,
   rangeEnd,
@@ -182,6 +183,7 @@ export default function Map({
           artists={artists}
           connectionCounts={connectionCounts}
           connections={connections}
+          connectionsByArtist={connectionsByArtist}
           activeConnectionTypes={activeConnectionTypes}
           hoveredArtist={hoveredArtist}
           selectedArtist={selectedArtist}

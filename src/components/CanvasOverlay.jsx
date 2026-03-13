@@ -5,7 +5,6 @@ import {
   GENRE_COLORS,
   preRenderOrbTexture,
   createGrainTexture,
-  drawArc,
   drawArcParticle,
   drawArtistNode,
   drawCityGroup,
@@ -25,6 +24,7 @@ export default function CanvasOverlay({
   artists,
   connectionCounts,
   connections,
+  connectionsByArtist,
   activeConnectionTypes,
   hoveredArtist,
   selectedArtist,
@@ -90,6 +90,7 @@ export default function CanvasOverlay({
   const artistsRef = useRef(artists);
   const connectionCountsRef = useRef(connectionCounts);
   const connectionsRef = useRef(connections);
+  const connectionsByArtistRef = useRef(connectionsByArtist);
   const activeConnectionTypesRef = useRef(activeConnectionTypes);
   const hoveredArtistRef = useRef(hoveredArtist);
   const selectedArtistRef = useRef(selectedArtist);
@@ -104,6 +105,9 @@ export default function CanvasOverlay({
 
   // Per-artist metadata cache: Map<id, { genreBucket, genreColor, pulseHash }>
   const artistMetaRef = useRef(new Map());
+
+  // Track which connectionCounts was used for the last presorted array
+  const lastSortedCountsRef = useRef(null);
 
   // Initialize textures once on mount
   useEffect(() => {
@@ -129,7 +133,7 @@ export default function CanvasOverlay({
 
     // Read latest props from refs
     const connectionCounts = connectionCountsRef.current;
-    const connections = connectionsRef.current;
+    const connectionsByArtist = connectionsByArtistRef.current;
     const activeConnectionTypes = activeConnectionTypesRef.current;
     const hoveredArtist = hoveredArtistRef.current;
     const selectedArtist = selectedArtistRef.current;
@@ -263,16 +267,16 @@ export default function CanvasOverlay({
     }
     posMapRef.current = posMap;
 
-    // Build set of ids connected to hovered/selected artist
+    // Build set of ids connected to hovered/selected artist using indexed lookup
     const connectedIds = new Set();
-    if (activeArtist && connections && connections.length > 0) {
-      for (const conn of connections) {
-        if (conn.source_id === activeArtist.id) {
-          connectedIds.add(conn.target_id);
-        }
-        if (conn.target_id === activeArtist.id) {
-          connectedIds.add(conn.source_id);
-        }
+    const activeArtistConns = activeArtist && connectionsByArtist
+      ? (connectionsByArtist.get(activeArtist.id) || [])
+      : [];
+    for (const conn of activeArtistConns) {
+      if (conn.source_id === activeArtist.id) {
+        connectedIds.add(conn.target_id);
+      } else {
+        connectedIds.add(conn.source_id);
       }
     }
 
@@ -284,18 +288,19 @@ export default function CanvasOverlay({
 
     if (
       activeArtist &&
-      connections && connections.length > 0 &&
+      activeArtistConns.length > 0 &&
       activeConnectionTypes && activeConnectionTypes.size > 0
     ) {
-      for (const conn of connections) {
+      for (const conn of activeArtistConns) {
         const { source_id, target_id, type, confidence } = conn;
+        if (!activeConnectionTypes.has(type)) continue;
+
         const srcArtist = artistByIdRef.current.get(source_id);
         const tgtArtist = artistByIdRef.current.get(target_id);
         if (!srcArtist || !tgtArtist) continue;
         const srcPos = posMap.get(srcArtist.id);
         const tgtPos = posMap.get(tgtArtist.id);
         if (!srcPos || !tgtPos) continue;
-        if (!activeConnectionTypes.has(type)) continue;
 
         // Arc viewport culling: skip arcs where BOTH endpoints are outside canvas
         const arcPad = 100;
@@ -310,18 +315,10 @@ export default function CanvasOverlay({
         const srcColor = srcMeta?.genreColor ?? getGenreBucket(srcArtist?.genres).color;
         const tgtColor = tgtMeta?.genreColor ?? getGenreBucket(tgtArtist?.genres).color;
 
-        const isConnected =
-          conn.source_id === activeArtist.id || conn.target_id === activeArtist.id;
-
-        if (isConnected) {
-          drawArcBloomed(ctx, srcPos.x, srcPos.y, tgtPos.x, tgtPos.y, srcColor, tgtColor, type, confidence ?? 0.5);
-          // Collect for particle rendering
-          if (selectedArtist) {
-            selectedArcs.push({ srcPos, tgtPos, srcColor });
-          }
-        } else {
-          const dimmed = !!activeArtist;
-          drawArc(ctx, srcPos.x, srcPos.y, tgtPos.x, tgtPos.y, srcColor, tgtColor, type, confidence ?? 0.5, dimmed);
+        drawArcBloomed(ctx, srcPos.x, srcPos.y, tgtPos.x, tgtPos.y, srcColor, tgtColor, type, confidence ?? 0.5);
+        // Collect for particle rendering
+        if (selectedArtist) {
+          selectedArcs.push({ srcPos, tgtPos, srcColor });
         }
       }
     }
@@ -773,6 +770,7 @@ export default function CanvasOverlay({
       return bCount - aCount;
     });
     presortedArtistsRef.current = sorted;
+    lastSortedCountsRef.current = cc;
 
     // Rebuild city groups
     cityGroupsRef.current = buildCityGroups(valid);
@@ -835,16 +833,29 @@ export default function CanvasOverlay({
   useEffect(() => {
     connectionCountsRef.current = connectionCounts;
     connectionsRef.current = connections;
+    connectionsByArtistRef.current = connectionsByArtist;
     activeConnectionTypesRef.current = activeConnectionTypes;
     hoveredArtistRef.current = hoveredArtist;
     selectedArtistRef.current = selectedArtist;
     onHoverRef.current = onHover;
     onSelectRef.current = onSelect;
 
+    // Re-sort presorted artists if connectionCounts changed since last sort
+    if (connectionCounts !== lastSortedCountsRef.current && validArtistsRef.current.length > 0) {
+      const cc = connectionCounts;
+      const sorted = [...validArtistsRef.current].sort((a, b) => {
+        const aCount = (cc && cc.get(a.id)) || 0;
+        const bCount = (cc && cc.get(b.id)) || 0;
+        return bCount - aCount;
+      });
+      presortedArtistsRef.current = sorted;
+      lastSortedCountsRef.current = cc;
+    }
+
     // Trigger re-render for prop changes
     needsAnimRef.current = true;
     startRaf();
-  }, [connectionCounts, connections, activeConnectionTypes, hoveredArtist, selectedArtist, onHover, onSelect, startRaf]);
+  }, [connectionCounts, connections, connectionsByArtist, activeConnectionTypes, hoveredArtist, selectedArtist, onHover, onSelect, startRaf]);
 
   // Re-render once when tab becomes visible again (no continuous polling)
   useEffect(() => {

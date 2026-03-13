@@ -312,18 +312,28 @@ export default function App() {
     setSelectedArtist(null);
   }, []);
 
-  const filteredArtists = useMemo(() => {
+  // Pre-process artists with cached start/end years and genre buckets (O(n) once on data load)
+  const preprocessedArtists = useMemo(() => {
     if (!allArtists.length) return [];
-    return allArtists.filter((a) => {
-      const start = a.active_start ?? a.birth_year;
-      const end = a.active_end ?? a.death_year ?? 2025;
-      if (start == null) return false;
-      const inRange = start <= timeline.rangeEnd && end >= timeline.rangeStart;
-      if (!inRange) return false;
-      const { bucket } = getGenreBucket(a.genres);
-      return activeGenres.has(bucket);
-    });
-  }, [allArtists, timeline.rangeStart, timeline.rangeEnd, activeGenres]);
+    return allArtists.map((a) => ({
+      artist: a,
+      start: a.active_start ?? a.birth_year,
+      end: a.active_end ?? a.death_year ?? 2025,
+      bucket: getGenreBucket(a.genres).bucket,
+    }));
+  }, [allArtists]);
+
+  const filteredArtists = useMemo(() => {
+    if (!preprocessedArtists.length) return [];
+    const result = [];
+    for (const entry of preprocessedArtists) {
+      if (entry.start == null) continue;
+      if (entry.start > timeline.rangeEnd || entry.end < timeline.rangeStart) continue;
+      if (!activeGenres.has(entry.bucket)) continue;
+      result.push(entry.artist);
+    }
+    return result;
+  }, [preprocessedArtists, timeline.rangeStart, timeline.rangeEnd, activeGenres]);
 
   const connectionTypeCounts = useMemo(() => {
     const counts = { teacher: 0, influence: 0, peer: 0, collaboration: 0 };
@@ -401,6 +411,7 @@ export default function App() {
         artists={filteredArtists}
         connectionCounts={connectionCounts}
         connections={connections}
+        connectionsByArtist={connectionsByArtist}
         activeConnectionTypes={activeConnectionTypes}
         rangeStart={timeline.rangeStart}
         rangeEnd={timeline.rangeEnd}
