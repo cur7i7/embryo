@@ -422,7 +422,7 @@ export default function CanvasOverlay({
         const t = (currentZoom - (ZOOM_CITY - 0.5));  // 0->1
         // Codex 6.5: quadratic ease-out on the fading mode reduces double-draw overlap artifacts
         clusterAlpha = (1 - t) * (1 - t);
-        cityAlpha = t;
+        cityAlpha = 1 - clusterAlpha;
       } else if (currentZoom < ZOOM_INDIVIDUAL - 0.5) {
         cityAlpha = 1;
       } else if (currentZoom < ZOOM_INDIVIDUAL + 0.5) {
@@ -430,7 +430,7 @@ export default function CanvasOverlay({
         const t = (currentZoom - (ZOOM_INDIVIDUAL - 0.5));  // 0->1
         // Codex 6.5: quadratic ease-out on the fading mode reduces double-draw overlap artifacts
         cityAlpha = (1 - t) * (1 - t);
-        individualAlpha = t;
+        individualAlpha = 1 - cityAlpha;
       } else {
         individualAlpha = 1;
       }
@@ -881,6 +881,9 @@ export default function CanvasOverlay({
             pillY = aboveY < 10 ? belowY : aboveY;
           }
         }
+
+        // Clamp pill horizontally to viewport edges (prevents left/right clipping)
+        pillX = Math.max(10, Math.min(pillX, cssWidth - pillW - 10));
 
         ctx.fillStyle = 'rgba(250, 243, 235, 0.92)';
         ctx.beginPath();
@@ -1537,7 +1540,7 @@ export default function CanvasOverlay({
           pointerEvents: 'none',
         }}
         onFocus={(e) => {
-          e.currentTarget.style.boxShadow = 'inset 0 0 0 3px rgba(216,62,127,0.5)';
+          if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = 'inset 0 0 0 3px rgba(216,62,127,0.5)';
         }}
         onBlur={(e) => {
           e.currentTarget.style.boxShadow = 'none';
