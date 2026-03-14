@@ -1,8 +1,14 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { Map as MapGL } from 'react-map-gl/maplibre';
+import { Source, Layer } from 'react-map-gl/maplibre';
 import ArtistCount from './ArtistCount.jsx';
-import CanvasOverlay from './CanvasOverlay.jsx';
-import { useIsPointerFine } from '../hooks/useIsPointerFine.js';
+import ArcOverlay from './ArcOverlay.jsx';
+import {
+  artistsToGeoJSON,
+  clusterProperties,
+  buildDominantGenreColorExpression,
+  individualColorExpression,
+} from '../utils/geoJsonSource.js';
 
 const mapStyle = {
   version: 8,
@@ -29,15 +35,117 @@ const mapStyle = {
   ],
 };
 
+const clusterCircleLayer = {
+  id: 'clusters',
+  type: 'circle',
+  source: 'artists',
+  filter: ['has', 'point_count'],
+  paint: {
+    'circle-color': buildDominantGenreColorExpression(),
+    'circle-radius': [
+      'step',
+      ['get', 'point_count'],
+      12,
+      10, 16,
+      50, 22,
+      200, 30,
+      1000, 40,
+    ],
+    'circle-opacity': 0.7,
+    'circle-stroke-width': 1.5,
+    'circle-stroke-color': buildDominantGenreColorExpression(),
+    'circle-stroke-opacity': 0.9,
+  },
+};
+
+const clusterCountLayer = {
+  id: 'cluster-count',
+  type: 'symbol',
+  source: 'artists',
+  filter: ['has', 'point_count'],
+  layout: {
+    'text-field': '{point_count_abbreviated}',
+    'text-font': ['Noto Sans Regular'],
+    'text-size': [
+      'step',
+      ['get', 'point_count'],
+      11,
+      100, 13,
+      1000, 15,
+    ],
+    'text-allow-overlap': true,
+  },
+  paint: {
+    'text-color': '#FFFFFF',
+    'text-halo-color': 'rgba(0,0,0,0.4)',
+    'text-halo-width': 1.5,
+  },
+};
+
+const unclusteredPointLayer = {
+  id: 'unclustered-point',
+  type: 'circle',
+  source: 'artists',
+  filter: ['!', ['has', 'point_count']],
+  paint: {
+    'circle-color': individualColorExpression,
+    'circle-radius': [
+      'interpolate', ['linear'], ['zoom'],
+      5, 4,
+      8, 7,
+      12, 12,
+    ],
+    'circle-opacity': 0.7,
+    'circle-stroke-width': 1.5,
+    'circle-stroke-color': individualColorExpression,
+    'circle-stroke-opacity': 0.9,
+  },
+};
+
+const unclusteredLabelLayer = {
+  id: 'unclustered-label',
+  type: 'symbol',
+  source: 'artists',
+  filter: ['!', ['has', 'point_count']],
+  minzoom: 10,
+  layout: {
+    'text-field': ['get', 'name'],
+    'text-font': ['Noto Sans Regular'],
+    'text-size': 11,
+    'text-offset': [0, 1.5],
+    'text-anchor': 'top',
+    'text-max-width': 10,
+    'text-optional': true,
+  },
+  paint: {
+    'text-color': '#3E3530',
+    'text-halo-color': 'rgba(250, 243, 235, 0.85)',
+    'text-halo-width': 1.5,
+  },
+};
+
+const selectedArtistLayer = {
+  id: 'selected-artist',
+  type: 'circle',
+  source: 'artists',
+  filter: ['==', ['get', 'artistId'], ''],  // empty filter, updated dynamically
+  paint: {
+    'circle-color': individualColorExpression,
+    'circle-radius': 16,
+    'circle-opacity': 0.9,
+    'circle-stroke-width': 3,
+    'circle-stroke-color': '#FAF3EB',
+    'circle-stroke-opacity': 1,
+  },
+};
+
 export default function Map({
   mapRef,
   artists,
-  connectionCounts,
   connectionsByArtist,
   activeConnectionTypes,
   rangeStart,
   rangeEnd,
-  hoveredArtist,
   selectedArtist,
   onHover,
   onHoverPosition,
@@ -47,13 +155,101 @@ export default function Map({
   initialZoom = 2,
 }) {
   const [mapLoaded, setMapLoaded] = useState(false);
-  const isFinePointer = useIsPointerFine();
+  const [cursor, setCursor] = useState('auto');
 
   const handleMapLoad = useCallback(() => {
     setMapLoaded(true);
   }, []);
 
   const visibleCount = useMemo(() => (artists || []).length, [artists]);
+
+  const artistById = useMemo(() => {
+    const lookup = new window.Map();
+    for (const a of (artists || [])) lookup.set(a.id, a);
+    return lookup;
+  }, [artists]);
+
+  const onClick = useCallback(
+    async (event) => {
+      const feature = event.features?.[0];
+      if (!feature) return;
+
+      // Cluster click → zoom in
+      if (feature.properties.cluster) {
+        const map = mapRef.current?.getMap();
+        if (!map) return;
+        const source = map.getSource('artists');
+        const zoom = await source.getClusterExpansionZoom(feature.properties.cluster_id);
+        map.easeTo({
+          center: feature.geometry.coordinates,
+          zoom: Math.min(zoom, 16),
+          duration: 500,
+        });
+        return;
+      }
+
+      // Individual artist click → select
+      const artist = artistById.get(feature.properties.artistId);
+      if (artist) {
+        onSelect(artist);
+        const map = mapRef.current?.getMap();
+        if (map) {
+          map.easeTo({
+            center: [artist.birth_lng, artist.birth_lat],
+            zoom: Math.max(map.getZoom(), 10),
+            duration: 500,
+          });
+        }
+      }
+    },
+    [artistById, onSelect, mapRef]
+  );
+
+  const onMouseMove = useCallback(
+    (event) => {
+      const feature = event.features?.[0];
+      if (!feature) {
+        onHover(null);
+        setCursor('auto');
+        return;
+      }
+
+      if (feature.properties.cluster) {
+        setCursor('pointer');
+        onHover(null);
+        return;
+      }
+
+      const artist = artistById.get(feature.properties.artistId);
+      if (artist) {
+        onHover(artist);
+        onHoverPosition({ x: event.point.x, y: event.point.y });
+        setCursor('pointer');
+      }
+    },
+    [artistById, onHover, onHoverPosition]
+  );
+
+  const onMouseLeave = useCallback(() => {
+    onHover(null);
+    setCursor('auto');
+  }, [onHover]);
+
+  useEffect(() => {
+    const map = mapRef.current?.getMap();
+    if (!map || !map.getLayer('selected-artist')) return;
+
+    if (selectedArtist) {
+      map.setFilter('selected-artist', ['==', ['get', 'artistId'], selectedArtist.id]);
+    } else {
+      map.setFilter('selected-artist', ['==', ['get', 'artistId'], '']);
+    }
+  }, [selectedArtist, mapRef]);
+
+  const geojsonData = useMemo(
+    () => artistsToGeoJSON(artists || []),
+    [artists]
+  );
 
   return (
     <div role="application" aria-label="Interactive world map showing artists from 1400 to 2025. Use search or timeline to explore." style={{ width: '100vw', minHeight: '100vh', height: '100dvh', backgroundColor: '#FAF3EB', position: 'relative' }}>
@@ -181,20 +377,37 @@ export default function Map({
         style={{ width: '100%', height: '100%' }}
         mapStyle={mapStyle}
         onLoad={handleMapLoad}
-      />
-      {mapLoaded && (
-        <CanvasOverlay
+        interactiveLayerIds={['clusters', 'unclustered-point']}
+        onClick={onClick}
+        onMouseMove={onMouseMove}
+        onMouseLeave={onMouseLeave}
+        cursor={cursor}
+      >
+        {mapLoaded && geojsonData.features.length > 0 && (
+          <Source
+            id="artists"
+            type="geojson"
+            data={geojsonData}
+            cluster={true}
+            clusterRadius={60}
+            clusterMaxZoom={14}
+            clusterProperties={clusterProperties}
+          >
+            <Layer {...clusterCircleLayer} />
+            <Layer {...clusterCountLayer} />
+            <Layer {...unclusteredPointLayer} />
+            <Layer {...unclusteredLabelLayer} />
+            <Layer {...selectedArtistLayer} />
+          </Source>
+        )}
+      </MapGL>
+      {mapLoaded && selectedArtist && (
+        <ArcOverlay
           mapRef={mapRef}
-          artists={artists}
-          connectionCounts={connectionCounts}
+          selectedArtist={selectedArtist}
           connectionsByArtist={connectionsByArtist}
           activeConnectionTypes={activeConnectionTypes}
-          hoveredArtist={hoveredArtist}
-          selectedArtist={selectedArtist}
-          onHover={onHover}
-          onHoverPosition={onHoverPosition}
-          onSelect={onSelect}
-          isFinePointer={isFinePointer}
+          artists={artists}
         />
       )}
       <ArtistCount
