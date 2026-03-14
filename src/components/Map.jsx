@@ -4,7 +4,7 @@ import { Source, Layer } from 'react-map-gl/maplibre';
 import ArtistCount from './ArtistCount.jsx';
 import ArcOverlay from './ArcOverlay.jsx';
 import { artistsByGenreBucket } from '../utils/geoJsonSource.js';
-import { GENRE_BUCKETS } from '../utils/genres.js';
+import { GENRE_BUCKETS, getTextColorForBg } from '../utils/genres.js';
 
 const mapStyle = {
   version: 8,
@@ -54,7 +54,7 @@ function makeClusterCircleLayer(sourceId, color) {
   };
 }
 
-function makeClusterCountLayer(sourceId) {
+function makeClusterCountLayer(sourceId, textColor = '#FFFFFF') {
   return {
     id: `${sourceId}-cluster-count`,
     type: 'symbol',
@@ -72,8 +72,8 @@ function makeClusterCountLayer(sourceId) {
       'text-allow-overlap': true,
     },
     paint: {
-      'text-color': '#FFFFFF',
-      'text-halo-color': 'rgba(0,0,0,0.4)',
+      'text-color': textColor,
+      'text-halo-color': textColor === '#1A1512' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)',
       'text-halo-width': 1.5,
     },
   };
@@ -453,6 +453,7 @@ export default function Map({
         {mapLoaded && genreBuckets.map(({ key, color, geojson }) => {
           if (geojson.features.length === 0) return null;
           const srcId = `genre-${key}`;
+          const textColor = getTextColorForBg(color);
           return (
             <Source
               key={srcId}
@@ -464,7 +465,7 @@ export default function Map({
               clusterMaxZoom={14}
             >
               <Layer {...makeClusterCircleLayer(srcId, color)} />
-              <Layer {...makeClusterCountLayer(srcId)} />
+              <Layer {...makeClusterCountLayer(srcId, textColor)} />
               <Layer {...makeUnclusteredPointLayer(srcId, color)} />
               <Layer {...makeUnclusteredLabelLayer(srcId)} />
               <Layer {...makeSelectedArtistLayer(srcId, color)} />
