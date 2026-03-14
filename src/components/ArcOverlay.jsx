@@ -50,7 +50,7 @@ export default function ArcOverlay({
       if (!activeConnectionTypes.has(conn.type)) continue;
       const targetId = conn.source_id === selectedArtist.id ? conn.target_id : conn.source_id;
       const target = artistById.current.get(targetId);
-      if (!target || !target.birth_lng || !target.birth_lat) continue;
+      if (!target || target.birth_lng == null || target.birth_lat == null) continue;
 
       const tgtPt = map.project([target.birth_lng, target.birth_lat]);
       const x1 = srcPt.x, y1 = srcPt.y, x2 = tgtPt.x, y2 = tgtPt.y;

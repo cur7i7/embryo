@@ -32,7 +32,7 @@ function ArtistCount({ count, rangeStart, rangeEnd, isPlaying = false }) {
     <div
       style={{
         position: 'absolute',
-        top: 'calc(56px + env(safe-area-inset-top))',
+        top: 'calc(66px + env(safe-area-inset-top))',
         left: 'calc(16px + env(safe-area-inset-left))',
         zIndex: 10,
         backgroundColor: 'rgba(250, 243, 235, 0.88)',

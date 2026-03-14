@@ -3,12 +3,8 @@ import { Map as MapGL } from 'react-map-gl/maplibre';
 import { Source, Layer } from 'react-map-gl/maplibre';
 import ArtistCount from './ArtistCount.jsx';
 import ArcOverlay from './ArcOverlay.jsx';
-import {
-  artistsToGeoJSON,
-  clusterProperties,
-  buildDominantGenreColorExpression,
-  individualColorExpression,
-} from '../utils/geoJsonSource.js';
+import { artistsByGenreBucket } from '../utils/geoJsonSource.js';
+import { GENRE_BUCKETS } from '../utils/genres.js';
 
 const mapStyle = {
   version: 8,
@@ -35,109 +31,124 @@ const mapStyle = {
   ],
 };
 
-const clusterCircleLayer = {
-  id: 'clusters',
-  type: 'circle',
-  source: 'artists',
-  filter: ['has', 'point_count'],
-  paint: {
-    'circle-color': buildDominantGenreColorExpression(),
-    'circle-radius': [
-      'step',
-      ['get', 'point_count'],
-      12,
-      10, 16,
-      50, 22,
-      200, 30,
-      1000, 40,
-    ],
-    'circle-opacity': 0.7,
-    'circle-stroke-width': 1.5,
-    'circle-stroke-color': buildDominantGenreColorExpression(),
-    'circle-stroke-opacity': 0.9,
-  },
-};
+// Layer factories — one set per genre bucket source
+function makeClusterCircleLayer(sourceId, color) {
+  return {
+    id: `${sourceId}-clusters`,
+    type: 'circle',
+    source: sourceId,
+    filter: ['has', 'point_count'],
+    paint: {
+      'circle-color': color,
+      'circle-radius': [
+        'interpolate', ['linear'], ['zoom'],
+        0, ['step', ['get', 'point_count'], 3, 10, 4, 50, 5, 200, 7],
+        5, ['step', ['get', 'point_count'], 5, 10, 7, 50, 9, 200, 12],
+        10, ['step', ['get', 'point_count'], 10, 10, 13, 50, 17, 200, 22],
+      ],
+      'circle-opacity': 0.75,
+      'circle-stroke-width': 1.5,
+      'circle-stroke-color': color,
+      'circle-stroke-opacity': 0.9,
+    },
+  };
+}
 
-const clusterCountLayer = {
-  id: 'cluster-count',
-  type: 'symbol',
-  source: 'artists',
-  filter: ['has', 'point_count'],
-  layout: {
-    'text-field': '{point_count_abbreviated}',
-    'text-font': ['Noto Sans Regular'],
-    'text-size': [
-      'step',
-      ['get', 'point_count'],
-      11,
-      100, 13,
-      1000, 15,
-    ],
-    'text-allow-overlap': true,
-  },
-  paint: {
-    'text-color': '#FFFFFF',
-    'text-halo-color': 'rgba(0,0,0,0.4)',
-    'text-halo-width': 1.5,
-  },
-};
+function makeClusterCountLayer(sourceId) {
+  return {
+    id: `${sourceId}-cluster-count`,
+    type: 'symbol',
+    source: sourceId,
+    filter: ['has', 'point_count'],
+    minzoom: 5,
+    layout: {
+      'text-field': '{point_count_abbreviated}',
+      'text-font': ['Noto Sans Regular'],
+      'text-size': [
+        'interpolate', ['linear'], ['zoom'],
+        5, ['step', ['get', 'point_count'], 8, 50, 9, 500, 10],
+        10, ['step', ['get', 'point_count'], 10, 50, 12, 500, 14],
+      ],
+      'text-allow-overlap': true,
+    },
+    paint: {
+      'text-color': '#FFFFFF',
+      'text-halo-color': 'rgba(0,0,0,0.4)',
+      'text-halo-width': 1.5,
+    },
+  };
+}
 
-const unclusteredPointLayer = {
-  id: 'unclustered-point',
-  type: 'circle',
-  source: 'artists',
-  filter: ['!', ['has', 'point_count']],
-  paint: {
-    'circle-color': individualColorExpression,
-    'circle-radius': [
-      'interpolate', ['linear'], ['zoom'],
-      5, 4,
-      8, 7,
-      12, 12,
-    ],
-    'circle-opacity': 0.7,
-    'circle-stroke-width': 1.5,
-    'circle-stroke-color': individualColorExpression,
-    'circle-stroke-opacity': 0.9,
-  },
-};
+function makeUnclusteredPointLayer(sourceId, color) {
+  return {
+    id: `${sourceId}-point`,
+    type: 'circle',
+    source: sourceId,
+    filter: ['!', ['has', 'point_count']],
+    paint: {
+      'circle-color': color,
+      'circle-radius': [
+        'interpolate', ['linear'], ['zoom'],
+        0, 1.5,
+        5, 3,
+        10, 7,
+        14, 12,
+      ],
+      'circle-opacity': 0.75,
+      'circle-stroke-width': 1,
+      'circle-stroke-color': color,
+      'circle-stroke-opacity': 0.9,
+    },
+  };
+}
 
-const unclusteredLabelLayer = {
-  id: 'unclustered-label',
-  type: 'symbol',
-  source: 'artists',
-  filter: ['!', ['has', 'point_count']],
-  minzoom: 10,
-  layout: {
-    'text-field': ['get', 'name'],
-    'text-font': ['Noto Sans Regular'],
-    'text-size': 11,
-    'text-offset': [0, 1.5],
-    'text-anchor': 'top',
-    'text-max-width': 10,
-    'text-optional': true,
-  },
-  paint: {
-    'text-color': '#3E3530',
-    'text-halo-color': 'rgba(250, 243, 235, 0.85)',
-    'text-halo-width': 1.5,
-  },
-};
+function makeUnclusteredLabelLayer(sourceId) {
+  return {
+    id: `${sourceId}-label`,
+    type: 'symbol',
+    source: sourceId,
+    filter: ['!', ['has', 'point_count']],
+    minzoom: 10,
+    layout: {
+      'text-field': ['get', 'name'],
+      'text-font': ['Noto Sans Regular'],
+      'text-size': 11,
+      'text-offset': [0, 1.5],
+      'text-anchor': 'top',
+      'text-max-width': 10,
+      'text-optional': true,
+    },
+    paint: {
+      'text-color': '#3E3530',
+      'text-halo-color': 'rgba(250, 243, 235, 0.85)',
+      'text-halo-width': 1.5,
+    },
+  };
+}
 
-const selectedArtistLayer = {
-  id: 'selected-artist',
-  type: 'circle',
-  source: 'artists',
-  filter: ['==', ['get', 'artistId'], ''],  // empty filter, updated dynamically
-  paint: {
-    'circle-color': individualColorExpression,
-    'circle-radius': 16,
-    'circle-opacity': 0.9,
-    'circle-stroke-width': 3,
-    'circle-stroke-color': '#FAF3EB',
-    'circle-stroke-opacity': 1,
-  },
-};
+function makeSelectedArtistLayer(sourceId, color) {
+  return {
+    id: `${sourceId}-selected`,
+    type: 'circle',
+    source: sourceId,
+    filter: ['==', ['get', 'artistId'], ''],
+    paint: {
+      'circle-color': color,
+      'circle-radius': [
+        'interpolate', ['linear'], ['zoom'],
+        0, 4,
+        5, 7,
+        10, 12,
+      ],
+      'circle-opacity': 0.9,
+      'circle-stroke-width': 3,
+      'circle-stroke-color': '#FAF3EB',
+      'circle-stroke-opacity': 1,
+    },
+  };
+}
+
+const BUCKET_KEYS = Object.keys(GENRE_BUCKETS);
 
 export default function Map({
   mapRef,
@@ -155,10 +166,15 @@ export default function Map({
   initialZoom = 2,
 }) {
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [mapError, setMapError] = useState(null);
   const [cursor, setCursor] = useState('auto');
 
   const handleMapLoad = useCallback(() => {
     setMapLoaded(true);
+  }, []);
+
+  const handleMapError = useCallback((e) => {
+    setMapError(e?.error?.message || 'Map failed to load');
   }, []);
 
   const visibleCount = useMemo(() => (artists || []).length, [artists]);
@@ -171,18 +187,46 @@ export default function Map({
 
   const onClick = useCallback(
     async (event) => {
-      const feature = event.features?.[0];
-      if (!feature) return;
+      const features = event.features || [];
+      if (features.length === 0) return;
+
+      // With multiple genre sources, pick the feature closest to the click.
+      // Priority: label layers > point layers > cluster layers.
+      // Labels carry the artist's name so clicking one should select that artist.
+      const clickLng = event.lngLat.lng;
+      const clickLat = event.lngLat.lat;
+      const distTo = (f) => {
+        const [lng, lat] = f.geometry.coordinates;
+        return (lng - clickLng) ** 2 + (lat - clickLat) ** 2;
+      };
+
+      const labels = features.filter((f) => !f.properties.cluster && f.layer?.id?.endsWith('-label'));
+      const points = features.filter((f) => !f.properties.cluster && !f.layer?.id?.endsWith('-label'));
+      const clusters = features.filter((f) => f.properties.cluster);
+
+      const pickClosest = (arr) => arr.reduce((a, b) => distTo(a) < distTo(b) ? a : b);
+
+      let feature;
+      if (labels.length > 0) {
+        feature = pickClosest(labels);
+      } else if (points.length > 0) {
+        feature = pickClosest(points);
+      } else if (clusters.length > 0) {
+        feature = pickClosest(clusters);
+      } else {
+        return;
+      }
 
       // Cluster click → zoom in
       if (feature.properties.cluster) {
         const map = mapRef.current?.getMap();
         if (!map) return;
-        const source = map.getSource('artists');
+        const source = map.getSource(feature.source);
+        if (!source) return;
         const zoom = await source.getClusterExpansionZoom(feature.properties.cluster_id);
         map.easeTo({
           center: feature.geometry.coordinates,
-          zoom: Math.min(zoom, 16),
+          zoom: Math.min(zoom, 18),
           duration: 500,
         });
         return;
@@ -207,12 +251,16 @@ export default function Map({
 
   const onMouseMove = useCallback(
     (event) => {
-      const feature = event.features?.[0];
-      if (!feature) {
+      const features = event.features || [];
+      if (features.length === 0) {
         onHover(null);
         setCursor('auto');
         return;
       }
+
+      // Prefer points over clusters, pick closest to cursor
+      const points = features.filter((f) => !f.properties.cluster);
+      const feature = points.length > 0 ? points[0] : features[0];
 
       if (feature.properties.cluster) {
         setCursor('pointer');
@@ -237,18 +285,27 @@ export default function Map({
 
   useEffect(() => {
     const map = mapRef.current?.getMap();
-    if (!map || !map.getLayer('selected-artist')) return;
+    if (!map) return;
 
-    if (selectedArtist) {
-      map.setFilter('selected-artist', ['==', ['get', 'artistId'], selectedArtist.id]);
-    } else {
-      map.setFilter('selected-artist', ['==', ['get', 'artistId'], '']);
+    for (const key of BUCKET_KEYS) {
+      const layerId = `genre-${key}-selected`;
+      if (!map.getLayer(layerId)) continue;
+      if (selectedArtist) {
+        map.setFilter(layerId, ['==', ['get', 'artistId'], selectedArtist.id]);
+      } else {
+        map.setFilter(layerId, ['==', ['get', 'artistId'], '']);
+      }
     }
   }, [selectedArtist, mapRef]);
 
-  const geojsonData = useMemo(
-    () => artistsToGeoJSON(artists || []),
+  const genreBuckets = useMemo(
+    () => artistsByGenreBucket(artists || []),
     [artists]
+  );
+
+  const interactiveLayerIds = useMemo(
+    () => BUCKET_KEYS.flatMap((key) => [`genre-${key}-clusters`, `genre-${key}-point`, `genre-${key}-label`]),
+    []
   );
 
   return (
@@ -257,7 +314,7 @@ export default function Map({
         href="#timeline-controls"
         onClick={(e) => {
           e.preventDefault();
-          document.querySelector('[role="slider"]')?.focus();
+          (document.querySelector('[role="slider"]') || document.getElementById('timeline-controls'))?.focus();
         }}
         style={{
           position: 'absolute',
@@ -294,7 +351,7 @@ export default function Map({
         href="#search-input"
         onClick={(e) => {
           e.preventDefault();
-          document.querySelector('input[type="search"]')?.focus();
+          document.getElementById('search-input')?.focus();
         }}
         style={{
           position: 'absolute',
@@ -333,6 +390,7 @@ export default function Map({
           e.preventDefault();
           // Try the genre filter group first; fall back to the mobile Filters toggle button
           const target = document.querySelector('[role="group"][aria-label="Filter by genre"] button')
+            || document.querySelector('[aria-expanded][aria-label*="ilter"], button[aria-expanded]')
             || document.getElementById('genre-filters');
           target?.focus();
         }}
@@ -367,6 +425,14 @@ export default function Map({
       >
         Skip to genre filters
       </a>
+      {mapError && (
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 5, fontFamily: '"DM Sans", sans-serif', color: '#3E3530', textAlign: 'center', padding: 32 }}>
+          <div>
+            <p style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>Map could not load</p>
+            <p style={{ fontSize: 14, color: '#6B5F55' }}>Your browser may not support WebGL. Try a different browser or enable hardware acceleration.</p>
+          </div>
+        </div>
+      )}
       <MapGL
         ref={mapRef}
         initialViewState={{
@@ -377,29 +443,34 @@ export default function Map({
         style={{ width: '100%', height: '100%' }}
         mapStyle={mapStyle}
         onLoad={handleMapLoad}
-        interactiveLayerIds={['clusters', 'unclustered-point']}
+        onError={handleMapError}
+        interactiveLayerIds={interactiveLayerIds}
         onClick={onClick}
         onMouseMove={onMouseMove}
         onMouseLeave={onMouseLeave}
         cursor={cursor}
       >
-        {mapLoaded && geojsonData.features.length > 0 && (
-          <Source
-            id="artists"
-            type="geojson"
-            data={geojsonData}
-            cluster={true}
-            clusterRadius={60}
-            clusterMaxZoom={14}
-            clusterProperties={clusterProperties}
-          >
-            <Layer {...clusterCircleLayer} />
-            <Layer {...clusterCountLayer} />
-            <Layer {...unclusteredPointLayer} />
-            <Layer {...unclusteredLabelLayer} />
-            <Layer {...selectedArtistLayer} />
-          </Source>
-        )}
+        {mapLoaded && genreBuckets.map(({ key, color, geojson }) => {
+          if (geojson.features.length === 0) return null;
+          const srcId = `genre-${key}`;
+          return (
+            <Source
+              key={srcId}
+              id={srcId}
+              type="geojson"
+              data={geojson}
+              cluster={true}
+              clusterRadius={55}
+              clusterMaxZoom={14}
+            >
+              <Layer {...makeClusterCircleLayer(srcId, color)} />
+              <Layer {...makeClusterCountLayer(srcId)} />
+              <Layer {...makeUnclusteredPointLayer(srcId, color)} />
+              <Layer {...makeUnclusteredLabelLayer(srcId)} />
+              <Layer {...makeSelectedArtistLayer(srcId, color)} />
+            </Source>
+          );
+        })}
       </MapGL>
       {mapLoaded && selectedArtist && (
         <ArcOverlay

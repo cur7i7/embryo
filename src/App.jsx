@@ -104,10 +104,9 @@ function timelineReducer(state, action) {
 // ---------------------------------------------------------------------------
 // Hooks
 // ---------------------------------------------------------------------------
-// Fix #56: Raised base breakpoint from 768→900 so tablets in portrait (768px)
-// get the desktop layout.
-// Fix #24: 1024px landscape touch devices (iPad landscape) now get desktop layout.
-// Only portrait touch devices ≤1024px get mobile.
+// Mobile breakpoint: ≤900px is always mobile.
+// Touch devices 901–1024px: portrait=mobile, landscape=desktop.
+// Touch ≥1024px landscape: desktop.
 function useIsMobile(breakpoint = 900) {
   const check = () => {
     const w = window.innerWidth;
@@ -543,6 +542,7 @@ export default function App() {
     const result = [];
     for (const entry of preprocessedArtists) {
       if (entry.start == null) continue;
+      if (!entry.artist._hasCoords) continue;
       if (entry.start > timeline.rangeEnd || entry.end < timeline.rangeStart) continue;
       if (!activeGenres.has(entry.bucket)) continue;
       result.push(entry.artist);

@@ -17,7 +17,7 @@ function getInitialCollapsed() {
 }
 
 function GenreLegend({ isMobile = false }) {
-  const [collapsed, setCollapsed] = useState(getInitialCollapsed);
+  const [collapsed, setCollapsed] = useState(() => isMobile || getInitialCollapsed());
 
   const toggleCollapsed = useCallback(() => {
     setCollapsed(prev => {

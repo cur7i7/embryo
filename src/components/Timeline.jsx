@@ -698,11 +698,11 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
             >
               <div
                 style={{
-                  width: '12px',
+                  width: '4px',
                   height: '100%',
                   backgroundColor: '#C4366F',
-                  borderRadius: '6px',
-                  boxShadow: '0 1px 4px rgba(216, 62, 127, 0.5), 0 0 0 1px rgba(216, 62, 127, 0.25)',
+                  borderRadius: '2px',
+                  boxShadow: '0 0 3px rgba(216, 62, 127, 0.4)',
                 }}
               />
             </div>
@@ -746,11 +746,11 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
             >
               <div
                 style={{
-                  width: 12,
+                  width: 4,
                   height: '100%',
                   backgroundColor: '#D4295E',
-                  borderRadius: 6,
-                  boxShadow: '0 1px 4px rgba(212, 41, 94, 0.5), 0 0 0 1px rgba(212, 41, 94, 0.25)',
+                  borderRadius: 2,
+                  boxShadow: '0 0 3px rgba(212, 41, 94, 0.4)',
                 }}
               />
             </div>
@@ -829,8 +829,8 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                 autoFocus
                 aria-label="Set start year"
                 style={{
-                  position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${leftPercent / 100} - 30px)`,
-                  bottom: 0, width: 56, minHeight: 44, padding: '0 4px', // Fix #20: bottom:0 keeps within bounds, Fix #39: removed dead height:24
+                  position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${leftPercent / 100} + 10px)`,
+                  bottom: 0, width: 56, minHeight: 44, padding: '0 4px',
                   fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
                   color: '#C4326B', backgroundColor: 'rgba(250,243,235,0.95)',
                   border: '1px solid #C4326B', borderRadius: 4, textAlign: 'center', outline: 'none',
@@ -842,11 +842,11 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                 onClick={() => { setStartInput(String(rangeStart)); setEditingStart(true); }}
                 aria-label={`Start year: ${rangeStart}. Click to edit`}
                 style={{
-                  position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${leftPercent / 100} - 20px)`,
-                  bottom: 0, background: 'none', border: 'none', cursor: 'pointer', // Fix #20: bottom:0
+                  position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${leftPercent / 100} + 10px)`,
+                  bottom: 0, background: 'none', border: 'none', cursor: 'pointer',
                   fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
-                  color: '#C4326B', padding: '2px 4px', minHeight: 44, display: 'flex', alignItems: 'center',
-                  borderBottom: '1px dashed rgba(196,50,107,0.4)', // Fix #18: visual affordance
+                  color: '#C4326B', padding: '2px 4px', minHeight: 44, minWidth: 44, display: 'flex', alignItems: 'center',
+                  borderBottom: '1px dashed rgba(196,50,107,0.4)',
                   outline: 'none',
                 }}
                 onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 2px rgba(196,50,107,0.4)'; }}
@@ -887,8 +887,8 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                 autoFocus
                 aria-label="Set end year"
                 style={{
-                  position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${rightPercent / 100} - 30px)`,
-                  bottom: 0, width: 56, minHeight: 44, padding: '0 4px', // Fix #20: bottom:0, Fix #39: removed dead height:24
+                  position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${rightPercent / 100} - 66px)`,
+                  bottom: 0, width: 56, minHeight: 44, padding: '0 4px',
                   fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
                   color: '#C4326B', backgroundColor: 'rgba(250,243,235,0.95)',
                   border: '1px solid #C4326B', borderRadius: 4, textAlign: 'center', outline: 'none',
@@ -900,11 +900,11 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                 onClick={() => { setEndInput(String(rangeEnd)); setEditingEnd(true); }}
                 aria-label={`End year: ${rangeEnd}. Click to edit`}
                 style={{
-                  position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${rightPercent / 100} - 20px)`,
-                  bottom: 0, background: 'none', border: 'none', cursor: 'pointer', // Fix #20: bottom:0
+                  position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${rightPercent / 100} - 50px)`,
+                  bottom: 0, background: 'none', border: 'none', cursor: 'pointer',
                   fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
-                  color: '#C4326B', padding: '2px 4px', minHeight: 44, display: 'flex', alignItems: 'center',
-                  borderBottom: '1px dashed rgba(196,50,107,0.4)', // Fix #18: visual affordance
+                  color: '#C4326B', padding: '2px 4px', minHeight: 44, minWidth: 44, display: 'flex', alignItems: 'center',
+                  borderBottom: '1px dashed rgba(196,50,107,0.4)',
                   outline: 'none',
                 }}
                 onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 2px rgba(196,50,107,0.4)'; }}
