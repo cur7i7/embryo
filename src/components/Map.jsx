@@ -1,8 +1,15 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { Map as MapGL } from 'react-map-gl/maplibre';
+import { Source, Layer } from 'react-map-gl/maplibre';
 import ArtistCount from './ArtistCount.jsx';
 import CanvasOverlay from './CanvasOverlay.jsx';
 import { useIsPointerFine } from '../hooks/useIsPointerFine.js';
+import {
+  artistsToGeoJSON,
+  clusterProperties,
+  buildDominantGenreColorExpression,
+  individualColorExpression,
+} from '../utils/geoJsonSource.js';
 
 const mapStyle = {
   version: 8,
@@ -27,6 +34,95 @@ const mapStyle = {
       },
     },
   ],
+};
+
+const clusterCircleLayer = {
+  id: 'clusters',
+  type: 'circle',
+  source: 'artists',
+  filter: ['has', 'point_count'],
+  paint: {
+    'circle-color': buildDominantGenreColorExpression(),
+    'circle-radius': [
+      'step',
+      ['get', 'point_count'],
+      12,
+      10, 16,
+      50, 22,
+      200, 30,
+      1000, 40,
+    ],
+    'circle-opacity': 0.7,
+    'circle-stroke-width': 1.5,
+    'circle-stroke-color': buildDominantGenreColorExpression(),
+    'circle-stroke-opacity': 0.9,
+  },
+};
+
+const clusterCountLayer = {
+  id: 'cluster-count',
+  type: 'symbol',
+  source: 'artists',
+  filter: ['has', 'point_count'],
+  layout: {
+    'text-field': '{point_count_abbreviated}',
+    'text-font': ['Noto Sans Regular'],
+    'text-size': [
+      'step',
+      ['get', 'point_count'],
+      11,
+      100, 13,
+      1000, 15,
+    ],
+    'text-allow-overlap': true,
+  },
+  paint: {
+    'text-color': '#FFFFFF',
+    'text-halo-color': 'rgba(0,0,0,0.4)',
+    'text-halo-width': 1.5,
+  },
+};
+
+const unclusteredPointLayer = {
+  id: 'unclustered-point',
+  type: 'circle',
+  source: 'artists',
+  filter: ['!', ['has', 'point_count']],
+  paint: {
+    'circle-color': individualColorExpression,
+    'circle-radius': [
+      'interpolate', ['linear'], ['zoom'],
+      5, 4,
+      8, 7,
+      12, 12,
+    ],
+    'circle-opacity': 0.7,
+    'circle-stroke-width': 1.5,
+    'circle-stroke-color': individualColorExpression,
+    'circle-stroke-opacity': 0.9,
+  },
+};
+
+const unclusteredLabelLayer = {
+  id: 'unclustered-label',
+  type: 'symbol',
+  source: 'artists',
+  filter: ['!', ['has', 'point_count']],
+  minzoom: 10,
+  layout: {
+    'text-field': ['get', 'name'],
+    'text-font': ['Noto Sans Regular'],
+    'text-size': 11,
+    'text-offset': [0, 1.5],
+    'text-anchor': 'top',
+    'text-max-width': 10,
+    'text-optional': true,
+  },
+  paint: {
+    'text-color': '#3E3530',
+    'text-halo-color': 'rgba(250, 243, 235, 0.85)',
+    'text-halo-width': 1.5,
+  },
 };
 
 export default function Map({
@@ -54,6 +150,11 @@ export default function Map({
   }, []);
 
   const visibleCount = useMemo(() => (artists || []).length, [artists]);
+
+  const geojsonData = useMemo(
+    () => artistsToGeoJSON(artists || []),
+    [artists]
+  );
 
   return (
     <div role="application" aria-label="Interactive world map showing artists from 1400 to 2025. Use search or timeline to explore." style={{ width: '100vw', minHeight: '100vh', height: '100dvh', backgroundColor: '#FAF3EB', position: 'relative' }}>
@@ -181,7 +282,25 @@ export default function Map({
         style={{ width: '100%', height: '100%' }}
         mapStyle={mapStyle}
         onLoad={handleMapLoad}
-      />
+        interactiveLayerIds={['clusters', 'unclustered-point']}
+      >
+        {mapLoaded && geojsonData.features.length > 0 && (
+          <Source
+            id="artists"
+            type="geojson"
+            data={geojsonData}
+            cluster={true}
+            clusterRadius={60}
+            clusterMaxZoom={14}
+            clusterProperties={clusterProperties}
+          >
+            <Layer {...clusterCircleLayer} />
+            <Layer {...clusterCountLayer} />
+            <Layer {...unclusteredPointLayer} />
+            <Layer {...unclusteredLabelLayer} />
+          </Source>
+        )}
+      </MapGL>
       {mapLoaded && (
         <CanvasOverlay
           mapRef={mapRef}
