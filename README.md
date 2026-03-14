@@ -1,124 +1,82 @@
-# Embryo
+# embryo.wiki
 
-Embryo is an interactive museum-style web app that visualizes how music history evolves over time through artist relationships.
+**How music was born.** An interactive map of 17,000+ musicians plotted at their birth locations, with connections tracing influence, teaching, and collaboration across six centuries.
 
-Tagline: **How music was born.**
+Live at: https://embryo.wiki
 
-## Demo Concept
+## Stack
 
-- Timeline from **1550 to 2025** controls which artists are visible based on active years.
-- A **D3 force-directed graph** maps connections such as teaching, influence, collaboration, and rivalry.
-- Clicking an artist opens a detail panel with biography and evidence-backed relationship history.
+- React 19.2 + Vite 7.3
+- MapLibre GL JS 5.20 via react-map-gl 8.1 (interactive map + clustering)
+- Fuse.js 7.1 (fuzzy search)
+- Inline CSS styles (no Tailwind, no CSS framework)
+- Cloudflare Pages (deployment)
 
-## Tech Stack
+## Features
 
-- React + Vite
-- Tailwind CSS
-- D3.js (force simulation + transitions)
+- Interactive world map with 17,288 musicians plotted at birth coordinates
+- 9 genre-color-coded clusters with MapLibre clustering at zoom-out
+- Timeline slider (1400–2025) with play/pause animation
+- Fuzzy search with keyboard navigation
+- Artist detail panel showing influences, teachers, and peers
+- Side-by-side artist comparison
+- Guided journeys: jazz evolution, Bach teaching lineage, electronic pioneers
+- Filter by genre and connection type
+- URL hash-based state persistence
 
-## Data Files
+## Design
 
-This project expects:
+- Font: DM Sans (Google Fonts)
+- Background: `#FAF3EB` (cream)
+- Accent: `#C4366F` (magenta)
+- Genre colors:
+  - Classical `#912761`
+  - Jazz `#FFBA52`
+  - Rock `#D4295E`
+  - Electronic `#D0DF00`
+  - Hip-hop `#F4762D`
+  - Pop `#DB608F`
+  - Folk `#ADA400`
+  - World `#C34121`
+  - Other `#FFCB78`
 
-- `public/data/artists_final.json`
-- `public/data/connections_final.json`
-
-`artists_final.json` fields used:
-
-- `name`
-- `birth_year`
-- `death_year`
-- `active_start`
-- `active_end`
-- `birth_city`
-- `birth_country`
-- `genres`
-- `education`
-
-`connections_final.json` fields used:
-
-- `source_name`
-- `target_name`
-- `type` (`teacher`, `influence`, `peer`, `collaboration`, `rivalry`)
-- `confidence`
-- `evidence`
-
-## Core Features Implemented
-
-1. Timeline slider (1550–2025) with smooth network transitions.
-2. Artist visibility by active years (`active_start <= year <= active_end`).
-3. Edge visibility only when both endpoint artists are visible.
-4. D3 force-directed layout with node size based on connection count.
-5. Node color buckets by genre:
-   - Classical (gold)
-   - Jazz/Blues (blue)
-   - Rock (green)
-   - Electronic (purple)
-   - Hip-Hop (red)
-   - Pop/Soul (orange)
-   - Other (grey)
-6. Top edge filters:
-   - All
-   - Teacher→Student
-   - Influence
-   - Friendship (maps to `peer` + `collaboration`)
-7. Play/Pause timeline control that advances by decade every 2 seconds.
-8. Artist detail panel with all known relationships and evidence text.
-9. Responsive layout for desktop and mobile.
-
-## Branding + Visual Direction
-
-- Primary background: `#672146` (deep burgundy)
-- Secondary UI accents: `#AA737D` (mesa rose)
-- Text and labels: `#FFF7C7` (warm cream)
-
-The UI uses layered gradients, a subtle grid, and serif-forward typography for an exhibit-like look.
-
-## Local Development
+## Setup
 
 ```bash
 npm install
-npm run dev
-```
-
-Build for production:
-
-```bash
-npm run build
-npm run preview
+npm run dev      # Start dev server
+npm run build    # Production build → dist/
+npm run lint     # ESLint
 ```
 
 ## Deployment
 
-### Vercel
-
-- `vercel.json` is included for SPA rewrites.
-- Build command: `npm run build`
-- Output directory: `dist`
-
-### Netlify
-
-- `netlify.toml` is included.
-- Build command: `npm run build`
-- Publish directory: `dist`
-- SPA redirect is configured.
+```bash
+npx wrangler pages deploy dist --project-name embryo-wiki
+```
 
 ## Project Structure
 
-```text
-embryo/
-  public/
-    data/
-      artists_final.json
-      connections_final.json
-  src/
-    components/
-      NetworkGraph.jsx
-    App.jsx
-    index.css
-    main.jsx
-  netlify.toml
-  vercel.json
-  tailwind.config.js
-  postcss.config.js
 ```
+src/
+├── App.jsx              # Root — all state lives here
+├── components/
+│   ├── Map.jsx          # MapLibre GL map with clustering
+│   ├── FilterPanel.jsx  # Genre + connection type filters
+│   ├── DetailPanel.jsx  # Artist detail sidebar
+│   ├── Timeline.jsx     # Year range slider + playback
+│   ├── SearchBar.jsx    # Fuse.js fuzzy search
+│   └── ...              # 10+ more components
+├── hooks/               # Data fetching, viewport, etc.
+├── utils/               # Genre classification, geo helpers
+└── contexts/            # TotalArtistCountContext
+public/data/
+├── artists_final.json   # 17,288 musicians
+└── connections_final.json # 15,229 connections
+```
+
+## Data
+
+- **Artists:** 17,288 musicians with birth coordinates, genres, birth/death/active years, education, Wikipedia/Wikidata/MusicBrainz IDs
+- **Connections:** 15,229 relationships (peer, teacher, influence, collaboration, rivalry)
+- **Journeys:** 3 curated guided tours
