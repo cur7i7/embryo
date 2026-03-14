@@ -706,7 +706,7 @@ export default function CanvasOverlay({
                 radius *= pulseFactor;
               }
 
-              const baseAlpha = isPassive ? 0.4 : 1.0;
+              const baseAlpha = isPassive ? 0.92 : 1.0;
               ctx.globalCompositeOperation = 'multiply';
               ctx.globalAlpha = baseAlpha * opacity * clusterAlpha;
               ctx.drawImage(orbTexture, x - radius, y - radius, radius * 2, radius * 2);

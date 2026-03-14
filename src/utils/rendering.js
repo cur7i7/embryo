@@ -65,12 +65,12 @@ export function drawArtistNode(ctx, x, y, radius, genreColor, name, years, state
   if (state === 'connected') {
     ctx.beginPath();
     ctx.arc(x, y, r * 1.6, 0, Math.PI * 2);
-    ctx.fillStyle = hexToRgba(genreColor, 0.2);
+    ctx.fillStyle = hexToRgba(genreColor, 0.55);
     ctx.fill();
   }
 
   // Circle fill: genre color with visible fill + soft glow
-  const fillOpacity = state === 'active' ? 0.35 : state === 'connected' ? 0.3 : 0.25;
+  const fillOpacity = 0.60;
   ctx.beginPath();
   ctx.arc(x, y, r, 0, Math.PI * 2);
   ctx.fillStyle = hexToRgba(genreColor, fillOpacity);
@@ -159,20 +159,20 @@ export function drawCityGroup(ctx, x, y, city, count, radius, alpha = 1, genreCo
   if (genreColor) {
     ctx.beginPath();
     ctx.arc(x, y, radius, 0, Math.PI * 2);
-    ctx.fillStyle = hexToRgba(genreColor, 0.35);
+    ctx.fillStyle = hexToRgba(genreColor, 0.60);
     ctx.fill();
   } else {
     // Fallback: soft cream fill
     ctx.beginPath();
     ctx.arc(x, y, radius, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(250, 243, 235, 0.35)';
+    ctx.fillStyle = 'rgba(250, 243, 235, 0.60)';
     ctx.fill();
   }
 
   // Dashed boundary stroke
   ctx.setLineDash([4, 4]);
   ctx.lineWidth = 1;
-  ctx.strokeStyle = genreColor ? hexToRgba(genreColor, 0.35) : 'rgba(62,53,48,0.3)';
+  ctx.strokeStyle = genreColor ? hexToRgba(genreColor, 0.60) : 'rgba(62,53,48,0.5)';
   ctx.stroke();
   ctx.setLineDash([]);
 
