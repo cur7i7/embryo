@@ -18,13 +18,15 @@ const BUCKET_NAMES = Object.keys(GENRE_BUCKETS);
  * Other      → ✦ (U+2726) four-pointed star — miscellaneous
  */
 const GENRE_SHAPES = {
-  'Classical':  '●',
-  'Jazz/Blues': '◆',
-  'Rock':       '▲',
-  'Electronic': '■',
-  'Hip-hop':    '★',
-  'Pop/Soul':   '♥',
-  'Other':      '✦',
+  'Classical':    '●',
+  'Jazz/Blues':   '◆',
+  'Rock':         '▲',
+  'Electronic':   '■',
+  'Hip-hop':      '★',
+  'Pop/Soul':     '♥',
+  'Folk/Country': '◇',
+  'World/Latin':  '⬟',
+  'Other':        '✦',
 };
 
 function GenreFilters({ activeGenres, onToggleGenre, onSelectAll, isMobile = false }) {
@@ -87,7 +89,7 @@ function GenreFilters({ activeGenres, onToggleGenre, onSelectAll, isMobile = fal
           border: allActive ? '1px solid #5A5048' : '1px solid rgba(90,80,72,0.2)',
           borderRadius: isPointerFine ? 999 : '8px',
           padding: isPointerFine ? '3px 10px' : (isMobile ? '6px 12px' : '5px 10px'),
-          minHeight: isPointerFine ? 30 : 44,
+          minHeight: 44,
           cursor: 'pointer',
           transition: 'all 0.15s ease',
           outline: '2px solid transparent',
@@ -134,7 +136,7 @@ function GenreFilters({ activeGenres, onToggleGenre, onSelectAll, isMobile = fal
               border: isActive ? `1.5px solid ${color}` : '1px solid rgba(90,80,72,0.15)',
               borderRadius: isPointerFine ? 999 : '8px',
               padding: isPointerFine ? '3px 10px' : (isMobile ? '6px 11px' : '5px 9px'),
-              minHeight: isPointerFine ? 30 : 44,
+              minHeight: 44,
               cursor: 'pointer',
               transition: 'all 0.15s ease',
               outline: '2px solid transparent',

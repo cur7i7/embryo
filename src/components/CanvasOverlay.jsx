@@ -83,7 +83,6 @@ export default function CanvasOverlay({
   mapRef,
   artists,
   connectionCounts,
-  connections,
   connectionsByArtist,
   activeConnectionTypes,
   hoveredArtist,
@@ -142,7 +141,7 @@ export default function CanvasOverlay({
   // Derived hit-test radius scaled by pointer type (coarse = 1.5x for touch targets)
   const hitRadius = HIT_TEST_MIN_RADIUS * (isFinePointer ? 1 : 1.5);
   const hitRadiusRef = useRef(hitRadius);
-  hitRadiusRef.current = hitRadius;
+  useEffect(() => { hitRadiusRef.current = hitRadius; }, [hitRadius]);
 
   // Supercluster index ref
   const scIndexRef = useRef(null);
@@ -153,6 +152,7 @@ export default function CanvasOverlay({
   const cityPosMapRef = useRef(new Map()); // projected city positions for hit testing
   const hoveredCityKeyRef = useRef(null);  // currently hovered city key for highlight
   const clusterColorCacheRef = useRef(new Map()); // cluster.id → texture index cache
+  const clusterLabelCacheRef = useRef(new Map()); // cluster.id → sorted leaves cache
 
   // Current render mode for hit testing
   const renderModeRef = useRef('cluster');
@@ -554,7 +554,7 @@ export default function CanvasOverlay({
       else if (renderMode === 'city') cityAlpha = 1;
       else individualAlpha = 1;
     } else {
-      // Cluster <-> City cross-fade around ZOOM_CITY (7.5-8.5)
+      // Cluster <-> City cross-fade around ZOOM_CITY (4.5-5.5)
       if (currentZoom < ZOOM_CITY - 0.5) {
         clusterAlpha = 1;
       } else if (currentZoom < ZOOM_CITY + 0.5) {
@@ -564,7 +564,7 @@ export default function CanvasOverlay({
       } else if (currentZoom < ZOOM_INDIVIDUAL - 0.5) {
         cityAlpha = 1;
       } else if (currentZoom < ZOOM_INDIVIDUAL + 0.5) {
-        // City <-> Individual cross-fade around ZOOM_INDIVIDUAL (11.5-12.5)
+        // City <-> Individual cross-fade around ZOOM_INDIVIDUAL (8.5-9.5)
         const t = (currentZoom - (ZOOM_INDIVIDUAL - 0.5));  // 0->1
         cityAlpha = 1 - t;
         individualAlpha = 1 - cityAlpha;
@@ -675,13 +675,17 @@ export default function CanvasOverlay({
               else clusterLabelBudget = 0; // too dense, no labels
             }
             if (clusterRadius >= 45 && clusterLabelsShown < clusterLabelBudget) {
-              const leaves = index.getLeaves(cluster.id, 10);
-              if (leaves.length > 0) {
+              let leaves = clusterLabelCacheRef.current.get(cluster.id);
+              if (!leaves) {
+                leaves = index.getLeaves(cluster.id, 10);
                 leaves.sort((a, b) => {
                   const cA = (connectionCounts && connectionCounts.get(a.properties.artistId)) || 0;
                   const cB = (connectionCounts && connectionCounts.get(b.properties.artistId)) || 0;
                   return cB - cA;
                 });
+                clusterLabelCacheRef.current.set(cluster.id, leaves);
+              }
+              if (leaves.length > 0) {
                 const topN = count >= 20 ? 3 : 2;
                 const topNames = [];
                 for (let i = 0; i < Math.min(topN, leaves.length); i++) {
@@ -1370,6 +1374,7 @@ export default function CanvasOverlay({
         );
         scIndexRef.current = index;
         clusterColorCacheRef.current = new Map(); // clear stale cluster color cache
+        clusterLabelCacheRef.current.clear(); // clear stale cluster label cache
 
         // Build display offsets for co-located artists
         const coordGroups = new Map();
@@ -1405,6 +1410,8 @@ export default function CanvasOverlay({
         clearTimeout(spatialRebuildTimerRef.current);
         spatialRebuildTimerRef.current = null;
       }
+      // Reset so React strict-mode re-mount detects the change and rebuilds
+      prevArtistsRef.current = null;
     };
   }, [artists, startRaf]);
 
@@ -1500,6 +1507,36 @@ export default function CanvasOverlay({
     return null;
   }, []);
 
+  // Shared cluster hit-test helper — returns the matched cluster object or null.
+  // Both click handlers and hover use identical bounds/getClusters/distance logic,
+  // so centralising it here keeps the three callsites DRY.
+  const findClusterAtPoint = useCallback((mx, my) => {
+    const map = mapRef.current?.getMap?.();
+    const index = scIndexRef.current;
+    if (!map || !index) return null;
+
+    const bounds = map.getBounds();
+    const zoom = Math.floor(map.getZoom());
+    const clusters = index.getClusters(
+      [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()],
+      zoom
+    );
+
+    for (const cluster of clusters) {
+      if (!cluster.properties.cluster) continue;
+      const [lng, lat] = cluster.geometry.coordinates;
+      const pt = map.project([lng, lat]);
+      const dx = pt.x - mx;
+      const dy = pt.y - my;
+      const count = cluster.properties.point_count;
+      const clusterRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log2(count) * 7, CLUSTER_RADIUS_MAX);
+      if (Math.sqrt(dx * dx + dy * dy) <= clusterRadius) {
+        return cluster;
+      }
+    }
+    return null;
+  }, [mapRef]);
+
   // Handle cluster clicks when in cluster mode — zoom by 3 levels per click
   // to reduce clicks from 4-6 to 2-3 (Issue #2)
   const handleClusterClick = useCallback((mx, my) => {
@@ -1509,69 +1546,38 @@ export default function CanvasOverlay({
 
     if (renderModeRef.current !== 'cluster') return false;
 
-    const bounds = map.getBounds();
-    const zoom = Math.floor(map.getZoom());
-    const clusters = index.getClusters(
-      [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()],
-      zoom
-    );
-
-    for (const cluster of clusters) {
-      if (!cluster.properties.cluster) continue;
-      const [lng, lat] = cluster.geometry.coordinates;
-      const pt = map.project([lng, lat]);
-      const dx = pt.x - mx;
-      const dy = pt.y - my;
-      const count = cluster.properties.point_count;
-      const clusterRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log2(count) * 7, CLUSTER_RADIUS_MAX);
-      if (Math.sqrt(dx * dx + dy * dy) <= clusterRadius) {
-        // Smart zoom: use Supercluster's expansion zoom, capped to prevent disorienting jumps
-        const currentZoom = map.getZoom();
-        let expansionZoom;
-        try {
-          expansionZoom = index.getClusterExpansionZoom(cluster.id);
-        } catch {
-          expansionZoom = currentZoom + 3;
-        }
-        const targetZoom = Math.min(expansionZoom, currentZoom + 4, 16);
-        map.flyTo({ center: cluster.geometry.coordinates, zoom: targetZoom });
-        return true;
+    const cluster = findClusterAtPoint(mx, my);
+    if (cluster) {
+      // Smart zoom: use Supercluster's expansion zoom, capped to prevent disorienting jumps
+      const currentZoom = map.getZoom();
+      let expansionZoom;
+      try {
+        expansionZoom = index.getClusterExpansionZoom(cluster.id);
+      } catch {
+        expansionZoom = currentZoom + 3;
       }
+      const targetZoom = Math.min(expansionZoom, currentZoom + 4, 16);
+      map.flyTo({ center: cluster.geometry.coordinates, zoom: targetZoom });
+      return true;
     }
     return false;
-  }, [mapRef]);
+  }, [mapRef, findClusterAtPoint]);
 
   // Handle double-click on cluster to zoom directly to individual artist level (Issue #2)
   const handleClusterDoubleClick = useCallback((mx, my) => {
-    const map = mapRef.current?.getMap?.();
-    const index = scIndexRef.current;
-    if (!map || !index) return false;
-
     if (renderModeRef.current !== 'cluster') return false;
 
-    const bounds = map.getBounds();
-    const zoom = Math.floor(map.getZoom());
-    const clusters = index.getClusters(
-      [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()],
-      zoom
-    );
+    const map = mapRef.current?.getMap?.();
+    if (!map) return false;
 
-    for (const cluster of clusters) {
-      if (!cluster.properties.cluster) continue;
-      const [lng, lat] = cluster.geometry.coordinates;
-      const pt = map.project([lng, lat]);
-      const dx = pt.x - mx;
-      const dy = pt.y - my;
-      const count = cluster.properties.point_count;
-      const clusterRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log2(count) * 7, CLUSTER_RADIUS_MAX);
-      if (Math.sqrt(dx * dx + dy * dy) <= clusterRadius) {
-        // Double-click jumps directly to individual artist level (zoom 9)
-        map.flyTo({ center: cluster.geometry.coordinates, zoom: ZOOM_INDIVIDUAL });
-        return true;
-      }
+    const cluster = findClusterAtPoint(mx, my);
+    if (cluster) {
+      // Double-click jumps directly to individual artist level (zoom 9)
+      map.flyTo({ center: cluster.geometry.coordinates, zoom: ZOOM_INDIVIDUAL });
+      return true;
     }
     return false;
-  }, [mapRef]);
+  }, [mapRef, findClusterAtPoint]);
 
   // Handle city group clicks when in city mode -> adaptive zoom based on artist count (Issue #2, #15)
   const handleCityClick = useCallback((mx, my) => {
@@ -1650,35 +1656,14 @@ export default function CanvasOverlay({
 
       // In cluster mode, check cluster hover for pointer cursor + tooltip (Issue #35)
       if (renderModeRef.current === 'cluster') {
-        const index = scIndexRef.current;
-        if (index) {
-          const bounds = map.getBounds();
-          const zoom = Math.floor(map.getZoom());
-          const clusters = index.getClusters(
-            [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()],
-            zoom
-          );
-          let foundCluster = false;
-          for (const cluster of clusters) {
-            if (!cluster.properties.cluster) continue;
-            const [lng, lat] = cluster.geometry.coordinates;
-            const pt = map.project([lng, lat]);
-            const cdx = pt.x - mx;
-            const cdy = pt.y - my;
-            const count = cluster.properties.point_count;
-            const clusterRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log2(count) * 7, CLUSTER_RADIUS_MAX);
-            if (Math.sqrt(cdx * cdx + cdy * cdy) <= clusterRadius) {
-              map.getCanvas().style.cursor = 'pointer';
-              // Show tooltip with cluster count
-              showClusterTooltip(mx, my, count, canvasRef.current);
-              foundCluster = true;
-              break;
-            }
-          }
-          if (!foundCluster) {
-            map.getCanvas().style.cursor = '';
-            hideClusterTooltip();
-          }
+        const hoveredCluster = findClusterAtPoint(mx, my);
+        if (hoveredCluster) {
+          map.getCanvas().style.cursor = 'pointer';
+          // Show tooltip with cluster count
+          showClusterTooltip(mx, my, hoveredCluster.properties.point_count, canvasRef.current);
+        } else {
+          map.getCanvas().style.cursor = '';
+          hideClusterTooltip();
         }
         onHoverRef.current?.(null);
         onHoverPositionRef.current?.(null);
@@ -1769,7 +1754,7 @@ export default function CanvasOverlay({
         rafRef.current = null;
       }
     };
-  }, [mapRef, startRaf, hitTest, handleClusterClick, handleClusterDoubleClick, handleCityClick]);
+  }, [mapRef, startRaf, hitTest, findClusterAtPoint, handleClusterClick, handleClusterDoubleClick, handleCityClick]);
 
   // Keyboard handler for canvas — arrow keys to cycle visible artists, Enter/Space to select
   const handleKeyDown = useCallback((e) => {
@@ -1965,30 +1950,28 @@ export default function CanvasOverlay({
   // Debounced live text: hover announcements are delayed 300ms to avoid flooding
   // screen readers during rapid mouse movement. Mode changes go through immediately.
   const [debouncedLiveText, setDebouncedLiveText] = useState('');
-  /* eslint-disable react-hooks/set-state-in-effect -- intentional debounce pattern */
   useEffect(() => {
     if (!hoveredArtist && !keyboardAnnouncement) {
-      setDebouncedLiveText(effectiveLiveText);
+      setDebouncedLiveText(effectiveLiveText); // eslint-disable-line react-hooks/set-state-in-effect
       return;
     }
     const id = setTimeout(() => setDebouncedLiveText(effectiveLiveText), 300);
     return () => clearTimeout(id);
   }, [effectiveLiveText, hoveredArtist, keyboardAnnouncement]);
-  /* eslint-enable react-hooks/set-state-in-effect */
 
   return (
     <>
       <canvas
         ref={canvasRef}
+        aria-hidden="true"
         style={{
           position: 'absolute',
           top: 0,
           left: 0,
           pointerEvents: 'none',
-          zIndex: 1,
+          zIndex: 2,
           cursor: 'default',
         }}
-        aria-label="Interactive map showing musical artist connections across centuries"
       />
       {/* Keyboard-accessible overlay with visible focus indicator */}
       <div

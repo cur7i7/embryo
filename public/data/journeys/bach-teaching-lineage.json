@@ -1,0 +1,48 @@
+{
+  "id": "bach-teaching-lineage",
+  "title": "Bach's Teaching Lineage",
+  "waypoints": [
+    {
+      "artistId": "artist_0775",
+      "narration": "The patriarch of Western music. Bach's mastery of counterpoint and harmony influenced every generation that followed.",
+      "zoom": 9,
+      "pauseSeconds": 7
+    },
+    {
+      "artistId": "artist_0913",
+      "narration": "Bach's second son bridged Baroque and Classical styles, his Empfindsamer Stil emphasizing emotional expression.",
+      "zoom": 9,
+      "pauseSeconds": 7
+    },
+    {
+      "artistId": "artist_1034",
+      "narration": "The youngest Bach son brought Italian operatic elegance to London, influencing the young Mozart.",
+      "zoom": 9,
+      "pauseSeconds": 7
+    },
+    {
+      "artistId": "artist_1346",
+      "narration": "Beethoven expanded the symphony and sonata beyond all previous bounds, carrying Bach's structural rigor into the Romantic era.",
+      "zoom": 9,
+      "pauseSeconds": 7
+    },
+    {
+      "artistId": "artist_1883",
+      "narration": "Mendelssohn revived Bach's music for the 19th century, conducting the St Matthew Passion's first performance in a hundred years.",
+      "zoom": 9,
+      "pauseSeconds": 7
+    },
+    {
+      "artistId": "artist_1931",
+      "narration": "Schumann championed new music through criticism and composition, linking Beethoven's legacy to the next generation.",
+      "zoom": 9,
+      "pauseSeconds": 7
+    },
+    {
+      "artistId": "artist_2559",
+      "narration": "Brahms completed the lineage — a Romantic who composed with Classical discipline, revered as Bach's spiritual heir.",
+      "zoom": 9,
+      "pauseSeconds": 7
+    }
+  ]
+}

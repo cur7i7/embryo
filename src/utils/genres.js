@@ -1,11 +1,66 @@
 const GENRE_BUCKETS = {
-  Classical: { genres: ['classical', 'opera', 'symphony', 'chamber', 'sacred', 'baroque', 'romantic'], color: '#912761' },
-  'Jazz/Blues': { genres: ['jazz', 'blues', 'funk', 'bebop', 'swing'], color: '#D4295E' },
-  Rock: { genres: ['rock', 'metal', 'punk', 'alternative', 'grunge', 'hard rock'], color: '#F4762D' },
-  Electronic: { genres: ['electronic', 'ambient', 'idm', 'house', 'techno', 'dance'], color: '#DB608F' },
-  'Hip-hop': { genres: ['hip-hop', 'rap'], color: '#FFBA52' },
-  'Pop/Soul': { genres: ['pop', 'disco', 'r&b', 'gospel', 'soul'], color: '#E05262' },
-  Other: { genres: [], color: '#C48272' },
+  Classical: {
+    genres: [
+      'classical', 'opera', 'symphony', 'chamber', 'sacred', 'baroque', 'romantic',
+      'film score', 'soundtrack', 'musical theatre', 'musical', 'choral', 'orchestral',
+      'romantic period',
+    ],
+    color: '#912761',
+  },
+  'Jazz/Blues': {
+    genres: [
+      'jazz', 'blues', 'funk', 'bebop', 'swing',
+      'bossa nova', 'samba', 'latin jazz', 'smooth jazz', 'acid jazz', 'afrobeat',
+    ],
+    color: '#D4295E',
+  },
+  Rock: {
+    genres: [
+      'rock', 'metal', 'punk', 'alternative', 'grunge', 'hard rock',
+      'new wave', 'post-punk', 'shoegaze', 'britpop', 'garage', 'surf', 'psychedelic',
+      'stoner', 'doom', 'sludge', 'emo',
+    ],
+    color: '#F4762D',
+  },
+  Electronic: {
+    genres: [
+      'electronic', 'ambient', 'idm', 'house', 'techno', 'dance',
+      'trip hop', 'downtempo', 'electropop', 'synth', 'drum and bass', 'dnb',
+      'dubstep', 'breakbeat', 'industrial',
+    ],
+    color: '#DB608F',
+  },
+  'Hip-hop': {
+    genres: [
+      'hip-hop', 'rap',
+      'grime', 'drill', 'trap', 'crunk', 'bounce', 'chopped and screwed',
+    ],
+    color: '#FFBA52',
+  },
+  'Pop/Soul': {
+    genres: [
+      'pop', 'disco', 'r&b', 'gospel', 'soul',
+      'cantopop', 'mandopop', 'j-pop', 'k-pop', 'c-pop', 'schlager', 'chanson',
+      'ballad', 'adult contemporary', 'euro', 'enka',
+    ],
+    color: '#FF7276',
+  },
+  'Folk/Country': {
+    genres: [
+      'country', 'folk', 'bluegrass', 'americana', 'traditional folk',
+    ],
+    color: '#FFCB78',
+  },
+  'World/Latin': {
+    genres: [
+      'world music', 'world', 'arabic', 'afro', 'reggae', 'ska', 'dancehall',
+      'reggaeton', 'latin', 'salsa', 'merengue', 'cumbia', 'bachata', 'tango',
+      'flamenco', 'fado', 'música popular brasileira', 'popular music',
+      'video game music', 'experimental',
+    ],
+    color: '#DE7487',
+  },
+  Other: { genres: [], color: '#E8A99B' },
 };
 
 export function getGenreBucket(genres) {

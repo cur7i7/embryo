@@ -53,6 +53,7 @@ function SuggestionForm({
   const storageKey = artist ? `embryo-suggestion:${artist.id}` : null;
   const existingRecord = useMemo(
     () => readSuggestionRecord(storageKey),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- isOpen intentionally busts cache so re-read localStorage each time dialog opens
     [storageKey, isOpen]
   );
 

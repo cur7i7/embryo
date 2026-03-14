@@ -270,7 +270,7 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false, artistCoun
               : '0 2px 12px rgba(90, 80, 72, 0.10)',
             backdropFilter: 'blur(8px)',
             transition: 'border-color 0.15s ease, border-radius 0.15s ease, box-shadow 0.3s ease',
-            minHeight: isPointerFine ? 40 : 44,
+            minHeight: 44,
             animation: glowActive ? 'searchBarGlow 1.5s ease-in-out 2' : 'none',
           }}
           onFocusCapture={e => { if (e.target.matches(':focus-visible')) { e.target.style.borderColor = 'rgba(168, 144, 128, 0.9)'; e.target.style.boxShadow = '0 0 0 3px rgba(168, 144, 128, 0.4)'; } }}
@@ -385,7 +385,7 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false, artistCoun
                   alignItems: 'center',
                   gap: 10,
                   padding: isPointerFine ? '6px 14px' : '9px 14px',
-                  minHeight: isPointerFine ? 36 : 44,
+                  minHeight: 44,
                   cursor: 'pointer',
                   backgroundColor: isActive ? 'rgba(168, 144, 128, 0.10)' : 'transparent',
                   borderBottom: i < results.length - 1 ? '1px solid rgba(224, 216, 204, 0.4)' : 'none',

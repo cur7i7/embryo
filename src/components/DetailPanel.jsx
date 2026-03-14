@@ -212,6 +212,7 @@ function ConnectionsList({ connections, artist, artistMap, onClickArtist }) {
 
   // Reset expanded state when artist changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setExpandedGroups({});
   }, [artist?.id]);
 
@@ -372,6 +373,7 @@ function DetailPanel({
   // Reset drag state when panel closes
   useEffect(() => {
     if (!isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDragDeltaY(0);
       setIsDragging(false);
       touchStartYRef.current = null;
@@ -381,6 +383,7 @@ function DetailPanel({
 
   useEffect(() => {
     if (!artist?.id) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setHasSuggestedForArtist(false);
       return;
     }
@@ -481,11 +484,6 @@ function DetailPanel({
   const location = artist
     ? [artist.birth_city, artist.birth_country].filter(Boolean).join(', ')
     : '';
-
-  // Detect dvh support for mobile landscape fix
-  const supportsDvh = React.useMemo(() => {
-    try { return CSS.supports('height', '1dvh'); } catch { return false; }
-  }, []);
 
   // Panel style changes based on mobile — full-screen takeover
   const panelStyle = isMobile

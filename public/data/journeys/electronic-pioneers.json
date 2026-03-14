@@ -1,0 +1,48 @@
+{
+  "id": "electronic-pioneers",
+  "title": "Electronic Music Pioneers",
+  "waypoints": [
+    {
+      "artistId": "artist_7552",
+      "narration": "Schaeffer invented musique concrète in Paris, proving that recorded sounds themselves could be musical material.",
+      "zoom": 9,
+      "pauseSeconds": 7
+    },
+    {
+      "artistId": "artist_10028",
+      "narration": "Stockhausen pushed electronic composition into uncharted territory at the Cologne studio, inspiring generations.",
+      "zoom": 9,
+      "pauseSeconds": 7
+    },
+    {
+      "artistId": "artist_11698",
+      "narration": "Derbyshire realized the iconic Doctor Who theme at the BBC Radiophonic Workshop, pioneering electronic sound design.",
+      "zoom": 9,
+      "pauseSeconds": 7
+    },
+    {
+      "artistId": "artist_12302",
+      "narration": "Carlos brought the Moog synthesizer to mainstream ears with Switched-On Bach, bridging classical and electronic.",
+      "zoom": 10,
+      "pauseSeconds": 7
+    },
+    {
+      "artistId": "artist_14259",
+      "narration": "As Kraftwerk, Hütter and Schneider created the blueprint for electronic pop, techno, and synth music.",
+      "zoom": 9,
+      "pauseSeconds": 7
+    },
+    {
+      "artistId": "artist_14736",
+      "narration": "Eno coined 'ambient music' and revolutionized studio production, shaping artists from Bowie to U2.",
+      "zoom": 9,
+      "pauseSeconds": 7
+    },
+    {
+      "artistId": "artist_19064",
+      "narration": "Atkins fused Kraftwerk's electronic precision with Detroit's soul to create techno — a genre that conquered the world.",
+      "zoom": 10,
+      "pauseSeconds": 7
+    }
+  ]
+}

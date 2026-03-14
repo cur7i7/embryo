@@ -36,8 +36,12 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
   const radioYearRef = useRef(null);
   const radioRangeRef = useRef(null);
 
-  // Fix: Track container width in state to avoid reading ref during render
+  // Fix: Track container width in state to avoid reading ref during render.
+  // mode is included in the dependency array so the observer re-initializes
+  // when the user switches modes (year/range), because containerRef.current is
+  // only populated while the range-mode subtree is mounted.
   const [containerWidth, setContainerWidth] = useState(300);
+  const [mode, setMode] = useState(initialMode || 'range');
   useLayoutEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -46,7 +50,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
     const ro = new ResizeObserver(update);
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [mode]);
 
   // Fix #19: Track which handle is actively being dragged for z-index priority
   const [activeHandle, setActiveHandle] = useState(null);
@@ -60,9 +64,6 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
     rangeStartRef.current = rangeStart;
     rangeEndRef.current = rangeEnd;
   }, [rangeStart, rangeEnd]);
-
-  // B: Mode state — 'range' (two handles) or 'year' (single handle)
-  const [mode, setMode] = useState(initialMode || 'range');
 
   // Viewport-aware year labels: fewer on narrow screens to prevent overlap
   const [windowWidth, setWindowWidth] = useState(() => window.innerWidth);
@@ -87,16 +88,20 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
   const [yearInputValue, setYearInputValue] = useState(String(rangeEnd));
 
   // Fix #10: Auto-switch to Range mode when rangeStart ≠ rangeEnd externally
-  // (e.g. auto-expand effect in App.jsx sets a range for selected artist)
+  // (e.g. auto-expand effect in App.jsx sets a range for selected artist).
+  // setState call is intentional — this is a controlled reset on prop change.
   useEffect(() => {
     if (mode === 'year' && rangeStart !== rangeEnd) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMode('range');
     }
   }, [rangeStart, rangeEnd, mode]);
 
-  // Sync yearInputValue when rangeEnd changes externally (play button, URL, etc.)
+  // Sync yearInputValue when rangeEnd changes externally (play button, URL, etc.).
+  // setState call is intentional — keeps the input display in sync with prop.
   useEffect(() => {
     if (mode === 'year') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setYearInputValue(String(rangeEnd));
     }
   }, [rangeEnd, mode]);
@@ -271,7 +276,6 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
   const padRight = responsivePad;
 
   const isYearMode = mode === 'year';
-  const selectedYear = rangeEnd;
   const leftPercent = yearToPercent(rangeStart);
   const rightPercent = yearToPercent(rangeEnd);
   // In year mode, fill from start (1400) to the selected year
@@ -551,7 +555,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
               style={{
                 width: 72,
                 height: isPointerFine ? 32 : 44,
-                minHeight: isPointerFine ? 32 : 44,
+                minHeight: 44,
                 padding: '0 6px',
                 fontSize: 14,
                 fontFamily: '"DM Sans", sans-serif',
@@ -570,7 +574,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
             <span style={{
               fontSize: 11,
               fontFamily: '"DM Sans", sans-serif',
-              color: '#8A7F75',
+              color: '#6B5F55',
             }}>
               {MIN_YEAR}–{MAX_YEAR}
             </span>
@@ -683,7 +687,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                 left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${leftPercent / 100} - 22px)`,
                 top: 0,
                 bottom: isPointerFine ? (isMobile ? 20 : 22) : 0, // Fix #30: full height on touch for 44px target
-                minHeight: isPointerFine ? undefined : 44, // Fix #30: ensure 44px on touch
+                minHeight: 44,
                 width: '44px',
                 cursor: 'ew-resize',
                 display: 'flex',
@@ -731,7 +735,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                 left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${rightPercent / 100} - 22px)`,
                 top: 0,
                 bottom: isPointerFine ? (isMobile ? 20 : 22) : 0, // Fix #30: full height on touch
-                minHeight: isPointerFine ? undefined : 44, // Fix #30: ensure 44px on touch
+                minHeight: 44,
                 width: '44px',
                 cursor: 'ew-resize',
                 display: 'flex',
@@ -826,7 +830,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                 aria-label="Set start year"
                 style={{
                   position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${leftPercent / 100} - 30px)`,
-                  bottom: 0, width: 56, minHeight: isPointerFine ? 28 : 44, padding: '0 4px', // Fix #20: bottom:0 keeps within bounds, Fix #39: removed dead height:24
+                  bottom: 0, width: 56, minHeight: 44, padding: '0 4px', // Fix #20: bottom:0 keeps within bounds, Fix #39: removed dead height:24
                   fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
                   color: '#C4326B', backgroundColor: 'rgba(250,243,235,0.95)',
                   border: '1px solid #C4326B', borderRadius: 4, textAlign: 'center', outline: 'none',
@@ -841,7 +845,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                   position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${leftPercent / 100} - 20px)`,
                   bottom: 0, background: 'none', border: 'none', cursor: 'pointer', // Fix #20: bottom:0
                   fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
-                  color: '#C4326B', padding: '2px 4px', minHeight: isPointerFine ? 28 : 44, display: 'flex', alignItems: 'center',
+                  color: '#C4326B', padding: '2px 4px', minHeight: 44, display: 'flex', alignItems: 'center',
                   borderBottom: '1px dashed rgba(196,50,107,0.4)', // Fix #18: visual affordance
                   outline: 'none',
                 }}
@@ -884,7 +888,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                 aria-label="Set end year"
                 style={{
                   position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${rightPercent / 100} - 30px)`,
-                  bottom: 0, width: 56, minHeight: isPointerFine ? 28 : 44, padding: '0 4px', // Fix #20: bottom:0, Fix #39: removed dead height:24
+                  bottom: 0, width: 56, minHeight: 44, padding: '0 4px', // Fix #20: bottom:0, Fix #39: removed dead height:24
                   fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
                   color: '#C4326B', backgroundColor: 'rgba(250,243,235,0.95)',
                   border: '1px solid #C4326B', borderRadius: 4, textAlign: 'center', outline: 'none',
@@ -899,7 +903,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                   position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${rightPercent / 100} - 20px)`,
                   bottom: 0, background: 'none', border: 'none', cursor: 'pointer', // Fix #20: bottom:0
                   fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
-                  color: '#C4326B', padding: '2px 4px', minHeight: isPointerFine ? 28 : 44, display: 'flex', alignItems: 'center',
+                  color: '#C4326B', padding: '2px 4px', minHeight: 44, display: 'flex', alignItems: 'center',
                   borderBottom: '1px dashed rgba(196,50,107,0.4)', // Fix #18: visual affordance
                   outline: 'none',
                 }}

@@ -1,4 +1,4 @@
-import React, { useState, useReducer, useMemo, useEffect, useRef, useCallback, createContext } from 'react';
+import React, { useState, useReducer, useMemo, useEffect, useRef, useCallback } from 'react';
 import Map from './components/Map.jsx';
 import Timeline from './components/Timeline.jsx';
 import GenreFilters from './components/GenreFilters.jsx';
@@ -19,8 +19,7 @@ import { useViewportArtists } from './hooks/useViewportArtists.js';
 import { GENRE_BUCKETS, getGenreBucket } from './utils/genres.js';
 import { flyToArtist, flyToWaypoint } from './utils/mapHelpers.js';
 
-// Fix #3: Context to provide total artist count to ArtistCount without modifying Map.jsx
-export const TotalArtistCountContext = createContext(0);
+import { TotalArtistCountContext } from './contexts/TotalArtistCountContext.js';
 
 const DEFAULT_RANGE = [1400, 2025];
 const DEFAULT_CENTER = [10, 48];
@@ -114,15 +113,28 @@ function useIsMobile(breakpoint = 900) {
     const w = window.innerWidth;
     const h = window.innerHeight;
     const isTouch = navigator.maxTouchPoints > 0;
+    // Always mobile at or below base breakpoint
+    if (w <= breakpoint) return true;
     // Landscape touch at 1024px+ → desktop
     if (isTouch && w >= 1024 && w > h) return false;
-    return w <= breakpoint || (w <= 1024 && isTouch);
+    // Touch <=1024px: only portrait (h > w) is mobile
+    if (w <= 1024 && isTouch) return h > w;
+    return false;
   };
   const [isMobile, setIsMobile] = useState(check);
   useEffect(() => {
-    const handler = () => setIsMobile(check());
-    window.addEventListener('resize', handler);
-    return () => window.removeEventListener('resize', handler);
+    // check reads live DOM values — defined inside effect to satisfy exhaustive-deps
+    const handleResize = () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const isTouch = navigator.maxTouchPoints > 0;
+      if (w <= breakpoint) { setIsMobile(true); return; }
+      if (isTouch && w >= 1024 && w > h) { setIsMobile(false); return; }
+      if (w <= 1024 && isTouch) { setIsMobile(h > w); return; }
+      setIsMobile(false);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, [breakpoint]);
   return isMobile;
 }
@@ -179,6 +191,7 @@ export default function App() {
   const mapRef = useRef(null);
   const hashUpdateTimer = useRef(null);
   const suppressHashSync = useRef(false);
+  const prevSelectedArtistId = useRef(null);
   const filterPanelRef = useRef(null);
   const [filterPanelHeight, setFilterPanelHeight] = useState(168);
 
@@ -277,7 +290,11 @@ export default function App() {
       if (selectedArtist) obj.artist = toSlug(selectedArtist);
       const hash = buildHash(obj);
       if (window.location.hash !== hash) {
-        const method = selectedArtist ? 'pushState' : 'replaceState';
+        const currentId = selectedArtist?.id ?? null;
+        // Only pushState when the selected artist actually changes; use replaceState
+        // for map panning/zooming to avoid flooding the browser history stack.
+        const method = currentId !== prevSelectedArtistId.current ? 'pushState' : 'replaceState';
+        prevSelectedArtistId.current = currentId;
         window.history[method](null, '', hash || window.location.pathname);
       }
     }, 500);

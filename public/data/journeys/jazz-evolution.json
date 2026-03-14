@@ -1,0 +1,54 @@
+{
+  "id": "jazz-evolution",
+  "title": "The Evolution of Jazz",
+  "waypoints": [
+    {
+      "artistId": "artist_4456",
+      "narration": "Often called the first man of jazz, Bolden's powerful cornet rang through New Orleans at the turn of the century.",
+      "zoom": 10,
+      "pauseSeconds": 7
+    },
+    {
+      "artistId": "artist_6525",
+      "narration": "Armstrong transformed jazz from ensemble music into a soloist's art, his trumpet and voice reaching every corner of the globe.",
+      "zoom": 10,
+      "pauseSeconds": 7
+    },
+    {
+      "artistId": "artist_6265",
+      "narration": "Ellington brought jazz to the concert hall, composing thousands of pieces that bridged popular and orchestral music.",
+      "zoom": 10,
+      "pauseSeconds": 7
+    },
+    {
+      "artistId": "artist_8097",
+      "narration": "Holiday's voice carried the weight of lived experience, reshaping how jazz vocalists interpreted song.",
+      "zoom": 10,
+      "pauseSeconds": 7
+    },
+    {
+      "artistId": "artist_8668",
+      "narration": "Parker's blazing speed and harmonic daring launched bebop, taking jazz from dance halls into the realm of art.",
+      "zoom": 10,
+      "pauseSeconds": 7
+    },
+    {
+      "artistId": "artist_8406",
+      "narration": "Monk's angular melodies and rhythmic surprises made him one of jazz's most original composers.",
+      "zoom": 10,
+      "pauseSeconds": 7
+    },
+    {
+      "artistId": "artist_9723",
+      "narration": "Davis reinvented himself across decades — cool jazz, hard bop, modal jazz, fusion — each era reshaping the genre.",
+      "zoom": 10,
+      "pauseSeconds": 7
+    },
+    {
+      "artistId": "artist_9690",
+      "narration": "Coltrane pushed jazz to its spiritual and harmonic limits, from 'sheets of sound' to the free jazz frontier.",
+      "zoom": 10,
+      "pauseSeconds": 7
+    }
+  ]
+}

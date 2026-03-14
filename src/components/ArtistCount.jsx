@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useIsPointerFine } from '../hooks/useIsPointerFine.js';
-import { TotalArtistCountContext } from '../App.jsx';
+import { TotalArtistCountContext } from '../contexts/TotalArtistCountContext.js';
 
 // Fix #3: Shows "{filtered} of {total} artists" when filters are active,
 // or just "{total} artists" when showing all.

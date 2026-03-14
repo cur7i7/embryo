@@ -33,7 +33,6 @@ export default function Map({
   mapRef,
   artists,
   connectionCounts,
-  connections,
   connectionsByArtist,
   activeConnectionTypes,
   rangeStart,
@@ -41,6 +40,7 @@ export default function Map({
   hoveredArtist,
   selectedArtist,
   onHover,
+  onHoverPosition,
   onSelect,
   isPlaying = false,
   initialCenter = [10, 48],
@@ -79,7 +79,7 @@ export default function Map({
           e.currentTarget.style.height = 'auto';
           e.currentTarget.style.padding = '8px 16px';
           e.currentTarget.style.backgroundColor = '#FAF3EB';
-          e.currentTarget.style.border = '2px solid #D83E7F';
+          e.currentTarget.style.border = '2px solid #C4366F';
           e.currentTarget.style.borderRadius = '8px';
           e.currentTarget.style.color = '#3E3530';
           e.currentTarget.style.fontFamily = '"DM Sans", sans-serif';
@@ -116,7 +116,7 @@ export default function Map({
           e.currentTarget.style.height = 'auto';
           e.currentTarget.style.padding = '8px 16px';
           e.currentTarget.style.backgroundColor = '#FAF3EB';
-          e.currentTarget.style.border = '2px solid #D83E7F';
+          e.currentTarget.style.border = '2px solid #C4366F';
           e.currentTarget.style.borderRadius = '8px';
           e.currentTarget.style.color = '#3E3530';
           e.currentTarget.style.fontFamily = '"DM Sans", sans-serif';
@@ -153,7 +153,7 @@ export default function Map({
           e.currentTarget.style.height = 'auto';
           e.currentTarget.style.padding = '8px 16px';
           e.currentTarget.style.backgroundColor = '#FAF3EB';
-          e.currentTarget.style.border = '2px solid #D83E7F';
+          e.currentTarget.style.border = '2px solid #C4366F';
           e.currentTarget.style.borderRadius = '8px';
           e.currentTarget.style.color = '#3E3530';
           e.currentTarget.style.fontFamily = '"DM Sans", sans-serif';
@@ -184,12 +184,12 @@ export default function Map({
           mapRef={mapRef}
           artists={artists}
           connectionCounts={connectionCounts}
-          connections={connections}
           connectionsByArtist={connectionsByArtist}
           activeConnectionTypes={activeConnectionTypes}
           hoveredArtist={hoveredArtist}
           selectedArtist={selectedArtist}
           onHover={onHover}
+          onHoverPosition={onHoverPosition}
           onSelect={onSelect}
           isFinePointer={isFinePointer}
         />
@@ -241,7 +241,7 @@ export default function Map({
           }}
           onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#F0E8DE'; }}
           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#FAF3EB'; }}
-          onFocus={(e) => { e.currentTarget.style.outline = '2px solid #D83E7F'; e.currentTarget.style.outlineOffset = '2px'; }}
+          onFocus={(e) => { e.currentTarget.style.outline = '2px solid #C4366F'; e.currentTarget.style.outlineOffset = '2px'; }}
           onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
         >
           +
@@ -273,7 +273,7 @@ export default function Map({
           }}
           onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#F0E8DE'; }}
           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#FAF3EB'; }}
-          onFocus={(e) => { e.currentTarget.style.outline = '2px solid #D83E7F'; e.currentTarget.style.outlineOffset = '2px'; }}
+          onFocus={(e) => { e.currentTarget.style.outline = '2px solid #C4366F'; e.currentTarget.style.outlineOffset = '2px'; }}
           onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
         >
           &minus;
@@ -305,7 +305,7 @@ export default function Map({
           }}
           onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#F0E8DE'; }}
           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#FAF3EB'; }}
-          onFocus={(e) => { e.currentTarget.style.outline = '2px solid #D83E7F'; e.currentTarget.style.outlineOffset = '2px'; }}
+          onFocus={(e) => { e.currentTarget.style.outline = '2px solid #C4366F'; e.currentTarget.style.outlineOffset = '2px'; }}
           onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
         >
           {/* Home icon as inline SVG for clarity */}

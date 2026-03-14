@@ -1,5 +1,5 @@
 {
   "rewrites": [
-    { "source": "/((?!data/|assets/).*)", "destination": "/" }
+    { "source": "/((?!data/|assets/|robots\\.txt|sitemap\\.xml|\\.well-known/).*)","destination": "/" }
   ]
 }

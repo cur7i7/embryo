@@ -1,0 +1,26 @@
+[
+  {
+    "id": "jazz-evolution",
+    "title": "The Evolution of Jazz",
+    "description": "From New Orleans to the world — trace jazz through its pioneers, innovators, and revolutionaries.",
+    "waypointCount": 8,
+    "estimatedMinutes": 4,
+    "coverColor": "#D4295E"
+  },
+  {
+    "id": "bach-teaching-lineage",
+    "title": "Bach's Teaching Lineage",
+    "description": "Follow the chain of teacher-student connections from Bach through generations of classical masters.",
+    "waypointCount": 7,
+    "estimatedMinutes": 3,
+    "coverColor": "#912761"
+  },
+  {
+    "id": "electronic-pioneers",
+    "title": "Electronic Music Pioneers",
+    "description": "From early synthesizer experiments to the birth of techno and house.",
+    "waypointCount": 7,
+    "estimatedMinutes": 3,
+    "coverColor": "#DB608F"
+  }
+]

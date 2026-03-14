@@ -40,12 +40,11 @@ export default function JourneyPlayer({
   onNavigate,
   onSelectArtist,
   onExit,
-  isMobile,
 }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const timerRef = useRef(null);
-  const waypoints = journey?.waypoints || [];
+  const waypoints = useMemo(() => journey?.waypoints || [], [journey?.waypoints]);
   const wp = waypoints[currentIndex];
 
   const artist = useMemo(() => {
@@ -81,6 +80,7 @@ export default function JourneyPlayer({
       onNavigate?.(waypoints[0], 0);
     }
     // Reset state for new journey
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentIndex(0);
     setIsPlaying(true);
   }, [journey?.id]); // eslint-disable-line react-hooks/exhaustive-deps
