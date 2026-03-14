@@ -236,14 +236,6 @@ export default function Map({
       const artist = artistById.get(feature.properties.artistId);
       if (artist) {
         onSelect(artist);
-        const map = mapRef.current?.getMap();
-        if (map) {
-          map.easeTo({
-            center: [artist.birth_lng, artist.birth_lat],
-            zoom: Math.max(map.getZoom(), 10),
-            duration: 500,
-          });
-        }
       }
     },
     [artistById, onSelect, mapRef]
