@@ -143,6 +143,7 @@ export default function Map({
   initialZoom = 2,
 }) {
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [cursor, setCursor] = useState('auto');
   const isFinePointer = useIsPointerFine();
 
   const handleMapLoad = useCallback(() => {
@@ -150,6 +151,78 @@ export default function Map({
   }, []);
 
   const visibleCount = useMemo(() => (artists || []).length, [artists]);
+
+  const artistById = useMemo(() => {
+    const map = new Map();
+    for (const a of (artists || [])) map.set(a.id, a);
+    return map;
+  }, [artists]);
+
+  const onClick = useCallback(
+    async (event) => {
+      const feature = event.features?.[0];
+      if (!feature) return;
+
+      // Cluster click → zoom in
+      if (feature.properties.cluster) {
+        const map = mapRef.current?.getMap();
+        if (!map) return;
+        const source = map.getSource('artists');
+        const zoom = await source.getClusterExpansionZoom(feature.properties.cluster_id);
+        map.easeTo({
+          center: feature.geometry.coordinates,
+          zoom: Math.min(zoom, 16),
+          duration: 500,
+        });
+        return;
+      }
+
+      // Individual artist click → select
+      const artist = artistById.get(feature.properties.artistId);
+      if (artist) {
+        onSelect(artist);
+        const map = mapRef.current?.getMap();
+        if (map) {
+          map.easeTo({
+            center: [artist.birth_lng, artist.birth_lat],
+            zoom: Math.max(map.getZoom(), 10),
+            duration: 500,
+          });
+        }
+      }
+    },
+    [artistById, onSelect, mapRef]
+  );
+
+  const onMouseMove = useCallback(
+    (event) => {
+      const feature = event.features?.[0];
+      if (!feature) {
+        onHover(null);
+        setCursor('auto');
+        return;
+      }
+
+      if (feature.properties.cluster) {
+        setCursor('pointer');
+        onHover(null);
+        return;
+      }
+
+      const artist = artistById.get(feature.properties.artistId);
+      if (artist) {
+        onHover(artist);
+        onHoverPosition({ x: event.point.x, y: event.point.y });
+        setCursor('pointer');
+      }
+    },
+    [artistById, onHover, onHoverPosition]
+  );
+
+  const onMouseLeave = useCallback(() => {
+    onHover(null);
+    setCursor('auto');
+  }, [onHover]);
 
   const geojsonData = useMemo(
     () => artistsToGeoJSON(artists || []),
@@ -283,6 +356,10 @@ export default function Map({
         mapStyle={mapStyle}
         onLoad={handleMapLoad}
         interactiveLayerIds={['clusters', 'unclustered-point']}
+        onClick={onClick}
+        onMouseMove={onMouseMove}
+        onMouseLeave={onMouseLeave}
+        cursor={cursor}
       >
         {mapLoaded && geojsonData.features.length > 0 && (
           <Source
