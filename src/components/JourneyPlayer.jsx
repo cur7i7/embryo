@@ -115,24 +115,48 @@ export default function JourneyPlayer({
       </div>
 
       {/* Progress dots */}
-      <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 10 }}>
-        {waypoints.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => { goTo(i); setIsPlaying(false); }}
-            aria-label={`Go to stop ${i + 1}`}
-            style={{
-              width: i === currentIndex ? 16 : 8,
-              height: 8,
-              borderRadius: 4,
-              backgroundColor: i === currentIndex ? '#D83E7F' : i < currentIndex ? '#C4B8AE' : '#E0D8CC',
-              border: 'none',
-              cursor: 'pointer',
-              padding: 0,
-              transition: 'width 0.2s ease, background-color 0.2s ease',
-            }}
-          />
-        ))}
+      <div style={{ display: 'flex', gap: 0, justifyContent: 'center', marginBottom: 10 }}>
+        {waypoints.map((_, i) => {
+          const isCurrent = i === currentIndex;
+          const isPast = i < currentIndex;
+          const dotColor = isCurrent ? '#D83E7F' : isPast ? '#8A7F77' : '#9A8E84';
+          const dotWidth = isCurrent ? 16 : 12;
+          const dotHeight = isCurrent ? 12 : 8;
+          return (
+            <button
+              key={i}
+              onClick={() => { goTo(i); setIsPlaying(false); }}
+              aria-label={`Go to stop ${i + 1}`}
+              aria-current={isCurrent ? 'step' : undefined}
+              style={{
+                width: 44,
+                height: 44,
+                minWidth: 44,
+                minHeight: 44,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
+              }}
+            >
+              <span
+                aria-hidden="true"
+                style={{
+                  display: 'block',
+                  width: dotWidth,
+                  height: dotHeight,
+                  borderRadius: dotHeight / 2,
+                  backgroundColor: dotColor,
+                  transition: 'width 0.2s ease, height 0.2s ease, background-color 0.2s ease',
+                  flexShrink: 0,
+                }}
+              />
+            </button>
+          );
+        })}
       </div>
 
       {/* Controls */}

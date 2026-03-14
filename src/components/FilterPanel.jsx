@@ -90,9 +90,9 @@ function FilterPanel({
   };
 
   const sectionHeadingStyle = {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: 600,
-    color: '#8A7F77',
+    color: '#6B5E56',
     letterSpacing: '0.06em',
     textTransform: 'uppercase',
     margin: 0,
