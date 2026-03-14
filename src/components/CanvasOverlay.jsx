@@ -20,14 +20,14 @@ const ZOOM_INDIVIDUAL = 9;
 
 // Animation & rendering constants
 const FADE_DURATION = 400;             // ms for opacity 0→1 or 1→0 transition
-const CLUSTER_RADIUS_BASE = 20;        // cluster orb base radius (px)
-const CLUSTER_RADIUS_MAX = 42;         // cluster orb max radius (px)
-const ARTIST_RADIUS = 14;              // individual artist node radius (px)
-const ARTIST_ACTIVE_SCALE = 1.5;       // scale for active artist in individual mode
-const CLUSTER_ACTIVE_SCALE = 1.5;      // scale for active artist in cluster mode
+const CLUSTER_RADIUS_BASE = 3;         // cluster orb base radius (px)
+const CLUSTER_RADIUS_MAX = 10;         // cluster orb max radius (px)
+const ARTIST_RADIUS = 12;              // individual artist node radius (px)
+const ARTIST_ACTIVE_SCALE = 1.4;       // scale for active artist in individual mode
+const CLUSTER_ACTIVE_SCALE = 1.4;      // scale for active artist in cluster mode
 const ANIMATION_CYCLE_MS = 3000;       // particle / pulse animation cycle period (ms)
 const HIT_TEST_MIN_RADIUS = 22;        // minimum hit-test radius (44px touch target / 2)
-const SUPERCLUSTER_RADIUS = 80;        // Supercluster clustering radius
+const SUPERCLUSTER_RADIUS = 80;        // Supercluster clustering radius (higher to compensate for 9 per-genre indices)
 const ARC_VIEWPORT_PAD = 100;          // arc viewport culling padding (px)
 const COLOCATION_OFFSET_RADIUS = 0.0008; // co-location spiral offset (degrees)
 
@@ -539,198 +539,182 @@ export default function CanvasOverlay({
     const clusterPositions = [];
 
     if (clusterAlpha > 0) {
-      const index = scIndexRef.current;
-      if (index) {
+      const indices = scIndexRef.current;
+      if (indices) {
         const zoom = Math.floor(currentZoom);
-        const clusters = index.getClusters(boundsArray, zoom);
 
-        for (const cluster of clusters) {
-          const [lng, lat] = cluster.geometry.coordinates;
-          const point = map.project([lng, lat]);
-          const { x, y } = point;
-
-          const maxRadius = 120;
-          if (x < -maxRadius || x > cssWidth + maxRadius || y < -maxRadius || y > cssHeight + maxRadius) continue;
-
-          if (cluster.properties.cluster) {
-            const count = cluster.properties.point_count;
-            // Zoom-based scale: 0.5x at zoom ≤1, scaling to 1.0x at zoom ≥4
-            const zoomScale = Math.min(1, Math.max(0.5, 0.5 + (currentZoom - 1) * (0.5 / 3)));
-            const clusterRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log10(count) * 14, CLUSTER_RADIUS_MAX) * zoomScale;
-
-            // Determine dominant genre color by sampling leaves (cached per cluster ID)
-            const clusterColorCache = clusterColorCacheRef.current;
-            let clusterTextureIdx = clusterColorCache.get(cluster.id);
-            if (clusterTextureIdx == null) {
-              clusterTextureIdx = Math.abs(cluster.id) % orbTextures.length; // fallback
-              const sampleLeaves = index.getLeaves(cluster.id, 8);
-              if (sampleLeaves.length > 0) {
-                const colorCounts = {};
-                for (const leaf of sampleLeaves) {
-                  const meta = artistMeta.get(leaf.properties.artistId);
-                  const gc = meta?.genreColor ?? getGenreBucket(leaf.properties.genres).color;
-                  colorCounts[gc] = (colorCounts[gc] || 0) + 1;
-                }
-                let bestColor = null;
-                let bestCount = 0;
-                for (const [c, n] of Object.entries(colorCounts)) {
-                  if (n > bestCount) { bestCount = n; bestColor = c; }
-                }
-                if (bestColor) {
-                  const idx = BUCKET_COLORS.indexOf(bestColor);
-                  if (idx >= 0) clusterTextureIdx = idx;
-                }
-              }
-              clusterColorCache.set(cluster.id, clusterTextureIdx);
+        // Pre-count total visible clusters across all genre indices for label budget
+        if (clusterLabelBudget === 0) {
+          let totalVisibleClusters = 0;
+          for (const entry of indices) {
+            const allClusters = entry.index.getClusters(boundsArray, zoom);
+            for (const c of allClusters) {
+              if (!c.properties.cluster) continue;
+              const [cLng, cLat] = c.geometry.coordinates;
+              const cPt = map.project([cLng, cLat]);
+              if (cPt.x >= -120 && cPt.x <= cssWidth + 120 && cPt.y >= -120 && cPt.y <= cssHeight + 120) totalVisibleClusters++;
             }
-            const orbTexture = orbTextures[clusterTextureIdx];
-            ctx.globalCompositeOperation = 'multiply';
-            ctx.globalAlpha = clusterAlpha;
-            ctx.drawImage(orbTexture, x - clusterRadius, y - clusterRadius, clusterRadius * 2, clusterRadius * 2);
+          }
+          if (totalVisibleClusters <= 10) clusterLabelBudget = 8;
+          else if (totalVisibleClusters <= 30) clusterLabelBudget = 5;
+          else if (totalVisibleClusters <= 60) clusterLabelBudget = 3;
+          else clusterLabelBudget = 0; // too dense, no labels
+        }
 
-            // Reset to source-over before drawing labels so they remain legible
-            ctx.globalCompositeOperation = 'source-over';
-            ctx.save();
-            const countStr = count.toString();
-            const isSmall = count < 5;
-            const fontSize = isSmall ? 10 : Math.min(14, (8 + Math.log2(count)) | 0);
+        for (const { textureIdx, index: scIndex } of indices) {
+          const clusters = scIndex.getClusters(boundsArray, zoom);
 
-            // Count text with shadow + stroke for legibility at all alpha levels
-            ctx.font = `600 ${fontSize}px "DM Sans", sans-serif`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.shadowColor = 'rgba(0,0,0,0.6)';
-            ctx.shadowBlur = 5;
-            ctx.strokeStyle = 'rgba(0,0,0,0.35)';
-            ctx.lineWidth = 2.5;
-            ctx.strokeText(countStr, x, y);
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillText(countStr, x, y);
-            ctx.shadowBlur = 0;
+          for (const cluster of clusters) {
+            const [lng, lat] = cluster.geometry.coordinates;
+            const point = map.project([lng, lat]);
+            const { x, y } = point;
 
-            // Draw top artist names below count — density-aware with collision detection
-            // Compute budget on first qualifying cluster (lazy init)
-            if (clusterLabelBudget === 0) {
-              // Count total visible clusters for budget
-              let visibleClusters = 0;
-              for (const c of clusters) {
-                if (!c.properties.cluster) continue;
-                const [cLng, cLat] = c.geometry.coordinates;
-                const cPt = map.project([cLng, cLat]);
-                if (cPt.x >= -120 && cPt.x <= cssWidth + 120 && cPt.y >= -120 && cPt.y <= cssHeight + 120) visibleClusters++;
+            const maxRadius = 120;
+            if (x < -maxRadius || x > cssWidth + maxRadius || y < -maxRadius || y > cssHeight + maxRadius) continue;
+
+            if (cluster.properties.cluster) {
+              const count = cluster.properties.point_count;
+              const zoomScale = Math.max(0.6, 1.2 - (currentZoom - 2) * 0.15);
+              const clusterRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log10(count) * 3.5, CLUSTER_RADIUS_MAX) * zoomScale;
+
+              // Use the per-genre texture index directly — no sampling needed
+              const orbTexture = orbTextures[textureIdx];
+              ctx.globalCompositeOperation = 'multiply';
+              ctx.globalAlpha = clusterAlpha;
+              ctx.drawImage(orbTexture, x - clusterRadius, y - clusterRadius, clusterRadius * 2, clusterRadius * 2);
+
+              // Reset to source-over before drawing labels so they remain legible
+              ctx.globalCompositeOperation = 'source-over';
+              ctx.save();
+              const countStr = count.toString();
+              const showCountLabel = currentZoom >= 7;
+              const isSmall = count < 5;
+              const fontSize = isSmall ? 10 : Math.min(14, (8 + Math.log2(count)) | 0);
+
+              if (showCountLabel) {
+                // Count text with shadow + stroke for legibility at all alpha levels
+                ctx.font = `600 ${fontSize}px "DM Sans", sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.shadowColor = 'rgba(0,0,0,0.6)';
+                ctx.shadowBlur = 5;
+                ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+                ctx.lineWidth = 2.5;
+                ctx.strokeText(countStr, x, y);
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillText(countStr, x, y);
+                ctx.shadowBlur = 0;
               }
-              if (visibleClusters <= 10) clusterLabelBudget = 8;
-              else if (visibleClusters <= 30) clusterLabelBudget = 5;
-              else if (visibleClusters <= 60) clusterLabelBudget = 3;
-              else clusterLabelBudget = 0; // too dense, no labels
-            }
-            if (clusterRadius >= 45 && clusterLabelsShown < clusterLabelBudget) {
-              let leaves = clusterLabelCacheRef.current.get(cluster.id);
-              if (!leaves) {
-                leaves = index.getLeaves(cluster.id, 10);
-                leaves.sort((a, b) => {
-                  const cA = (connectionCounts && connectionCounts.get(a.properties.artistId)) || 0;
-                  const cB = (connectionCounts && connectionCounts.get(b.properties.artistId)) || 0;
-                  return cB - cA;
-                });
-                clusterLabelCacheRef.current.set(cluster.id, leaves);
-              }
-              if (leaves.length > 0) {
-                const topN = count >= 20 ? 3 : 2;
-                const topNames = [];
-                for (let i = 0; i < Math.min(topN, leaves.length); i++) {
-                  const leaf = leaves[i];
-                  const a = artistById.get(leaf.properties.artistId);
-                  if (a) {
-                    const n = a.name.length > 15 ? a.name.slice(0, 14) + '\u2026' : a.name;
-                    topNames.push(n);
-                  }
+
+              // Draw top artist names below count — density-aware with collision detection
+              if (clusterRadius >= 45 && clusterLabelsShown < clusterLabelBudget) {
+                let leaves = clusterLabelCacheRef.current.get(cluster.id);
+                if (!leaves) {
+                  leaves = scIndex.getLeaves(cluster.id, 10);
+                  leaves.sort((a, b) => {
+                    const cA = (connectionCounts && connectionCounts.get(a.properties.artistId)) || 0;
+                    const cB = (connectionCounts && connectionCounts.get(b.properties.artistId)) || 0;
+                    return cB - cA;
+                  });
+                  clusterLabelCacheRef.current.set(cluster.id, leaves);
                 }
-                if (topNames.length > 0) {
-                  const namesStr = topNames.join(', ');
-                  ctx.font = '500 10px "DM Sans", sans-serif';
-                  const namesW = ctx.measureText(namesStr).width;
-                  // Collision check via AABB
-                  const labelRect = { x: x - namesW / 2 - 4, y: y + fontSize / 2 + 1, w: namesW + 8, h: 28 };
-                  let blocked = false;
-                  for (const occ of clusterLabelOccupied) {
-                    if (overlaps(labelRect, occ)) { blocked = true; break; }
-                  }
-                  if (!blocked) {
-                    clusterLabelOccupied.push(labelRect);
-                    clusterLabelsShown++;
-
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'top';
-                    ctx.shadowColor = 'rgba(0,0,0,0.6)';
-                    ctx.shadowBlur = 4;
-                    ctx.strokeStyle = 'rgba(0,0,0,0.35)';
-                    ctx.lineWidth = 2;
-                    ctx.strokeText(namesStr, x, y + fontSize / 2 + 3);
-                    ctx.fillStyle = 'rgba(250,243,235,0.85)';
-                    ctx.fillText(namesStr, x, y + fontSize / 2 + 3);
-
-                    // "+N more" only for large clusters
-                    const remaining = count - topNames.length;
-                    if (remaining > 5) {
-                      const moreStr = `+${remaining} more`;
-                      ctx.font = '400 9px "DM Sans", sans-serif';
-                      ctx.strokeText(moreStr, x, y + fontSize / 2 + 16);
-                      ctx.fillStyle = 'rgba(250,243,235,0.6)';
-                      ctx.fillText(moreStr, x, y + fontSize / 2 + 16);
+                if (leaves.length > 0) {
+                  const topN = count >= 20 ? 3 : 2;
+                  const topNames = [];
+                  for (let i = 0; i < Math.min(topN, leaves.length); i++) {
+                    const leaf = leaves[i];
+                    const a = artistById.get(leaf.properties.artistId);
+                    if (a) {
+                      const n = a.name.length > 15 ? a.name.slice(0, 14) + '\u2026' : a.name;
+                      topNames.push(n);
                     }
-                    ctx.shadowBlur = 0;
+                  }
+                  if (topNames.length > 0) {
+                    const namesStr = topNames.join(', ');
+                    ctx.font = '500 10px "DM Sans", sans-serif';
+                    const namesW = ctx.measureText(namesStr).width;
+                    // Collision check via AABB
+                    const labelRect = { x: x - namesW / 2 - 4, y: y + fontSize / 2 + 1, w: namesW + 8, h: 28 };
+                    let blocked = false;
+                    for (const occ of clusterLabelOccupied) {
+                      if (overlaps(labelRect, occ)) { blocked = true; break; }
+                    }
+                    if (!blocked) {
+                      clusterLabelOccupied.push(labelRect);
+                      clusterLabelsShown++;
+
+                      ctx.textAlign = 'center';
+                      ctx.textBaseline = 'top';
+                      ctx.shadowColor = 'rgba(0,0,0,0.6)';
+                      ctx.shadowBlur = 4;
+                      ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+                      ctx.lineWidth = 2;
+                      ctx.strokeText(namesStr, x, y + fontSize / 2 + 3);
+                      ctx.fillStyle = 'rgba(250,243,235,0.85)';
+                      ctx.fillText(namesStr, x, y + fontSize / 2 + 3);
+
+                      // "+N more" only for large clusters
+                      const remaining = count - topNames.length;
+                      if (remaining > 5) {
+                        const moreStr = `+${remaining} more`;
+                        ctx.font = '400 9px "DM Sans", sans-serif';
+                        ctx.strokeText(moreStr, x, y + fontSize / 2 + 16);
+                        ctx.fillStyle = 'rgba(250,243,235,0.6)';
+                        ctx.fillText(moreStr, x, y + fontSize / 2 + 16);
+                      }
+                      ctx.shadowBlur = 0;
+                    }
                   }
                 }
               }
-            }
-            ctx.restore();
+              ctx.restore();
 
-            // Track cluster position for pill collision
-            clusterPositions.push({ x, y, radius: clusterRadius });
-          } else {
-            const artistId = cluster.properties.artistId;
-            const artistData = artistById.get(artistId);
-            if (!artistData) continue;
+              // Track cluster position for pill collision
+              clusterPositions.push({ x, y, radius: clusterRadius });
+            } else {
+              const artistId = cluster.properties.artistId;
+              const artistData = artistById.get(artistId);
+              if (!artistData) continue;
 
-            const opacity = opacityMap.get(artistId)?.opacity ?? 1;
-            if (opacity <= 0) continue;
+              const opacity = opacityMap.get(artistId)?.opacity ?? 1;
+              if (opacity <= 0) continue;
 
-            const connCount = (connectionCounts && connectionCounts.get(artistData.id)) || 0;
-            const scaleFactor = validArtists.length > 200 ? 0.5 : 1;
-            const baseRadius = (CLUSTER_RADIUS_BASE + Math.min(connCount * 3, 60)) * scaleFactor;
+              const connCount = (connectionCounts && connectionCounts.get(artistData.id)) || 0;
+              const scaleFactor = validArtists.length > 200 ? 0.4 : 0.8;
+              const baseRadius = (CLUSTER_RADIUS_BASE + Math.min(connCount * 0.6, 8)) * scaleFactor;
 
-            const isActive = activeArtist && artistData.id === activeArtist.id;
-            const isConnected = connectedIds.has(artistId);
-            const isPassive = activeArtist && !isActive && !isConnected;
+              const isActive = activeArtist && artistData.id === activeArtist.id;
+              const isConnected = connectedIds.has(artistId);
+              const isPassive = activeArtist && !isActive && !isConnected;
 
-            const meta = artistMeta.get(artistId);
-            const genreColor = meta?.genreColor ?? getGenreBucket(artistData.genres).color;
-            const textureIndex = BUCKET_COLORS.indexOf(genreColor);
-            const orbTexture =
-              textureIndex >= 0 && textureIndex < orbTextures.length
-                ? orbTextures[textureIndex]
-                : orbTextures[orbTextures.length - 1];
+              const meta = artistMeta.get(artistId);
+              const genreColor = meta?.genreColor ?? getGenreBucket(artistData.genres).color;
+              const textureIndex = BUCKET_COLORS.indexOf(genreColor);
+              const orbTexture =
+                textureIndex >= 0 && textureIndex < orbTextures.length
+                  ? orbTextures[textureIndex]
+                  : orbTextures[orbTextures.length - 1];
 
-            let radius = isActive ? baseRadius * CLUSTER_ACTIVE_SCALE : baseRadius;
-            if (!isActive && !isConnected && !hasActiveTransitions) {
-              let pulseFactor = 1;
-              if (!reducedMotion) {
-                const hash = meta?.pulseHash ?? 0;
-                const phase = ((performance.now() / ANIMATION_CYCLE_MS) + hash * 0.1) % 1;
-                pulseFactor = 1 + 0.05 * Math.sin(phase * Math.PI * 2);
+              let radius = isActive ? baseRadius * CLUSTER_ACTIVE_SCALE : baseRadius;
+              if (!isActive && !isConnected && !hasActiveTransitions) {
+                let pulseFactor = 1;
+                if (!reducedMotion) {
+                  const hash = meta?.pulseHash ?? 0;
+                  const phase = ((performance.now() / ANIMATION_CYCLE_MS) + hash * 0.1) % 1;
+                  pulseFactor = 1 + 0.05 * Math.sin(phase * Math.PI * 2);
+                }
+                radius *= pulseFactor;
               }
-              radius *= pulseFactor;
+
+              const baseAlpha = isPassive ? 0.4 : 1.0;
+              ctx.globalCompositeOperation = 'multiply';
+              ctx.globalAlpha = baseAlpha * opacity * clusterAlpha;
+              ctx.drawImage(orbTexture, x - radius, y - radius, radius * 2, radius * 2);
+              ctx.globalCompositeOperation = 'source-over';
+
+              // Track individual-in-cluster position for pill collision
+              clusterPositions.push({ x, y, radius });
             }
-
-            const baseAlpha = isPassive ? 0.4 : 1.0;
-            ctx.globalCompositeOperation = 'multiply';
-            ctx.globalAlpha = baseAlpha * opacity * clusterAlpha;
-            ctx.drawImage(orbTexture, x - radius, y - radius, radius * 2, radius * 2);
-            ctx.globalCompositeOperation = 'source-over';
-
-            // Track individual-in-cluster position for pill collision
-            clusterPositions.push({ x, y, radius });
           }
         }
       }
@@ -774,7 +758,7 @@ export default function CanvasOverlay({
         const point = cityProjections.get(key);
         const { x, y } = point;
 
-        const cityRadius = Math.max(30, Math.sqrt(group.artists.length) * 12);
+        const cityRadius = Math.max(8, Math.sqrt(group.artists.length) * 1.2);
         // Viewport cull
         if (x < -cityRadius || x > cssWidth + cityRadius || y < -cityRadius || y > cssHeight + cityRadius) continue;
 
@@ -924,7 +908,7 @@ export default function CanvasOverlay({
         }
 
         const connCount = (connectionCounts && connectionCounts.get(artist.id)) || 0;
-        const prominenceScale = Math.min(1 + Math.log2(Math.max(connCount, 1)) * 0.08, 1.8);
+        const prominenceScale = Math.min(1 + Math.log2(Math.max(connCount, 1)) * 0.06, 1.5);
         const r = ARTIST_RADIUS * (state === 'active' ? ARTIST_ACTIVE_SCALE : prominenceScale);
 
         // Always show labels for hovered/active/connected; collision-check the rest
@@ -1072,7 +1056,7 @@ export default function CanvasOverlay({
       if (pos) {
         const connCount = (connectionCounts && connectionCounts.get(activeArtist.id)) || 0;
         const isIndividual = renderModeRef.current === 'individual';
-        const baseRadius = isIndividual ? ARTIST_RADIUS : CLUSTER_RADIUS_BASE + Math.min(connCount * 3, 60);
+        const baseRadius = isIndividual ? ARTIST_RADIUS : CLUSTER_RADIUS_BASE + Math.min(connCount * 0.6, 8);
         const radius = baseRadius * (isIndividual ? ARTIST_ACTIVE_SCALE : CLUSTER_ACTIVE_SCALE);
 
         const meta = artistMeta.get(activeArtist.id);
@@ -1284,16 +1268,25 @@ export default function CanvasOverlay({
           (a, b) => b[1].artists.length - a[1].artists.length
         );
 
-        // Rebuild Supercluster index
-        const index = new Supercluster({ radius: SUPERCLUSTER_RADIUS, maxZoom: 20 });
-        index.load(
-          currentValid.map((a) => ({
+        // Rebuild per-genre Supercluster indices
+        const BUCKET_ENTRIES = Object.entries(GENRE_BUCKETS);
+        const artistsByBucket = new Map();
+        for (const [name] of BUCKET_ENTRIES) artistsByBucket.set(name, []);
+        for (const a of currentValid) {
+          const { bucket } = getGenreBucket(a.genres);
+          artistsByBucket.get(bucket).push(a);
+        }
+        const indices = BUCKET_ENTRIES.map(([name, data], idx) => {
+          const artists = artistsByBucket.get(name) || [];
+          const sc = new Supercluster({ radius: SUPERCLUSTER_RADIUS, maxZoom: 20 });
+          sc.load(artists.map(a => ({
             type: 'Feature',
             properties: { artistId: a.id, name: a.name, genres: a.genres },
             geometry: { type: 'Point', coordinates: [a.birth_lng, a.birth_lat] },
-          }))
-        );
-        scIndexRef.current = index;
+          })));
+          return { bucketName: name, color: data.color, textureIdx: idx, index: sc };
+        });
+        scIndexRef.current = indices;
         clusterColorCacheRef.current = new Map(); // clear stale cluster color cache
         clusterLabelCacheRef.current.clear(); // clear stale cluster label cache
 
@@ -1417,7 +1410,7 @@ export default function CanvasOverlay({
       const connCount = (connectionCountsRef.current?.get(artist?.id)) || 0;
       const scaleFactor = validArtistsRef.current.length > 200 ? 0.5 : 1;
       const inputScale = hitRadiusRef.current / HIT_TEST_MIN_RADIUS;
-      const baseRadius = (CLUSTER_RADIUS_BASE + Math.min(connCount * 3, 60)) * scaleFactor;
+      const baseRadius = (CLUSTER_RADIUS_BASE + Math.min(connCount * 0.6, 8)) * scaleFactor;
       effectiveHitRadius = Math.max(20 * inputScale, baseRadius * 0.4);
     }
 
@@ -1433,26 +1426,26 @@ export default function CanvasOverlay({
   // so centralising it here keeps the three callsites DRY.
   const findClusterAtPoint = useCallback((mx, my) => {
     const map = mapRef.current?.getMap?.();
-    const index = scIndexRef.current;
-    if (!map || !index) return null;
+    const indices = scIndexRef.current;
+    if (!map || !indices) return null;
 
     const bounds = map.getBounds();
     const zoom = Math.floor(map.getZoom());
-    const clusters = index.getClusters(
-      [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()],
-      zoom
-    );
+    const boundsArr = [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()];
 
-    for (const cluster of clusters) {
-      if (!cluster.properties.cluster) continue;
-      const [lng, lat] = cluster.geometry.coordinates;
-      const pt = map.project([lng, lat]);
-      const dx = pt.x - mx;
-      const dy = pt.y - my;
-      const count = cluster.properties.point_count;
-      const clusterRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log2(count) * 7, CLUSTER_RADIUS_MAX);
-      if (Math.sqrt(dx * dx + dy * dy) <= clusterRadius) {
-        return cluster;
+    for (const entry of indices) {
+      const clusters = entry.index.getClusters(boundsArr, zoom);
+      for (const cluster of clusters) {
+        if (!cluster.properties.cluster) continue;
+        const [lng, lat] = cluster.geometry.coordinates;
+        const pt = map.project([lng, lat]);
+        const dx = pt.x - mx;
+        const dy = pt.y - my;
+        const count = cluster.properties.point_count;
+        const clusterRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log10(count) * 3.5, CLUSTER_RADIUS_MAX);
+        if (Math.sqrt(dx * dx + dy * dy) <= clusterRadius) {
+          return { cluster, scEntry: entry };
+        }
       }
     }
     return null;
@@ -1462,18 +1455,18 @@ export default function CanvasOverlay({
   // to reduce clicks from 4-6 to 2-3 (Issue #2)
   const handleClusterClick = useCallback((mx, my) => {
     const map = mapRef.current?.getMap?.();
-    const index = scIndexRef.current;
-    if (!map || !index) return false;
+    if (!map) return false;
 
     if (renderModeRef.current !== 'cluster') return false;
 
-    const cluster = findClusterAtPoint(mx, my);
-    if (cluster) {
+    const result = findClusterAtPoint(mx, my);
+    if (result) {
+      const { cluster, scEntry } = result;
       // Smart zoom: use Supercluster's expansion zoom, capped to prevent disorienting jumps
       const currentZoom = map.getZoom();
       let expansionZoom;
       try {
-        expansionZoom = index.getClusterExpansionZoom(cluster.id);
+        expansionZoom = scEntry.index.getClusterExpansionZoom(cluster.id);
       } catch {
         expansionZoom = currentZoom + 3;
       }
@@ -1491,10 +1484,10 @@ export default function CanvasOverlay({
     const map = mapRef.current?.getMap?.();
     if (!map) return false;
 
-    const cluster = findClusterAtPoint(mx, my);
-    if (cluster) {
+    const result = findClusterAtPoint(mx, my);
+    if (result) {
       // Double-click jumps directly to individual artist level (zoom 9)
-      map.flyTo({ center: cluster.geometry.coordinates, zoom: ZOOM_INDIVIDUAL });
+      map.flyTo({ center: result.cluster.geometry.coordinates, zoom: ZOOM_INDIVIDUAL });
       return true;
     }
     return false;
@@ -1577,11 +1570,11 @@ export default function CanvasOverlay({
 
       // In cluster mode, check cluster hover for pointer cursor + tooltip (Issue #35)
       if (renderModeRef.current === 'cluster') {
-        const hoveredCluster = findClusterAtPoint(mx, my);
-        if (hoveredCluster) {
+        const hoveredResult = findClusterAtPoint(mx, my);
+        if (hoveredResult) {
           map.getCanvas().style.cursor = 'pointer';
           // Show tooltip with cluster count
-          showClusterTooltip(mx, my, hoveredCluster.properties.point_count, canvasRef.current);
+          showClusterTooltip(mx, my, hoveredResult.cluster.properties.point_count, canvasRef.current);
         } else {
           map.getCanvas().style.cursor = '';
           hideClusterTooltip();
@@ -1686,13 +1679,12 @@ export default function CanvasOverlay({
       const map = mapRef.current?.getMap?.();
 
       if (mode === 'cluster') {
-        // Expand focused cluster
-        const cluster = focusedArtistIndexRef._focusedCluster;
-        const index = scIndexRef.current;
-        if (cluster && cluster.properties.cluster && index && map) {
+        // Expand focused cluster using its per-genre index
+        const focused = focusedArtistIndexRef._focusedCluster;
+        if (focused && focused.cluster && focused.cluster.properties.cluster && focused.scEntry && map) {
           try {
-            const expansionZoom = index.getClusterExpansionZoom(cluster.id);
-            map.flyTo({ center: cluster.geometry.coordinates, zoom: expansionZoom });
+            const expansionZoom = focused.scEntry.index.getClusterExpansionZoom(focused.cluster.id);
+            map.flyTo({ center: focused.cluster.geometry.coordinates, zoom: expansionZoom });
           } catch { /* cluster expansion may fail at max zoom */ }
         }
         return;
@@ -1741,21 +1733,21 @@ export default function CanvasOverlay({
       const map = mapRef.current?.getMap?.();
 
       if (mode === 'cluster') {
-        // Cycle through cluster centers visible on screen
-        const index = scIndexRef.current;
-        if (!map || !index) return;
+        // Cycle through cluster centers visible on screen (collected from all genre indices)
+        const indices = scIndexRef.current;
+        if (!map || !indices) return;
         const bounds = map.getBounds();
         const zoom = Math.floor(map.getZoom());
-        const clusters = index.getClusters(
-          [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()],
-          zoom
-        );
+        const boundsArr = [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()];
         const visibleClusters = [];
-        for (const cluster of clusters) {
-          const [lng, lat] = cluster.geometry.coordinates;
-          const pt = map.project([lng, lat]);
-          if (pt.x >= 0 && pt.x <= cw && pt.y >= 0 && pt.y <= ch) {
-            visibleClusters.push({ cluster, pt });
+        for (const entry of indices) {
+          const clusters = entry.index.getClusters(boundsArr, zoom);
+          for (const cluster of clusters) {
+            const [lng, lat] = cluster.geometry.coordinates;
+            const pt = map.project([lng, lat]);
+            if (pt.x >= 0 && pt.x <= cw && pt.y >= 0 && pt.y <= ch) {
+              visibleClusters.push({ cluster, pt, scEntry: entry });
+            }
           }
         }
         if (visibleClusters.length === 0) return;
@@ -1769,7 +1761,7 @@ export default function CanvasOverlay({
         focusedArtistIndexRef.current = idx;
 
         // Announce focused cluster/leaf via ARIA live region
-        const { cluster } = visibleClusters[idx];
+        const { cluster, scEntry } = visibleClusters[idx];
         const clusterLabel = cluster.properties.cluster
           ? `Cluster of ${cluster.properties.point_count} artists`
           : cluster.properties.name || 'Artist';
@@ -1781,8 +1773,8 @@ export default function CanvasOverlay({
         } else {
           onHoverRef.current?.(null);
         }
-        // Store focused cluster for Enter handling
-        focusedArtistIndexRef._focusedCluster = cluster;
+        // Store focused cluster + its per-genre entry for Enter handling
+        focusedArtistIndexRef._focusedCluster = { cluster, scEntry };
         needsAnimRef.current = true;
         startRaf();
         return;

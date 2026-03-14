@@ -12,7 +12,7 @@ const GENRE_BUCKETS = {
       'jazz', 'blues', 'funk', 'bebop', 'swing',
       'bossa nova', 'samba', 'latin jazz', 'smooth jazz', 'acid jazz', 'afrobeat',
     ],
-    color: '#D4295E',
+    color: '#FFBA52',
   },
   Rock: {
     genres: [
@@ -20,7 +20,7 @@ const GENRE_BUCKETS = {
       'new wave', 'post-punk', 'shoegaze', 'britpop', 'garage', 'surf', 'psychedelic',
       'stoner', 'doom', 'sludge', 'emo',
     ],
-    color: '#F4762D',
+    color: '#D4295E',
   },
   Electronic: {
     genres: [
@@ -28,14 +28,14 @@ const GENRE_BUCKETS = {
       'trip hop', 'downtempo', 'electropop', 'synth', 'drum and bass', 'dnb',
       'dubstep', 'breakbeat', 'industrial',
     ],
-    color: '#DB608F',
+    color: '#D0DF00',
   },
   'Hip-hop': {
     genres: [
       'hip-hop', 'rap',
       'grime', 'drill', 'trap', 'crunk', 'bounce', 'chopped and screwed',
     ],
-    color: '#FFBA52',
+    color: '#F4762D',
   },
   'Pop/Soul': {
     genres: [
@@ -43,13 +43,13 @@ const GENRE_BUCKETS = {
       'cantopop', 'mandopop', 'j-pop', 'k-pop', 'c-pop', 'schlager', 'chanson',
       'ballad', 'adult contemporary', 'euro', 'enka',
     ],
-    color: '#FF7276',
+    color: '#DB608F',
   },
   'Folk/Country': {
     genres: [
       'country', 'folk', 'bluegrass', 'americana', 'traditional folk',
     ],
-    color: '#FFCB78',
+    color: '#ADA400',
   },
   'World/Latin': {
     genres: [
@@ -58,9 +58,9 @@ const GENRE_BUCKETS = {
       'flamenco', 'fado', 'música popular brasileira', 'popular music',
       'video game music', 'experimental',
     ],
-    color: '#DE7487',
+    color: '#C34121',
   },
-  Other: { genres: [], color: '#E8A99B' },
+  Other: { genres: [], color: '#FFCB78' },
 };
 
 export function getGenreBucket(genres) {
