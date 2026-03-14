@@ -166,9 +166,9 @@ export default function Map({
   const visibleCount = useMemo(() => (artists || []).length, [artists]);
 
   const artistById = useMemo(() => {
-    const map = new Map();
-    for (const a of (artists || [])) map.set(a.id, a);
-    return map;
+    const lookup = new window.Map();
+    for (const a of (artists || [])) lookup.set(a.id, a);
+    return lookup;
   }, [artists]);
 
   const onClick = useCallback(
