@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { Map as MapGL } from 'react-map-gl/maplibre';
 import { Source, Layer } from 'react-map-gl/maplibre';
 import ArtistCount from './ArtistCount.jsx';
@@ -126,6 +126,21 @@ const unclusteredLabelLayer = {
   },
 };
 
+const selectedArtistLayer = {
+  id: 'selected-artist',
+  type: 'circle',
+  source: 'artists',
+  filter: ['==', ['get', 'artistId'], ''],  // empty filter, updated dynamically
+  paint: {
+    'circle-color': individualColorExpression,
+    'circle-radius': 16,
+    'circle-opacity': 0.9,
+    'circle-stroke-width': 3,
+    'circle-stroke-color': '#FAF3EB',
+    'circle-stroke-opacity': 1,
+  },
+};
+
 export default function Map({
   mapRef,
   artists,
@@ -224,6 +239,17 @@ export default function Map({
     onHover(null);
     setCursor('auto');
   }, [onHover]);
+
+  useEffect(() => {
+    const map = mapRef.current?.getMap();
+    if (!map || !map.getLayer('selected-artist')) return;
+
+    if (selectedArtist) {
+      map.setFilter('selected-artist', ['==', ['get', 'artistId'], selectedArtist.id]);
+    } else {
+      map.setFilter('selected-artist', ['==', ['get', 'artistId'], '']);
+    }
+  }, [selectedArtist, mapRef]);
 
   const geojsonData = useMemo(
     () => artistsToGeoJSON(artists || []),
@@ -376,6 +402,7 @@ export default function Map({
             <Layer {...clusterCountLayer} />
             <Layer {...unclusteredPointLayer} />
             <Layer {...unclusteredLabelLayer} />
+            <Layer {...selectedArtistLayer} />
           </Source>
         )}
       </MapGL>
