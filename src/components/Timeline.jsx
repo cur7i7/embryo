@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect, useLayoutEffect } from 'react';
 import { useIsPointerFine } from '../hooks/useIsPointerFine';
 
 const MIN_YEAR = 1400;
@@ -35,6 +35,18 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
   const handlePointerMoveRef = useRef(null);
   const radioYearRef = useRef(null);
   const radioRangeRef = useRef(null);
+
+  // Fix: Track container width in state to avoid reading ref during render
+  const [containerWidth, setContainerWidth] = useState(300);
+  useLayoutEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const update = () => setContainerWidth(el.offsetWidth);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   // Fix #19: Track which handle is actively being dragged for z-index priority
   const [activeHandle, setActiveHandle] = useState(null);
@@ -324,7 +336,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
             width: 36,
             height: 36,
             borderRadius: '8px',
-            backgroundColor: isPlaying ? '#D83E7F' : 'rgba(196,50,107,0.1)',
+            backgroundColor: isPlaying ? '#C4366F' : 'rgba(196,50,107,0.1)',
             color: isPlaying ? '#FAF3EB' : '#C4326B',
             display: 'flex',
             alignItems: 'center',
@@ -538,8 +550,8 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
               aria-invalid={clampedFeedback != null ? 'true' : undefined}
               style={{
                 width: 72,
-                height: 32,
-                minHeight: 32,
+                height: isPointerFine ? 32 : 44,
+                minHeight: isPointerFine ? 32 : 44,
                 padding: '0 6px',
                 fontSize: 14,
                 fontFamily: '"DM Sans", sans-serif',
@@ -618,7 +630,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                     style={{
                       flex: 1,
                       height: `${Math.max(2, heightPct)}%`,
-                      background: 'linear-gradient(to top, #D83E7F, #FFBA52)',
+                      background: 'linear-gradient(to top, #C4366F, #FFBA52)',
                       opacity: inRange ? 0.65 : 0.25,
                       borderRadius: '2px 2px 0 0',
                       transition: 'opacity 0.15s',
@@ -656,7 +668,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
               onPointerDown={(e) => handlePointerDown(e, 'left')}
               onPointerMove={(e) => handlePointerMoveRef.current(e)}
               onPointerUp={handlePointerUp}
-              onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) { e.currentTarget.style.outline = '2px solid #D83E7F'; e.currentTarget.style.outlineOffset = '2px'; } }}
+              onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) { e.currentTarget.style.outline = '2px solid #C4366F'; e.currentTarget.style.outlineOffset = '2px'; } }}
               onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
               onKeyDown={(e) => {
                 if (e.key === 'ArrowLeft') onRangeChange(Math.max(MIN_YEAR, rangeStart - 10), rangeEnd);
@@ -684,7 +696,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                 style={{
                   width: '12px',
                   height: '100%',
-                  backgroundColor: '#D83E7F',
+                  backgroundColor: '#C4366F',
                   borderRadius: '6px',
                   boxShadow: '0 1px 4px rgba(216, 62, 127, 0.5), 0 0 0 1px rgba(216, 62, 127, 0.25)',
                 }}
@@ -704,7 +716,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
               onPointerDown={(e) => handlePointerDown(e, 'right')}
               onPointerMove={(e) => handlePointerMoveRef.current(e)}
               onPointerUp={handlePointerUp}
-              onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) { e.currentTarget.style.outline = '2px solid #D83E7F'; e.currentTarget.style.outlineOffset = '2px'; } }}
+              onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) { e.currentTarget.style.outline = '2px solid #C4366F'; e.currentTarget.style.outlineOffset = '2px'; } }}
               onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
               onKeyDown={(e) => {
                 if (e.key === 'ArrowLeft') onRangeChange(rangeStart, Math.max(rangeStart + 10, rangeEnd - 10));
@@ -754,8 +766,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
               {yearLabels.map((year) => {
                 const pct = yearToPercent(year);
                 // Fix #38: Use pixel distance instead of year distance for consistent behavior
-                const containerEl = containerRef.current;
-                const usableWidth = containerEl ? containerEl.offsetWidth - padLeft - padRight : 300;
+                const usableWidth = containerWidth - padLeft - padRight;
                 const pxPerYear = usableWidth / (MAX_YEAR - MIN_YEAR);
                 const MIN_PX_GAP = 40; // minimum pixel distance before hiding label
                 const pxFromStart = Math.abs(year - rangeStart) * pxPerYear;
@@ -815,7 +826,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                 aria-label="Set start year"
                 style={{
                   position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${leftPercent / 100} - 30px)`,
-                  bottom: 0, width: 56, minHeight: 28, padding: '0 4px', // Fix #20: bottom:0 keeps within bounds, Fix #39: removed dead height:24
+                  bottom: 0, width: 56, minHeight: isPointerFine ? 28 : 44, padding: '0 4px', // Fix #20: bottom:0 keeps within bounds, Fix #39: removed dead height:24
                   fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
                   color: '#C4326B', backgroundColor: 'rgba(250,243,235,0.95)',
                   border: '1px solid #C4326B', borderRadius: 4, textAlign: 'center', outline: 'none',
@@ -830,7 +841,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                   position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${leftPercent / 100} - 20px)`,
                   bottom: 0, background: 'none', border: 'none', cursor: 'pointer', // Fix #20: bottom:0
                   fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
-                  color: '#C4326B', padding: '2px 4px', minHeight: 28, display: 'flex', alignItems: 'center',
+                  color: '#C4326B', padding: '2px 4px', minHeight: isPointerFine ? 28 : 44, display: 'flex', alignItems: 'center',
                   borderBottom: '1px dashed rgba(196,50,107,0.4)', // Fix #18: visual affordance
                   outline: 'none',
                 }}
@@ -873,7 +884,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                 aria-label="Set end year"
                 style={{
                   position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${rightPercent / 100} - 30px)`,
-                  bottom: 0, width: 56, minHeight: 28, padding: '0 4px', // Fix #20: bottom:0, Fix #39: removed dead height:24
+                  bottom: 0, width: 56, minHeight: isPointerFine ? 28 : 44, padding: '0 4px', // Fix #20: bottom:0, Fix #39: removed dead height:24
                   fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
                   color: '#C4326B', backgroundColor: 'rgba(250,243,235,0.95)',
                   border: '1px solid #C4326B', borderRadius: 4, textAlign: 'center', outline: 'none',
@@ -888,7 +899,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                   position: 'absolute', left: `calc(${padLeft}px + (100% - ${padLeft + padRight}px) * ${rightPercent / 100} - 20px)`,
                   bottom: 0, background: 'none', border: 'none', cursor: 'pointer', // Fix #20: bottom:0
                   fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
-                  color: '#C4326B', padding: '2px 4px', minHeight: 28, display: 'flex', alignItems: 'center',
+                  color: '#C4326B', padding: '2px 4px', minHeight: isPointerFine ? 28 : 44, display: 'flex', alignItems: 'center',
                   borderBottom: '1px dashed rgba(196,50,107,0.4)', // Fix #18: visual affordance
                   outline: 'none',
                 }}

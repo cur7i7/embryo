@@ -5,16 +5,18 @@ import { useIsPointerFine } from '../hooks/useIsPointerFine.js';
 
 const MAX_RESULTS = 8;
 
-function SearchBar({ artists, allArtists, onSelect, isMobile = false, artistCount }) {
+function SearchBar({ artists, allArtists, onSelect, isMobile = false, artistCount, connectionCounts }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [hasFocus, setHasFocus] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [glowActive, setGlowActive] = useState(true);
   const isPointerFine = useIsPointerFine();
   const inputRef = useRef(null);
   const dropdownRef = useRef(null);
   const blurTimeoutRef = useRef(null);
+  const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.userAgent);
 
   // Fix #49: Derive total artist count for the placeholder.
   // Prefer the explicit `artistCount` prop; fall back to allArtists/artists length.
@@ -22,8 +24,14 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false, artistCoun
   // reflect the full dataset rather than the currently-filtered slice.
   const totalCount = artistCount ?? (allArtists?.length || artists?.length) ?? 0;
   const searchPlaceholder = totalCount > 0
-    ? `Search ${totalCount.toLocaleString()} artists…`
+    ? `Search ${totalCount.toLocaleString()}+ artists…`
     : 'Search artists…';
+
+  // One-time glow animation on mount to draw attention
+  useEffect(() => {
+    const timer = setTimeout(() => setGlowActive(false), 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Use the full unfiltered dataset for indexing so the Fuse index is not
   // rebuilt on every timeline drag (which changes the filtered artists list
@@ -33,7 +41,7 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false, artistCoun
     if (!indexSource || indexSource.length === 0) return null;
     return new Fuse(indexSource, {
       keys: ['name'],
-      threshold: 0.3,
+      threshold: 0.4,
       minMatchCharLength: 2,
       includeScore: true,
     });
@@ -50,10 +58,40 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false, artistCoun
       return;
     }
 
-    const matches = fuse.search(val).slice(0, MAX_RESULTS).map((r) => r.item);
+    // Take a large candidate pool — long names like "Johann Sebastian Bach"
+    // score poorly in Fuse (0.36 for query "bach") so we need depth to find them
+    const rawResults = fuse.search(val).slice(0, 100);
+    const queryLower = val.trim().toLowerCase();
+    const queryWords = queryLower.split(/\s+/);
+    const boosted = rawResults.map((r) => {
+      const connCount = connectionCounts?.get(r.item.id) ?? 0;
+      const nameLower = r.item.name.toLowerCase();
+      const nameWords = nameLower.split(/\s+/);
+
+      // Connection-based boost (fame proxy) — steeper scaling so household
+      // names decisively outrank obscure matches even on partial queries
+      const connectionBoost = Math.min(Math.log2(connCount + 1) * 0.1, 0.6);
+
+      // Exact word match: if every query word matches a word start in the name
+      const allWordsMatch = queryWords.every(qw =>
+        nameWords.some(nw => nw === qw || nw.startsWith(qw))
+      );
+      const exactWordBonus = allWordsMatch ? 0.15 : 0;
+
+      // Surname match: "bach" → prefer artists whose last name IS Bach
+      const lastName = nameWords[nameWords.length - 1];
+      const lastNameBonus = (lastName === queryLower || queryWords.includes(lastName)) ? 0.2 : 0;
+
+      return {
+        item: r.item,
+        combinedScore: (r.score ?? 0) - connectionBoost - exactWordBonus - lastNameBonus,
+      };
+    });
+    boosted.sort((a, b) => a.combinedScore - b.combinedScore);
+    const matches = boosted.slice(0, MAX_RESULTS).map((r) => r.item);
     setResults(matches);
     setIsOpen(matches.length > 0);
-  }, [fuse]);
+  }, [fuse, connectionCounts]);
 
   const selectArtist = useCallback((artist) => {
     setQuery(artist.name);
@@ -155,6 +193,15 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false, artistCoun
   }, [activeIndex]);
 
   return (
+    <>
+    {glowActive && (
+      <style>{`
+        @keyframes searchBarGlow {
+          0%, 100% { box-shadow: 0 2px 12px rgba(90, 80, 72, 0.10); }
+          50% { box-shadow: 0 2px 20px rgba(168, 144, 128, 0.35), 0 0 0 3px rgba(168, 144, 128, 0.15); }
+        }
+      `}</style>
+    )}
     <div
       style={{
         position: 'fixed',
@@ -162,7 +209,7 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false, artistCoun
         right: `max(16px, env(safe-area-inset-right))`,
         left: isMobile ? `max(16px, env(safe-area-inset-left))` : 'auto',
         zIndex: 20,
-        width: isMobile ? 'auto' : 'clamp(240px, 30vw, 320px)',
+        width: isMobile ? 'auto' : 'clamp(260px, 35vw, 380px)',
         maxWidth: 400,
         fontFamily: '"DM Sans", sans-serif',
       }}
@@ -193,7 +240,7 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false, artistCoun
         <input
           id="search-input"
           ref={inputRef}
-          type="search"
+          type="text"
           value={query}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
@@ -210,18 +257,21 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false, artistCoun
           style={{
             width: '100%',
             boxSizing: 'border-box',
-            padding: '9px 12px 9px 36px',
-            fontSize: 14,
+            padding: isPointerFine && !isMobile ? '10px 48px 10px 36px' : '9px 12px 9px 36px',
+            fontSize: 15,
             fontFamily: '"DM Sans", sans-serif',
             color: '#3E3530',
             backgroundColor: 'rgba(250, 243, 235, 0.95)',
             border: '1px solid rgba(224, 216, 204, 0.8)',
             borderRadius: (isOpen || (hasFocus && query.trim().length >= 2 && results.length === 0)) ? '12px 12px 0 0' : 999,
             outline: '2px solid transparent',
-            boxShadow: '0 2px 12px rgba(90, 80, 72, 0.10)',
+            boxShadow: glowActive
+              ? undefined
+              : '0 2px 12px rgba(90, 80, 72, 0.10)',
             backdropFilter: 'blur(8px)',
-            transition: 'border-color 0.15s ease, border-radius 0.15s ease',
-            minHeight: isPointerFine ? 36 : 44,
+            transition: 'border-color 0.15s ease, border-radius 0.15s ease, box-shadow 0.3s ease',
+            minHeight: isPointerFine ? 40 : 44,
+            animation: glowActive ? 'searchBarGlow 1.5s ease-in-out 2' : 'none',
           }}
           onFocusCapture={e => { if (e.target.matches(':focus-visible')) { e.target.style.borderColor = 'rgba(168, 144, 128, 0.9)'; e.target.style.boxShadow = '0 0 0 3px rgba(168, 144, 128, 0.4)'; } }}
           onBlurCapture={e => { e.target.style.borderColor = 'rgba(224, 216, 204, 0.8)'; e.target.style.boxShadow = '0 2px 12px rgba(90, 80, 72, 0.10)'; }}
@@ -259,6 +309,32 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false, artistCoun
           >
             ×
           </button>
+        )}
+        {/* Keyboard shortcut badge — desktop only, hidden when focused or has query */}
+        {isPointerFine && !isMobile && !hasFocus && !query && (
+          <span
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              right: 10,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              pointerEvents: 'none',
+              fontSize: 11,
+              fontFamily: '"DM Sans", sans-serif',
+              fontWeight: 500,
+              color: '#9A8E84',
+              backgroundColor: 'rgba(224, 216, 204, 0.55)',
+              border: '1px solid rgba(200, 190, 178, 0.5)',
+              borderRadius: 5,
+              padding: '2px 6px',
+              lineHeight: '16px',
+              letterSpacing: '0.02em',
+              userSelect: 'none',
+            }}
+          >
+            {isMac ? '⌘K' : 'Ctrl K'}
+          </span>
         )}
       </div>
 
@@ -382,6 +458,7 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false, artistCoun
         </div>
       )}
     </div>
+    </>
   );
 }
 

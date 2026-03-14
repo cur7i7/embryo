@@ -17,27 +17,33 @@ export function hexToRgba(hex, alpha) {
 
 
 export function drawOrb(ctx, x, y, radius, genreColor, peachColor = '#EEC1A2') {
-  // 1. Primary gradient — genre color dissolving to transparent
-  const primary = ctx.createRadialGradient(x, y, 0, x, y, radius);
-  primary.addColorStop(0, genreColor + '99');   // ~60% opacity
-  primary.addColorStop(0.4, genreColor + '66'); // ~40% opacity
-  primary.addColorStop(0.7, genreColor + '33'); // ~20% opacity
-  primary.addColorStop(1, genreColor + '00');    // transparent
+  // Extended radius for dissolved/feathered edges
+  const outerR = radius * 1.25;
+
+  // 1. Primary gradient — genre color dissolving with peach shift at edges
+  const primary = ctx.createRadialGradient(x, y, 0, x, y, outerR);
+  primary.addColorStop(0, genreColor + 'FF');     // 100% opacity — core
+  primary.addColorStop(0.25, genreColor + 'DD');   // ~87% — inner warmth
+  primary.addColorStop(0.5, genreColor + '88');    // ~53% — mid dissolve
+  primary.addColorStop(0.7, peachColor + '44');    // ~27% — shift to peach
+  primary.addColorStop(0.85, peachColor + '22');   // ~13% — feathered peach
+  primary.addColorStop(1, peachColor + '00');      // transparent
   ctx.fillStyle = primary;
   ctx.beginPath();
-  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.arc(x, y, outerR, 0, Math.PI * 2);
   ctx.fill();
 
-  // 2. Secondary warm bleed — offset down-right, warm peach
-  const offsetX = radius * 0.3;
-  const offsetY = radius * 0.3;
-  const bleedRadius = radius * 0.7;
+  // 2. Secondary warm bleed — offset down-right, larger and softer
+  const offsetX = radius * 0.35;
+  const offsetY = radius * 0.35;
+  const bleedRadius = radius * 0.85;
   const bleed = ctx.createRadialGradient(
     x + offsetX, y + offsetY, 0,
     x + offsetX, y + offsetY, bleedRadius
   );
-  bleed.addColorStop(0, peachColor + '40'); // ~25% opacity
-  bleed.addColorStop(0.5, peachColor + '20');
+  bleed.addColorStop(0, peachColor + '88'); // ~53% opacity
+  bleed.addColorStop(0.4, peachColor + '55');
+  bleed.addColorStop(0.7, peachColor + '28');
   bleed.addColorStop(1, peachColor + '00');
   ctx.fillStyle = bleed;
   ctx.beginPath();
@@ -67,7 +73,7 @@ export function createGrainTexture(width = 512, height = 512) {
     imgData.data[i] = v;
     imgData.data[i + 1] = v;
     imgData.data[i + 2] = v;
-    imgData.data[i + 3] = 18; // very subtle
+    imgData.data[i + 3] = 32; // subtle but visible film grain
   }
   ctx.putImageData(imgData, 0, 0);
   return canvas;
@@ -112,15 +118,24 @@ export function drawArtistNode(ctx, x, y, radius, genreColor, name, years, state
     ctx.globalAlpha = alpha * 0.4;
   }
 
-  // Circle fill: genre color at 10% opacity
+  // Connected state: soft glow ring behind the circle
+  if (state === 'connected') {
+    ctx.beginPath();
+    ctx.arc(x, y, r * 1.6, 0, Math.PI * 2);
+    ctx.fillStyle = hexToRgba(genreColor, 0.2);
+    ctx.fill();
+  }
+
+  // Circle fill: genre color with visible fill + soft glow
+  const fillOpacity = state === 'active' ? 0.35 : state === 'connected' ? 0.3 : 0.25;
   ctx.beginPath();
   ctx.arc(x, y, r, 0, Math.PI * 2);
-  ctx.fillStyle = hexToRgba(genreColor, 0.1);
+  ctx.fillStyle = hexToRgba(genreColor, fillOpacity);
   ctx.fill();
 
-  // Circle stroke
-  ctx.lineWidth = strokeWidth;
-  ctx.strokeStyle = genreColor;
+  // Circle stroke — thicker for visibility
+  ctx.lineWidth = state === 'connected' ? 2.5 : strokeWidth;
+  ctx.strokeStyle = hexToRgba(genreColor, 0.9);
   ctx.stroke();
 
   if (showLabel) {
@@ -192,17 +207,34 @@ export function drawArtistNode(ctx, x, y, radius, genreColor, name, years, state
  * @param {number} radius - boundary circle radius
  * @param {number} alpha - overall opacity (0–1), used for cross-fade
  */
-export function drawCityGroup(ctx, x, y, city, count, radius, alpha = 1) {
+export function drawCityGroup(ctx, x, y, city, count, radius, alpha = 1, genreColor = null) {
   if (alpha <= 0) return;
   ctx.save();
   ctx.globalAlpha = alpha;
 
-  // Dashed boundary circle
-  ctx.beginPath();
-  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  // Genre-colored radial fill — visible and warm like cluster orbs
+  if (genreColor) {
+    const grad = ctx.createRadialGradient(x, y, 0, x, y, radius);
+    grad.addColorStop(0, hexToRgba(genreColor, 0.45));
+    grad.addColorStop(0.5, hexToRgba(genreColor, 0.25));
+    grad.addColorStop(0.8, hexToRgba(genreColor, 0.10));
+    grad.addColorStop(1, hexToRgba(genreColor, 0.03));
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+  } else {
+    // Fallback: soft cream fill
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(250, 243, 235, 0.35)';
+    ctx.fill();
+  }
+
+  // Dashed boundary stroke
   ctx.setLineDash([4, 4]);
   ctx.lineWidth = 1;
-  ctx.strokeStyle = 'rgba(62,53,48,0.25)';
+  ctx.strokeStyle = genreColor ? hexToRgba(genreColor, 0.35) : 'rgba(62,53,48,0.3)';
   ctx.stroke();
   ctx.setLineDash([]);
 

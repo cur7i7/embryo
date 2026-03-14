@@ -6,7 +6,7 @@ const STEPS = [
   {
     icon: null, // Special: rendered as the EMBRYO wordmark
     heading: 'EMBRYO',
-    body: 'Explore 30,000+ artists and their connections across centuries.',
+    body: 'Explore thousands of artists and their connections across centuries.',
   },
   {
     icon: 'map',
@@ -378,12 +378,14 @@ export default function OnboardingOverlay({ onComplete }) {
                 height: 8,
                 borderRadius: 4,
                 border: 'none',
-                padding: 0,
+                padding: '18px 10px',
                 cursor: 'pointer',
                 backgroundColor: i === step ? '#B8336A' : 'rgba(107, 94, 84, 0.2)',
+                backgroundClip: 'content-box',
                 transition: prefersReducedMotion ? 'none' : 'width 0.25s ease, background-color 0.25s ease',
                 minWidth: 0,
                 minHeight: 0,
+                boxSizing: 'content-box',
               }}
               onFocus={e => { e.currentTarget.style.outline = '2px solid #B8336A'; e.currentTarget.style.outlineOffset = '2px'; }}
               onBlur={e => { e.currentTarget.style.outline = 'none'; }}

@@ -53,7 +53,7 @@ export function buildCityGroups(artists) {
   const result = new Map();
 
   for (const [key, group] of accumulator) {
-    if (group.artists.length < 2) continue;
+    if (group.artists.length < 1) continue;
 
     const count = group.artists.length;
 

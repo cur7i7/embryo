@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { getGenreBucket } from '../utils/genres.js';
 import { hexToRgba } from '../utils/rendering.js';
 import { useIsPointerFine } from '../hooks/useIsPointerFine.js';
+import SuggestionForm from './SuggestionForm.jsx';
 
 const PANEL_WIDTH = 'clamp(320px, 30vw, 420px)';
 
@@ -294,12 +295,16 @@ function ConnectionsList({ connections, artist, artistMap, onClickArtist }) {
   );
 }
 
-export default function DetailPanel({
+function DetailPanel({
   artist,
   connections,
   allArtists,
   onSelect,
   onClose,
+  onCompare,
+  onSuggestionSubmitted,
+  isCompareArmed = false,
+  comparePrimaryArtistId = null,
   isMobile = false,
 }) {
   const isOpen = !!artist;
@@ -327,6 +332,8 @@ export default function DetailPanel({
   const touchStartYRef = useRef(null);
   const [dragDeltaY, setDragDeltaY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [showSuggestionForm, setShowSuggestionForm] = useState(false);
+  const [hasSuggestedForArtist, setHasSuggestedForArtist] = useState(false);
 
   const handleTouchStart = useCallback((e) => {
     touchStartYRef.current = e.touches[0].clientY;
@@ -368,8 +375,21 @@ export default function DetailPanel({
       setDragDeltaY(0);
       setIsDragging(false);
       touchStartYRef.current = null;
+      setShowSuggestionForm(false);
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!artist?.id) {
+      setHasSuggestedForArtist(false);
+      return;
+    }
+    try {
+      setHasSuggestedForArtist(Boolean(localStorage.getItem(`embryo-suggestion:${artist.id}`)));
+    } catch {
+      setHasSuggestedForArtist(false);
+    }
+  }, [artist?.id]);
 
   // Fix #24: Reliably toggle inert attribute via useEffect
   useEffect(() => {
@@ -434,6 +454,11 @@ export default function DetailPanel({
     onSelect?.(connArtist);
   }, [onSelect]);
 
+  const handleSuggestionSubmitted = useCallback((submittedArtist) => {
+    setHasSuggestedForArtist(true);
+    onSuggestionSubmitted?.(submittedArtist);
+  }, [onSuggestionSubmitted]);
+
   // Build a fast lookup for allArtists
   const artistMap = React.useMemo(() => {
     const m = new Map();
@@ -462,23 +487,21 @@ export default function DetailPanel({
     try { return CSS.supports('height', '1dvh'); } catch { return false; }
   }, []);
 
-  // Panel style changes based on mobile
+  // Panel style changes based on mobile — full-screen takeover
   const panelStyle = isMobile
     ? {
         position: 'fixed',
-        bottom: `calc(clamp(44px, 6vw, 52px) + 28px + env(safe-area-inset-bottom))`,
+        top: 0,
         left: 0,
         right: 0,
+        bottom: 0,
         width: '100%',
-        height: supportsDvh
-          ? 'clamp(120px, calc(45dvh - 60px), 55dvh)'
-          : 'clamp(120px, calc(45vh - 60px), 55vh)',
-        backgroundColor: 'rgba(250, 243, 235, 0.98)',
+        height: '100%',
+        backgroundColor: 'rgba(250, 243, 235, 0.99)',
         backdropFilter: 'blur(12px)',
-        borderTop: '1px solid rgba(224, 216, 204, 0.8)',
-        boxShadow: '0 -4px 24px rgba(90, 80, 72, 0.12)',
         zIndex: 30,
         overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch',
         transform: isOpen
           ? (dragDeltaY > 0 ? `translateY(${dragDeltaY}px)` : 'translateY(0)')
           : 'translateY(100%)',
@@ -494,9 +517,8 @@ export default function DetailPanel({
         willChange: isDragging ? 'transform' : 'auto',
         visibility: isOpen ? 'visible' : 'hidden',
         pointerEvents: isOpen ? 'auto' : 'none',
-        padding: '24px',
+        padding: 'calc(env(safe-area-inset-top) + 16px) 20px calc(env(safe-area-inset-bottom) + 20px)',
         fontFamily: '"DM Sans", sans-serif',
-        borderRadius: '12px 12px 0 0',
       }
     : {
         position: 'fixed',
@@ -529,35 +551,55 @@ export default function DetailPanel({
       aria-hidden={!isOpen}
       ref={panelRef}
       onKeyDown={handleTrapKeyDown}
+      onTouchStart={isMobile ? handleTouchStart : undefined}
+      onTouchMove={isMobile ? handleTouchMove : undefined}
+      onTouchEnd={isMobile ? handleTouchEnd : undefined}
     >
-      {/* Mobile drag handle indicator */}
+      {/* Mobile: visual drag handle indicator */}
       {isMobile && (
         <div
           aria-hidden="true"
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
           style={{
-            width: '100%',
-            display: 'flex',
-            justifyContent: 'center',
-            paddingTop: 4,
-            paddingBottom: 8,
-            marginBottom: -8,
-            touchAction: 'none',
-            cursor: 'grab',
-          }}
-        >
-          <div style={{
             width: 32,
             height: 4,
             borderRadius: 2,
-            backgroundColor: 'rgba(90, 80, 72, 0.25)',
-          }} />
-        </div>
+            backgroundColor: 'rgba(107, 94, 84, 0.25)',
+            margin: '0 auto 8px',
+          }}
+        />
       )}
 
-      {/* Back button */}
+      {/* Mobile: Back to map button */}
+      {isMobile && (
+        <button
+          onClick={() => { if (previousFocusRef.current && document.contains(previousFocusRef.current)) { previousFocusRef.current.focus(); } else { document.body.focus(); } onClose?.(); }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            background: 'none',
+            border: 'none',
+            padding: '8px 0',
+            marginBottom: 12,
+            fontFamily: '"DM Sans", sans-serif',
+            fontSize: 14,
+            fontWeight: 600,
+            color: '#5A5048',
+            cursor: 'pointer',
+            minHeight: 44,
+          }}
+          aria-label="Close detail panel and return to map"
+          onFocus={e => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.outline = '2px solid #5A5048'; }}
+          onBlur={e => { e.currentTarget.style.outline = 'none'; }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          Back to map
+        </button>
+      )}
+
+      {/* Back button (artist navigation history) */}
       {history.length > 0 && (
         <button
           onClick={() => {
@@ -568,8 +610,8 @@ export default function DetailPanel({
           aria-label="Go back to previous artist"
           style={{
             position: 'absolute',
-            top: 16,
-            right: 64,
+            top: isMobile ? 'calc(env(safe-area-inset-top) + 16px)' : 16,
+            right: isMobile ? 16 : 64,
             width: 44,
             height: 44,
             border: 'none',
@@ -587,15 +629,16 @@ export default function DetailPanel({
         </button>
       )}
 
-      {/* Close button */}
+      {/* Close button (hidden on mobile — "Back to map" replaces it) */}
       <button
         ref={closeButtonRef}
         onClick={() => { if (previousFocusRef.current && document.contains(previousFocusRef.current)) { previousFocusRef.current.focus(); } else { document.body.focus(); } onClose?.(); }}
         aria-label="Close detail panel"
         style={{
           position: 'absolute',
-          top: 12,
-          right: 12,
+          top: isMobile ? 'calc(env(safe-area-inset-top) + 12px)' : 12,
+          right: isMobile ? 16 : 12,
+          display: isMobile ? 'none' : 'flex',
           width: 44,
           height: 44,
           border: '1px solid rgba(224, 216, 204, 0.6)',
@@ -605,7 +648,6 @@ export default function DetailPanel({
           color: '#3E3530',
           fontSize: 18,
           cursor: 'pointer',
-          display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           transition: 'background-color 0.15s ease',
@@ -653,7 +695,7 @@ export default function DetailPanel({
                 onError={() => setImageError(true)}
                 style={{
                   display: 'block',
-                  maxHeight: isMobile ? 'clamp(120px, 25vw, 260px)' : 260,
+                  maxHeight: isMobile ? 'clamp(160px, 35vh, 320px)' : 260,
                   width: '100%',
                   objectFit: 'cover',
                   objectPosition: 'center 20%',
@@ -730,6 +772,52 @@ export default function DetailPanel({
               {lifespan}
             </div>
           )}
+
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
+            <button
+              onClick={() => onCompare?.(artist)}
+              style={{
+                minHeight: 44,
+                padding: '10px 14px',
+                borderRadius: 10,
+                border: '1px solid rgba(168, 144, 128, 0.45)',
+                backgroundColor: isCompareArmed && comparePrimaryArtistId === artist.id
+                  ? 'rgba(184, 51, 106, 0.16)'
+                  : 'rgba(255, 255, 255, 0.75)',
+                color: '#3E3530',
+                fontFamily: '"DM Sans", sans-serif',
+                fontWeight: 600,
+                fontSize: 13,
+                cursor: 'pointer',
+              }}
+              aria-label={`Compare ${artist.name} with another artist`}
+            >
+              {isCompareArmed && comparePrimaryArtistId === artist.id ? 'Select 2nd artist…' : 'Compare'}
+            </button>
+            <button
+              onClick={() => setShowSuggestionForm(true)}
+              disabled={hasSuggestedForArtist}
+              style={{
+                minHeight: 44,
+                padding: '10px 14px',
+                borderRadius: 10,
+                border: '1px solid rgba(184, 51, 106, 0.35)',
+                backgroundColor: hasSuggestedForArtist ? 'rgba(184, 51, 106, 0.3)' : 'rgba(184, 51, 106, 0.1)',
+                color: hasSuggestedForArtist ? '#FAF3EB' : '#5A4F47',
+                fontFamily: '"DM Sans", sans-serif',
+                fontWeight: 600,
+                fontSize: 13,
+                cursor: hasSuggestedForArtist ? 'not-allowed' : 'pointer',
+              }}
+              aria-label={
+                hasSuggestedForArtist
+                  ? `Correction already submitted for ${artist.name}`
+                  : `Suggest a correction for ${artist.name}`
+              }
+            >
+              {hasSuggestedForArtist ? 'Suggestion Sent' : 'Suggest Correction'}
+            </button>
+          </div>
 
           <hr style={{ border: 'none', borderTop: '1px solid rgba(224, 216, 204, 0.7)', margin: '0 0 14px 0' }} />
 
@@ -879,6 +967,16 @@ export default function DetailPanel({
           )}
         </>
       )}
+
+      <SuggestionForm
+        isOpen={showSuggestionForm && isOpen && !!artist}
+        artist={artist}
+        onClose={() => setShowSuggestionForm(false)}
+        onSubmitted={handleSuggestionSubmitted}
+        isMobile={isMobile}
+      />
     </aside>
   );
 }
+
+export default React.memo(DetailPanel);

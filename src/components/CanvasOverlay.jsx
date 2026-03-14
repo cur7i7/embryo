@@ -11,6 +11,7 @@ import {
   hexToRgba,
 } from '../utils/rendering.js';
 import { buildCityGroups } from '../utils/cityGrouping.js';
+import { buildHeatmapGrid } from '../utils/heatmap.js';
 
 // Build a stable mapping from genre bucket color -> pre-rendered texture index
 const BUCKET_COLORS = Object.values(GENRE_BUCKETS).map((b) => b.color);
@@ -31,6 +32,10 @@ const HIT_TEST_MIN_RADIUS = 22;        // minimum hit-test radius (44px touch ta
 const SUPERCLUSTER_RADIUS = 60;        // Supercluster clustering radius
 const ARC_VIEWPORT_PAD = 100;          // arc viewport culling padding (px)
 const COLOCATION_OFFSET_RADIUS = 0.0008; // co-location spiral offset (degrees)
+const HEATMAP_FADE_IN_START = 4;
+const HEATMAP_FULL_START = 5;
+const HEATMAP_FADE_OUT_START = 6;
+const HEATMAP_FADE_OUT_END = 7;
 
 // AABB overlap helper — hoisted to module scope to avoid per-frame closure allocation
 function overlaps(a, b) {
@@ -84,6 +89,7 @@ export default function CanvasOverlay({
   hoveredArtist,
   selectedArtist,
   onHover,
+  onHoverPosition,
   onSelect,
   isFinePointer = true,
 }) {
@@ -143,8 +149,10 @@ export default function CanvasOverlay({
 
   // City groups ref (rebuilt when artists change)
   const cityGroupsRef = useRef(new Map());
+  const heatmapCellsRef = useRef([]);
   const cityPosMapRef = useRef(new Map()); // projected city positions for hit testing
   const hoveredCityKeyRef = useRef(null);  // currently hovered city key for highlight
+  const clusterColorCacheRef = useRef(new Map()); // cluster.id → texture index cache
 
   // Current render mode for hit testing
   const renderModeRef = useRef('cluster');
@@ -172,6 +180,7 @@ export default function CanvasOverlay({
   const hoveredArtistRef = useRef(hoveredArtist);
   const selectedArtistRef = useRef(selectedArtist);
   const onHoverRef = useRef(onHover);
+  const onHoverPositionRef = useRef(onHoverPosition);
   const onSelectRef = useRef(onSelect);
 
   // Cached valid artists and lookup maps (rebuilt only when artists change)
@@ -228,12 +237,12 @@ export default function CanvasOverlay({
     const cssHeight = container.clientHeight;
 
     // Resize canvas if needed (physical pixels for crispness)
-    if (
-      canvas.width !== cssWidth * dpr ||
-      canvas.height !== cssHeight * dpr
-    ) {
-      canvas.width = cssWidth * dpr;
-      canvas.height = cssHeight * dpr;
+    // Round to avoid resize thrash on fractional DPR (1.25, 1.5, etc.)
+    const physW = Math.round(cssWidth * dpr);
+    const physH = Math.round(cssHeight * dpr);
+    if (canvas.width !== physW || canvas.height !== physH) {
+      canvas.width = physW;
+      canvas.height = physH;
       canvas.style.width = cssWidth + 'px';
       canvas.style.height = cssHeight + 'px';
     }
@@ -350,7 +359,7 @@ export default function CanvasOverlay({
       // Scale offset with zoom so artists visually separate at any zoom level
       if (currentZoomForPos >= ZOOM_INDIVIDUAL && offsets.has(artist.id)) {
         const o = offsets.get(artist.id);
-        const zoomScale = Math.max(1, (16 - currentZoomForPos) * 3);
+        const zoomScale = Math.max(0.5, (16 - currentZoomForPos) * 3);
         lng += o.dlng * zoomScale;
         lat += o.dlat * zoomScale;
       }
@@ -364,7 +373,7 @@ export default function CanvasOverlay({
       let lat = activeArtist.birth_lat;
       if (currentZoomForPos >= ZOOM_INDIVIDUAL && offsets.has(activeArtist.id)) {
         const o = offsets.get(activeArtist.id);
-        const zoomScale = Math.max(1, (16 - currentZoomForPos) * 3);
+        const zoomScale = Math.max(0.5, (16 - currentZoomForPos) * 3);
         lng += o.dlng * zoomScale;
         lat += o.dlat * zoomScale;
       }
@@ -375,6 +384,46 @@ export default function CanvasOverlay({
     // always sees the last *complete* frame, even while posMapFrameRef is being
     // cleared and rebuilt for the next frame (Issue #7).
     posMapRef.current = new Map(posMap);
+
+    // --- Genre heatmap phase (mid zoom) ---
+    // Draw behind cluster/city/individual layers using a cached density grid.
+    let heatmapAlpha = 0;
+    if (currentZoomForPos >= HEATMAP_FADE_IN_START && currentZoomForPos < HEATMAP_FADE_OUT_END) {
+      if (currentZoomForPos < HEATMAP_FULL_START) {
+        heatmapAlpha = (currentZoomForPos - HEATMAP_FADE_IN_START) / (HEATMAP_FULL_START - HEATMAP_FADE_IN_START);
+      } else if (currentZoomForPos < HEATMAP_FADE_OUT_START) {
+        heatmapAlpha = 1;
+      } else {
+        heatmapAlpha = 1 - ((currentZoomForPos - HEATMAP_FADE_OUT_START) / (HEATMAP_FADE_OUT_END - HEATMAP_FADE_OUT_START));
+      }
+    }
+    if (heatmapAlpha > 0.01) {
+      const heatmapCells = heatmapCellsRef.current;
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      for (const cell of heatmapCells) {
+        const pt = map.project([cell.lng, cell.lat]);
+        const intensity = Math.max(0.2, Math.min(1, cell.normalizedIntensity || 0));
+        const radius = 26 + Math.sqrt(cell.count) * 9;
+        const outerRadius = radius * (1.2 + intensity * 1.5);
+        if (
+          pt.x < -outerRadius || pt.x > cssWidth + outerRadius ||
+          pt.y < -outerRadius || pt.y > cssHeight + outerRadius
+        ) {
+          continue;
+        }
+
+        const grad = ctx.createRadialGradient(pt.x, pt.y, 0, pt.x, pt.y, outerRadius);
+        grad.addColorStop(0, hexToRgba(cell.dominantColor, 0.26 * heatmapAlpha * intensity));
+        grad.addColorStop(0.55, hexToRgba(cell.dominantColor, 0.14 * heatmapAlpha * intensity));
+        grad.addColorStop(1, hexToRgba(cell.dominantColor, 0));
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, outerRadius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
 
     // Build set of ids connected to hovered/selected artist using indexed lookup
     const connectedIds = new Set();
@@ -398,6 +447,11 @@ export default function CanvasOverlay({
     // Track selected arcs for particle drawing
     const selectedArcs = [];
 
+    // Cluster label density: count visible clusters for budget calculation
+    const clusterLabelOccupied = [];
+    let clusterLabelsShown = 0;
+    let clusterLabelBudget = 0; // computed below after first pass
+
     if (
       activeArtist &&
       activeArtistConns.length > 0 &&
@@ -411,7 +465,7 @@ export default function CanvasOverlay({
         let lat = artist.birth_lat;
         if (currentZoomForPos >= ZOOM_INDIVIDUAL && offsets.has(artist.id)) {
           const o = offsets.get(artist.id);
-          const zoomScale = Math.max(1, (16 - currentZoomForPos) * 3);
+          const zoomScale = Math.max(0.5, (16 - currentZoomForPos) * 3);
           lng += o.dlng * zoomScale;
           lat += o.dlat * zoomScale;
         }
@@ -420,9 +474,15 @@ export default function CanvasOverlay({
         return pos;
       };
 
-      for (const conn of activeArtistConns) {
+      // Sort by confidence descending and limit to top 15 to avoid starburst
+      const MAX_VISIBLE_ARCS = 15;
+      const sortedConns = [...activeArtistConns]
+        .filter(c => activeConnectionTypes.has(c.type))
+        .sort((a, b) => (b.confidence ?? 0.5) - (a.confidence ?? 0.5))
+        .slice(0, MAX_VISIBLE_ARCS);
+
+      for (const conn of sortedConns) {
         const { source_id, target_id, type, confidence } = conn;
-        if (!activeConnectionTypes.has(type)) continue;
 
         const srcArtist = artistByIdRef.current.get(source_id);
         const tgtArtist = artistByIdRef.current.get(target_id);
@@ -550,7 +610,32 @@ export default function CanvasOverlay({
             const count = cluster.properties.point_count;
             const clusterRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log2(count) * 7, CLUSTER_RADIUS_MAX);
 
-            const orbTexture = orbTextures[Math.abs(cluster.id) % orbTextures.length];
+            // Determine dominant genre color by sampling leaves (cached per cluster ID)
+            const clusterColorCache = clusterColorCacheRef.current;
+            let clusterTextureIdx = clusterColorCache.get(cluster.id);
+            if (clusterTextureIdx == null) {
+              clusterTextureIdx = Math.abs(cluster.id) % orbTextures.length; // fallback
+              const sampleLeaves = index.getLeaves(cluster.id, 8);
+              if (sampleLeaves.length > 0) {
+                const colorCounts = {};
+                for (const leaf of sampleLeaves) {
+                  const meta = artistMeta.get(leaf.properties.artistId);
+                  const gc = meta?.genreColor ?? getGenreBucket(leaf.properties.genres).color;
+                  colorCounts[gc] = (colorCounts[gc] || 0) + 1;
+                }
+                let bestColor = null;
+                let bestCount = 0;
+                for (const [c, n] of Object.entries(colorCounts)) {
+                  if (n > bestCount) { bestCount = n; bestColor = c; }
+                }
+                if (bestColor) {
+                  const idx = BUCKET_COLORS.indexOf(bestColor);
+                  if (idx >= 0) clusterTextureIdx = idx;
+                }
+              }
+              clusterColorCache.set(cluster.id, clusterTextureIdx);
+            }
+            const orbTexture = orbTextures[clusterTextureIdx];
             ctx.globalAlpha = clusterAlpha;
             ctx.drawImage(orbTexture, x - clusterRadius, y - clusterRadius, clusterRadius * 2, clusterRadius * 2);
             ctx.globalAlpha = clusterAlpha;
@@ -560,15 +645,91 @@ export default function CanvasOverlay({
             const isSmall = count < 5;
             const fontSize = isSmall ? 10 : Math.min(14, (8 + Math.log2(count)) | 0);
 
-            // Count text with subtle shadow for legibility
-            ctx.shadowColor = 'rgba(0,0,0,0.5)';
-            ctx.shadowBlur = 4;
+            // Count text with shadow + stroke for legibility at all alpha levels
             ctx.font = `600 ${fontSize}px "DM Sans", sans-serif`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
+            ctx.shadowColor = 'rgba(0,0,0,0.6)';
+            ctx.shadowBlur = 5;
+            ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+            ctx.lineWidth = 2.5;
+            ctx.strokeText(countStr, x, y);
             ctx.fillStyle = '#FAF3EB';
             ctx.fillText(countStr, x, y);
             ctx.shadowBlur = 0;
+
+            // Draw top artist names below count — density-aware with collision detection
+            // Compute budget on first qualifying cluster (lazy init)
+            if (clusterLabelBudget === 0) {
+              // Count total visible clusters for budget
+              let visibleClusters = 0;
+              for (const c of clusters) {
+                if (!c.properties.cluster) continue;
+                const [cLng, cLat] = c.geometry.coordinates;
+                const cPt = map.project([cLng, cLat]);
+                if (cPt.x >= -120 && cPt.x <= cssWidth + 120 && cPt.y >= -120 && cPt.y <= cssHeight + 120) visibleClusters++;
+              }
+              if (visibleClusters <= 10) clusterLabelBudget = 8;
+              else if (visibleClusters <= 30) clusterLabelBudget = 5;
+              else if (visibleClusters <= 60) clusterLabelBudget = 3;
+              else clusterLabelBudget = 0; // too dense, no labels
+            }
+            if (clusterRadius >= 45 && clusterLabelsShown < clusterLabelBudget) {
+              const leaves = index.getLeaves(cluster.id, 10);
+              if (leaves.length > 0) {
+                leaves.sort((a, b) => {
+                  const cA = (connectionCounts && connectionCounts.get(a.properties.artistId)) || 0;
+                  const cB = (connectionCounts && connectionCounts.get(b.properties.artistId)) || 0;
+                  return cB - cA;
+                });
+                const topN = count >= 20 ? 3 : 2;
+                const topNames = [];
+                for (let i = 0; i < Math.min(topN, leaves.length); i++) {
+                  const leaf = leaves[i];
+                  const a = artistById.get(leaf.properties.artistId);
+                  if (a) {
+                    const n = a.name.length > 15 ? a.name.slice(0, 14) + '\u2026' : a.name;
+                    topNames.push(n);
+                  }
+                }
+                if (topNames.length > 0) {
+                  const namesStr = topNames.join(', ');
+                  ctx.font = '500 10px "DM Sans", sans-serif';
+                  const namesW = ctx.measureText(namesStr).width;
+                  // Collision check via AABB
+                  const labelRect = { x: x - namesW / 2 - 4, y: y + fontSize / 2 + 1, w: namesW + 8, h: 28 };
+                  let blocked = false;
+                  for (const occ of clusterLabelOccupied) {
+                    if (overlaps(labelRect, occ)) { blocked = true; break; }
+                  }
+                  if (!blocked) {
+                    clusterLabelOccupied.push(labelRect);
+                    clusterLabelsShown++;
+
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'top';
+                    ctx.shadowColor = 'rgba(0,0,0,0.6)';
+                    ctx.shadowBlur = 4;
+                    ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+                    ctx.lineWidth = 2;
+                    ctx.strokeText(namesStr, x, y + fontSize / 2 + 3);
+                    ctx.fillStyle = 'rgba(250,243,235,0.85)';
+                    ctx.fillText(namesStr, x, y + fontSize / 2 + 3);
+
+                    // "+N more" only for large clusters
+                    const remaining = count - topNames.length;
+                    if (remaining > 5) {
+                      const moreStr = `+${remaining} more`;
+                      ctx.font = '400 9px "DM Sans", sans-serif';
+                      ctx.strokeText(moreStr, x, y + fontSize / 2 + 16);
+                      ctx.fillStyle = 'rgba(250,243,235,0.6)';
+                      ctx.fillText(moreStr, x, y + fontSize / 2 + 16);
+                    }
+                    ctx.shadowBlur = 0;
+                  }
+                }
+              }
+            }
             ctx.restore();
 
             // Track cluster position for pill collision
@@ -724,7 +885,20 @@ export default function CanvasOverlay({
           ctx.restore();
         }
 
-        drawCityGroup(ctx, x, y, showLabel ? group.city : null, group.artists.length, cityRadius, cityAlpha);
+        // Compute dominant genre color for this city group
+        const genreCounts = {};
+        for (const a of group.artists) {
+          const meta = artistMeta.get(a.id);
+          const gc = meta?.genreColor ?? getGenreBucket(a.genres).color;
+          genreCounts[gc] = (genreCounts[gc] || 0) + 1;
+        }
+        let dominantColor = null;
+        let maxCount = 0;
+        for (const [color, cnt] of Object.entries(genreCounts)) {
+          if (cnt > maxCount) { maxCount = cnt; dominantColor = color; }
+        }
+
+        drawCityGroup(ctx, x, y, showLabel ? group.city : null, group.artists.length, cityRadius, cityAlpha, dominantColor);
       }
     }
     // --- Individual phase --- hard-reset canvas state
@@ -746,7 +920,7 @@ export default function CanvasOverlay({
         else if (connectedIds.has(a.id)) connArr.push(a);
         else restArr.push(a);
       }
-      const sortedArtists = activeArr.concat(connArr, restArr);
+      const sortedArtists = restArr.concat(connArr, activeArr);
 
       // Density-aware label suppression: use sortedArtists length directly
       // since it already contains only viewport-visible artists
@@ -793,10 +967,13 @@ export default function CanvasOverlay({
             : `${artist.birth_year}\u2013`;
         }
 
-        const r = ARTIST_RADIUS * (state === 'active' ? ARTIST_ACTIVE_SCALE : 1);
+        const connCount = (connectionCounts && connectionCounts.get(artist.id)) || 0;
+        const prominenceScale = Math.min(1 + Math.log2(Math.max(connCount, 1)) * 0.08, 1.8);
+        const r = ARTIST_RADIUS * (state === 'active' ? ARTIST_ACTIVE_SCALE : prominenceScale);
 
         // Always show labels for hovered/active/connected; collision-check the rest
-        const isImportant = isActive || isConnected;
+        const isProminent = connCount >= 30; // Top ~200 artists globally
+        const isImportant = isActive || isConnected || isProminent;
         // Hide canvas label only when artist is being hovered (pill shows near cursor).
         // Keep label visible for selected-but-not-hovered artists so they're findable on map.
         const isBeingHovered = hoveredArtist && artist.id === hoveredArtist.id;
@@ -1110,6 +1287,10 @@ export default function CanvasOverlay({
     const valid = (artists || []).filter(a => a.birth_lat != null && a.birth_lng != null);
     validArtistsRef.current = valid;
 
+    // Precompute heatmap density grid once per filtered artist set.
+    // Mid-zoom rendering reuses this cached structure each frame.
+    heatmapCellsRef.current = buildHeatmapGrid(valid, 2.2);
+
     // Rebuild cached currentIds set (P1: avoid per-frame allocation)
     currentIdsRef.current = new Set(valid.map(a => a.id));
 
@@ -1179,7 +1360,7 @@ export default function CanvasOverlay({
         );
 
         // Rebuild Supercluster index
-        const index = new Supercluster({ radius: SUPERCLUSTER_RADIUS, maxZoom: 16 });
+        const index = new Supercluster({ radius: SUPERCLUSTER_RADIUS, maxZoom: 20 });
         index.load(
           currentValid.map((a) => ({
             type: 'Feature',
@@ -1188,6 +1369,7 @@ export default function CanvasOverlay({
           }))
         );
         scIndexRef.current = index;
+        clusterColorCacheRef.current = new Map(); // clear stale cluster color cache
 
         // Build display offsets for co-located artists
         const coordGroups = new Map();
@@ -1236,6 +1418,7 @@ export default function CanvasOverlay({
     hoveredArtistRef.current = hoveredArtist;
     selectedArtistRef.current = selectedArtist;
     onHoverRef.current = onHover;
+    onHoverPositionRef.current = onHoverPosition;
     onSelectRef.current = onSelect;
 
     // Re-sort presorted artists if connectionCounts changed since last sort
@@ -1254,7 +1437,7 @@ export default function CanvasOverlay({
     needsAnimRef.current = true;
     startRaf();
   // Fix #36: `connections` is not read inside this effect body — removed to avoid spurious re-runs
-  }, [connectionCounts, connectionsByArtist, activeConnectionTypes, hoveredArtist, selectedArtist, onHover, onSelect, startRaf]);
+  }, [connectionCounts, connectionsByArtist, activeConnectionTypes, hoveredArtist, selectedArtist, onHover, onHoverPosition, onSelect, startRaf]);
 
   // Re-render once when tab becomes visible again (no continuous polling)
   useEffect(() => {
@@ -1292,8 +1475,9 @@ export default function CanvasOverlay({
       }
     }
 
-    // Hit radius depends on render mode and pointer type (fine vs coarse)
-    const dpr = window.devicePixelRatio || 1;
+    // Hit radius depends on render mode and pointer type (fine vs coarse).
+    // All radii are in CSS px — no DPR scaling needed because mouse events
+    // report CSS px and the canvas is DPR-scaled via ctx.scale in the render loop.
     const scaledHitRadius = hitRadiusRef.current;
     let effectiveHitRadius;
     if (mode === 'individual') {
@@ -1308,8 +1492,6 @@ export default function CanvasOverlay({
       const baseRadius = (CLUSTER_RADIUS_BASE + Math.min(connCount * 3, 60)) * scaleFactor;
       effectiveHitRadius = Math.max(20 * inputScale, baseRadius * 0.4);
     }
-    // dpr is read above; radii are in CSS px (canvas is already dpr-scaled via ctx.scale)
-    void dpr;
 
     if (nearestDist <= effectiveHitRadius && nearestId != null) {
       const artist = artistByIdRef.current.get(nearestId);
@@ -1343,8 +1525,15 @@ export default function CanvasOverlay({
       const count = cluster.properties.point_count;
       const clusterRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log2(count) * 7, CLUSTER_RADIUS_MAX);
       if (Math.sqrt(dx * dx + dy * dy) <= clusterRadius) {
-        // Jump by 3 zoom levels instead of incremental expansion (Issue #2)
-        const targetZoom = Math.min(map.getZoom() + 3, 16);
+        // Smart zoom: use Supercluster's expansion zoom, capped to prevent disorienting jumps
+        const currentZoom = map.getZoom();
+        let expansionZoom;
+        try {
+          expansionZoom = index.getClusterExpansionZoom(cluster.id);
+        } catch {
+          expansionZoom = currentZoom + 3;
+        }
+        const targetZoom = Math.min(expansionZoom, currentZoom + 4, 16);
         map.flyTo({ center: cluster.geometry.coordinates, zoom: targetZoom });
         return true;
       }
@@ -1444,6 +1633,7 @@ export default function CanvasOverlay({
         }
         if (foundCityKey) {
           onHoverRef.current?.(null);
+          onHoverPositionRef.current?.(null);
           map.getCanvas().style.cursor = 'pointer';
           return;
         }
@@ -1453,6 +1643,7 @@ export default function CanvasOverlay({
       // when individual mode isn't visible (alpha === 0)
       if (renderModeRef.current === 'city' && individualAlphaRef.current === 0) {
         onHoverRef.current?.(null);
+        onHoverPositionRef.current?.(null);
         map.getCanvas().style.cursor = '';
         return;
       }
@@ -1490,6 +1681,7 @@ export default function CanvasOverlay({
           }
         }
         onHoverRef.current?.(null);
+        onHoverPositionRef.current?.(null);
         return;
       }
 
@@ -1497,9 +1689,11 @@ export default function CanvasOverlay({
       const hit = hitTest(mx, my);
       if (hit) {
         onHoverRef.current?.(hit.artist);
+        onHoverPositionRef.current?.({ x: e.point.x, y: e.point.y });
         map.getCanvas().style.cursor = 'pointer';
       } else {
         onHoverRef.current?.(null);
+        onHoverPositionRef.current?.(null);
         map.getCanvas().style.cursor = '';
       }
     };
@@ -1525,6 +1719,7 @@ export default function CanvasOverlay({
 
     const handleMapMouseLeave = () => {
       onHoverRef.current?.(null);
+      onHoverPositionRef.current?.(null);
       map.getCanvas().style.cursor = '';
       hideClusterTooltip();
       if (hoveredCityKeyRef.current !== null) {
@@ -1564,6 +1759,11 @@ export default function CanvasOverlay({
       map.off('mouseout', handleMapMouseLeave);
       map.off('touchstart', handleMapTouchStart);
       hideClusterTooltip();
+      // Remove global tooltip node from DOM on unmount
+      if (_clusterTooltipEl && _clusterTooltipEl.parentNode) {
+        _clusterTooltipEl.parentNode.removeChild(_clusterTooltipEl);
+        _clusterTooltipEl = null;
+      }
       if (rafRef.current != null) {
         cancelAnimationFrame(rafRef.current);
         rafRef.current = null;
@@ -1836,7 +2036,7 @@ export default function CanvasOverlay({
 // -------------------------------------------------------------------
 // Bloomed arc for hover/selection state
 // -------------------------------------------------------------------
-function drawArcBloomed(ctx, x1, y1, x2, y2, color1, color2, type) {
+function drawArcBloomed(ctx, x1, y1, x2, y2, color1, color2, type, confidence = 0.5) {
   const midX = (x1 + x2) / 2;
   const midY = (y1 + y2) / 2;
   const dist = Math.hypot(x2 - x1, y2 - y1);
@@ -1860,9 +2060,11 @@ function drawArcBloomed(ctx, x1, y1, x2, y2, color1, color2, type) {
     ctx.setLineDash([]);
   }
 
+  // Confidence modulates opacity: high confidence = more visible
+  const arcAlpha = 0.12 + confidence * 0.30; // range 0.12–0.42
   const gradient = ctx.createLinearGradient(x1, y1, x2, y2);
-  gradient.addColorStop(0, hexToRgba(color1, 0.35));
-  gradient.addColorStop(1, hexToRgba(color2, 0.35));
+  gradient.addColorStop(0, hexToRgba(color1, arcAlpha));
+  gradient.addColorStop(1, hexToRgba(color2, arcAlpha));
   ctx.strokeStyle = gradient;
 
   ctx.beginPath();
