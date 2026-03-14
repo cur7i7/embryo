@@ -38,6 +38,7 @@ const ITEM_STYLE = {
   alignItems: 'center',
   gap: 8,
   padding: '6px 12px',
+  minHeight: 44,
   cursor: 'pointer',
   border: 'none',
   background: 'none',
@@ -63,6 +64,7 @@ export default function NearbyArtists({ artists, connectionCounts, onSelect, isM
             ...ITEM_STYLE,
             justifyContent: 'center',
             padding: '8px 14px',
+            minHeight: 44,
             fontWeight: 600,
             fontSize: 12,
             color: '#5A5048',
@@ -88,7 +90,7 @@ export default function NearbyArtists({ artists, connectionCounts, onSelect, isM
         </span>
         <button
           onClick={() => setExpanded(false)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, fontSize: 12, color: '#6B5F55', fontFamily: 'inherit' }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, fontSize: 12, color: '#6B5F55', fontFamily: 'inherit', minWidth: 44, minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           aria-label="Collapse nearby artists"
         >
           ◂

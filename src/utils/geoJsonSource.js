@@ -3,12 +3,26 @@ import { getGenreBucket, GENRE_BUCKETS } from './genres.js';
 const BUCKET_KEYS = Object.keys(GENRE_BUCKETS);
 
 /**
+ * Deterministic hash for an artist ID → [0, 1) float.
+ * Uses a simple FNV-1a-inspired hash for speed and stability.
+ */
+function hashId(id) {
+  let h = 0x811c9dc5;
+  const s = String(id);
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return ((h >>> 0) % 10000) / 10000;
+}
+
+/**
  * Split artists into per-genre-bucket FeatureCollections.
- * Applies global jitter BEFORE splitting so artists from different
- * buckets at the same coordinates also get unique positions.
+ * Applies deterministic jitter per artistId BEFORE splitting so artists
+ * from different buckets at the same coordinates get unique, stable positions.
  */
 export function artistsByGenreBucket(artists) {
-  // 1. Build all features first, grouped by original coordinate for jitter
+  // 1. Build all features, grouped by original coordinate for jitter
   const coordGroups = new Map();
   const allFeatures = [];
   for (const a of (artists || [])) {
@@ -32,16 +46,25 @@ export function artistsByGenreBucket(artists) {
     coordGroups.get(coordKey).push(feature);
   }
 
-  // 2. Apply jitter globally across all buckets
+  // 2. Apply deterministic jitter globally across all buckets.
+  //    Radius scales with group size so dense cities (200+ artists) spread
+  //    further instead of forming a visible ring.
   for (const group of coordGroups.values()) {
     if (group.length < 2) continue;
-    const radius = 0.003;
-    for (let i = 0; i < group.length; i++) {
-      const angle = (2 * Math.PI * i) / group.length;
-      const [lng, lat] = group[i].geometry.coordinates;
-      group[i].geometry.coordinates = [
-        lng + radius * Math.cos(angle),
-        lat + radius * Math.sin(angle),
+    // Base radius 0.004° (~440m), grows logarithmically for large groups
+    const radius = 0.004 + 0.003 * Math.log2(group.length);
+    for (const feature of group) {
+      const id = feature.properties.artistId;
+      // Deterministic angle and radius offset from the artist's own ID
+      const h1 = hashId(id);
+      const h2 = hashId(id + '_r');
+      const angle = h1 * 2 * Math.PI;
+      // Vary radius between 30% and 100% of max to avoid center clustering
+      const r = radius * (0.3 + 0.7 * h2);
+      const [lng, lat] = feature.geometry.coordinates;
+      feature.geometry.coordinates = [
+        lng + r * Math.cos(angle),
+        lat + r * Math.sin(angle),
       ];
     }
   }

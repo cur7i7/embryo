@@ -7,7 +7,7 @@ const GENRE_BUCKETS = {
     ],
     color: '#912761',
   },
-  'Jazz/Blues': {
+  'Jazz & Blues': {
     genres: [
       'jazz', 'blues', 'funk', 'bebop', 'swing',
       'bossa nova', 'samba', 'latin jazz', 'smooth jazz', 'acid jazz', 'afrobeat',
@@ -37,7 +37,7 @@ const GENRE_BUCKETS = {
     ],
     color: '#F4762D',
   },
-  'Pop/Soul': {
+  'Pop & Soul': {
     genres: [
       'pop', 'disco', 'r&b', 'gospel', 'soul',
       'cantopop', 'mandopop', 'j-pop', 'k-pop', 'c-pop', 'schlager', 'chanson',
@@ -45,13 +45,13 @@ const GENRE_BUCKETS = {
     ],
     color: '#DB608F',
   },
-  'Folk/Country': {
+  'Folk & Country': {
     genres: [
       'country', 'folk', 'bluegrass', 'americana', 'traditional folk',
     ],
     color: '#ADA400',
   },
-  'World/Latin': {
+  'World & Latin': {
     genres: [
       'world music', 'world', 'arabic', 'afro', 'reggae', 'ska', 'dancehall',
       'reggaeton', 'latin', 'salsa', 'merengue', 'cumbia', 'bachata', 'tango',

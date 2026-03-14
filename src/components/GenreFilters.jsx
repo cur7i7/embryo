@@ -24,11 +24,7 @@ function GenreFilters({ activeGenres, onToggleGenre, onSelectAll, isMobile = fal
   return (
     <>
     <div style={{
-      position: 'fixed',
-      bottom: isMobile ? `calc(clamp(44px, 6vw, 52px) + 116px + env(safe-area-inset-bottom))` : `calc(clamp(44px, 6vw, 52px) + 76px + env(safe-area-inset-bottom))`,
-      left: isMobile ? '0' : '16px',
-      right: isMobile ? '0' : 'auto',
-      zIndex: 20,
+      position: 'relative',
     }}>
     <div
       role="group"
@@ -65,8 +61,8 @@ function GenreFilters({ activeGenres, onToggleGenre, onSelectAll, isMobile = fal
           backgroundColor: allActive ? '#5A5048' : 'transparent',
           border: allActive ? '1px solid #5A5048' : '1px solid rgba(90,80,72,0.2)',
           borderRadius: isPointerFine ? 999 : '8px',
-          padding: isPointerFine ? '3px 10px' : (isMobile ? '6px 12px' : '5px 10px'),
-          minHeight: 44,
+          padding: isPointerFine ? '4px 10px' : (isMobile ? '6px 12px' : '5px 10px'),
+          minHeight: isPointerFine ? 32 : 44,
           cursor: 'pointer',
           transition: 'all 0.15s ease',
           outline: '2px solid transparent',
@@ -112,8 +108,8 @@ function GenreFilters({ activeGenres, onToggleGenre, onSelectAll, isMobile = fal
               backgroundColor: isActive ? `${color}1F` : 'transparent',
               border: isActive ? `1.5px solid ${color}` : '1px solid rgba(90,80,72,0.15)',
               borderRadius: isPointerFine ? 999 : '8px',
-              padding: isPointerFine ? '3px 10px' : (isMobile ? '6px 11px' : '5px 9px'),
-              minHeight: 44,
+              padding: isPointerFine ? '4px 10px' : (isMobile ? '6px 11px' : '5px 9px'),
+              minHeight: isPointerFine ? 32 : 44,
               cursor: 'pointer',
               transition: 'all 0.15s ease',
               outline: '2px solid transparent',

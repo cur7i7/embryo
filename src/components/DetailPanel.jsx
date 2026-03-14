@@ -61,7 +61,7 @@ function ConnectionTypeLabel({ type }) {
   return (
     <span
       style={{
-        fontSize: 11,
+        fontSize: 12,
         fontWeight: 600,
         padding: '2px 6px',
         borderRadius: 8,
@@ -82,7 +82,7 @@ function PipelineBadge({ pipeline }) {
   return (
     <span
       style={{
-        fontSize: 11,
+        fontSize: 12,
         fontWeight: 500,
         padding: '1px 5px',
         borderRadius: 8,
@@ -262,7 +262,7 @@ function ConnectionsList({ connections, artist, artistMap, onClickArtist }) {
                   fontFamily: '"DM Sans", sans-serif',
                   color: '#5A5048',
                   cursor: 'pointer',
-                  minHeight: isPointerFine ? 36 : 44,
+                  minHeight: 44,
                 }}
                 aria-label={`Show ${hiddenCount} more ${label.toLowerCase()}`}
               >
@@ -282,7 +282,7 @@ function ConnectionsList({ connections, artist, artistMap, onClickArtist }) {
                   fontFamily: '"DM Sans", sans-serif',
                   color: '#5A5048',
                   cursor: 'pointer',
-                  minHeight: isPointerFine ? 36 : 44,
+                  minHeight: 44,
                 }}
                 aria-label={`Show fewer ${label.toLowerCase()}`}
               >

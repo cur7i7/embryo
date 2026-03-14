@@ -320,7 +320,7 @@ function SearchBar({ artists, allArtists, onSelect, isMobile = false, artistCoun
               top: '50%',
               transform: 'translateY(-50%)',
               pointerEvents: 'none',
-              fontSize: 11,
+              fontSize: 12,
               fontFamily: '"DM Sans", sans-serif',
               fontWeight: 500,
               color: '#9A8E84',

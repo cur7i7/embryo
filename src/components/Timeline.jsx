@@ -418,7 +418,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
             gap: 4,
             padding: '0 10px',
             minWidth: 44,
-            height: isPointerFine ? 36 : 44, // Fix #14: 44px on touch devices
+            height: 44, // Fix #14: 44px on all devices
             border: 'none',
             cursor: 'pointer',
             fontFamily: '"DM Sans", sans-serif',
@@ -452,7 +452,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
             gap: 4,
             padding: '0 10px',
             minWidth: 44,
-            height: isPointerFine ? 36 : 44, // Fix #14: 44px on touch devices
+            height: 44, // Fix #14: 44px on all devices
             border: 'none',
             cursor: 'pointer',
             fontFamily: '"DM Sans", sans-serif',
@@ -572,7 +572,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
               }}
             />
             <span style={{
-              fontSize: 11,
+              fontSize: 12,
               fontFamily: '"DM Sans", sans-serif',
               color: '#6B5F55',
             }}>
@@ -783,7 +783,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                       position: 'absolute',
                       left: `${pct}%`,
                       transform: 'translateX(-50%)',
-                      fontSize: '11px',
+                      fontSize: '12px',
                       fontFamily: '"DM Sans", sans-serif',
                       fontWeight: 500,
                       color: '#4A3F37',

@@ -118,7 +118,7 @@ export default function HoverCard({ artist, position, connectionCount, isMobile 
         alignItems: 'center',
         gap: 8,
         marginTop: 3,
-        fontSize: 11,
+        fontSize: 12,
         color: '#6B5F55',
         lineHeight: 1.3,
       }}>

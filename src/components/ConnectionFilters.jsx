@@ -30,11 +30,7 @@ function ConnectionFilters({ activeConnectionTypes, onToggleType, onSelectAll, t
   return (
     <>
     <div style={{
-      position: 'fixed',
-      bottom: isMobile ? `calc(clamp(44px, 6vw, 52px) + 56px + env(safe-area-inset-bottom))` : `calc(clamp(44px, 6vw, 52px) + 20px + env(safe-area-inset-bottom))`,
-      left: isMobile ? '0' : '16px',
-      right: isMobile ? '0' : 'auto',
-      zIndex: 20,
+      position: 'relative',
     }}>
     <div
       role="group"
@@ -42,8 +38,8 @@ function ConnectionFilters({ activeConnectionTypes, onToggleType, onSelectAll, t
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: '3px',
-        padding: isMobile ? '3px 12px' : '3px 6px',
+        gap: '4px',
+        padding: isMobile ? '4px 12px' : '4px 6px',
         backgroundColor: 'rgba(250, 243, 235, 0.88)',
         backdropFilter: 'blur(8px)',
         WebkitBackdropFilter: 'blur(8px)',
@@ -70,8 +66,8 @@ function ConnectionFilters({ activeConnectionTypes, onToggleType, onSelectAll, t
           backgroundColor: allActive ? ACCENT : 'transparent',
           border: allActive ? `1px solid ${ACCENT}` : '1px solid rgba(90,80,72,0.15)',
           borderRadius: isPointerFine ? 999 : '8px',
-          padding: isPointerFine ? '3px 8px' : (isMobile ? '6px 10px' : '4px 8px'),
-          minHeight: 44,
+          padding: isPointerFine ? '4px 8px' : (isMobile ? '6px 10px' : '4px 8px'),
+          minHeight: isPointerFine ? 32 : 44,
           cursor: 'pointer',
           transition: 'all 0.15s ease',
           outline: '2px solid transparent',
@@ -118,15 +114,15 @@ function ConnectionFilters({ activeConnectionTypes, onToggleType, onSelectAll, t
               backgroundColor: isActive ? 'rgba(90,80,72,0.08)' : 'transparent',
               border: isActive ? `1.5px solid ${ACCENT}` : '1px solid rgba(90,80,72,0.12)',
               borderRadius: isPointerFine ? 999 : '8px',
-              padding: isPointerFine ? '3px 8px' : (isMobile ? '6px 9px' : '4px 7px'),
-              minHeight: 44,
+              padding: isPointerFine ? '4px 8px' : (isMobile ? '6px 9px' : '4px 7px'),
+              minHeight: isPointerFine ? 32 : 44,
               cursor: 'pointer',
               transition: 'all 0.15s ease',
               outline: '2px solid transparent',
               whiteSpace: 'nowrap',
               display: 'flex',
               alignItems: 'center',
-              gap: '3px',
+              gap: '4px',
             }}
             onMouseEnter={(e) => {
               if (!isActive) {

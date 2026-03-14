@@ -1,12 +1,10 @@
 import React, { useState, useReducer, useMemo, useEffect, useRef, useCallback } from 'react';
 import Map from './components/Map.jsx';
 import Timeline from './components/Timeline.jsx';
-import GenreFilters from './components/GenreFilters.jsx';
-import ConnectionFilters from './components/ConnectionFilters.jsx';
 import DetailPanel from './components/DetailPanel.jsx';
 import SearchBar from './components/SearchBar.jsx';
 import OnboardingOverlay from './components/OnboardingOverlay.jsx';
-import GenreLegend from './components/GenreLegend.jsx';
+import FilterPanel from './components/FilterPanel.jsx';
 import HoverCard from './components/HoverCard.jsx';
 import ComparisonView from './components/ComparisonView.jsx';
 import JourneyPicker from './components/JourneyPicker.jsx';
@@ -177,7 +175,6 @@ export default function App() {
   const [hoveredArtist, setHoveredArtist] = useState(null);
   const [hoverPosition, setHoverPosition] = useState(null);
   const [selectedArtist, setSelectedArtist] = useState(null);
-  const [filtersExpanded, setFiltersExpanded] = useState(false);
   const [comparisonPair, setComparisonPair] = useState([]);
   const [isCompareArmed, setIsCompareArmed] = useState(false);
   const [isComparisonOpen, setIsComparisonOpen] = useState(false);
@@ -191,8 +188,6 @@ export default function App() {
   const hashUpdateTimer = useRef(null);
   const suppressHashSync = useRef(false);
   const prevSelectedArtistId = useRef(null);
-  const filterPanelRef = useRef(null);
-  const [filterPanelHeight, setFilterPanelHeight] = useState(168);
 
   // Fix #57: Track whether connections warning has been dismissed
   const [connectionsWarningDismissed, setConnectionsWarningDismissed] = useState(false);
@@ -577,19 +572,6 @@ export default function App() {
     return connectionsByArtist.get(selectedArtist.id) || [];
   }, [selectedArtist, connectionsByArtist]);
 
-  // ---- Measure filter panel height for toggle button positioning (Fix #54) ----
-  useEffect(() => {
-    const el = filterPanelRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(entries => {
-      for (const entry of entries) {
-        setFilterPanelHeight(entry.contentRect.height);
-      }
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [filtersExpanded]);
-
   // ---- Reset view: detect non-default state ----
   const isDefault = timeline.rangeStart === DEFAULT_RANGE[0]
     && timeline.rangeEnd === DEFAULT_RANGE[1]
@@ -811,7 +793,18 @@ export default function App() {
         </button>
       )}
 
-      {!isLandscapeConstrained && <GenreLegend isMobile={isMobile} />}
+      {!isLandscapeConstrained && (
+        <FilterPanel
+          activeGenres={activeGenres}
+          onToggleGenre={handleToggleGenre}
+          onSelectAllGenres={handleSelectAllGenres}
+          activeConnectionTypes={activeConnectionTypes}
+          onToggleConnectionType={handleToggleConnectionType}
+          onSelectAllConnectionTypes={handleSelectAllConnectionTypes}
+          typeCounts={connectionTypeCounts}
+          isMobile={isMobile}
+        />
+      )}
 
       {/* Journey button */}
       {journeyManifest.length > 0 && !activeJourney && (
@@ -857,68 +850,7 @@ export default function App() {
       {/* Permanent skip-link target for genre filters — always in DOM even when filters are collapsed */}
       <span id="genre-filters" tabIndex={-1} style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }} />
 
-      {/* Mobile: collapsible filters toggle */}
-      {/* Fix #4/#5: Hide in constrained landscape to save vertical space */}
-      {isMobile && !isLandscapeConstrained && (
-        <button
-          onClick={() => setFiltersExpanded(prev => !prev)}
-          aria-expanded={filtersExpanded}
-          style={{
-            position: 'fixed',
-            bottom: filtersExpanded ? `calc(${filterPanelHeight}px + env(safe-area-inset-bottom))` : `calc(56px + env(safe-area-inset-bottom))`,
-            left: 12,
-            zIndex: 18,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 5,
-            padding: '6px 12px',
-            fontSize: 12,
-            fontWeight: 600,
-            fontFamily: '"DM Sans", sans-serif',
-            color: filtersExpanded ? '#C4326B' : '#5A5048',
-            backgroundColor: 'rgba(250, 243, 235, 0.92)',
-            backdropFilter: 'blur(6px)',
-            border: '1px solid rgba(224, 216, 204, 0.7)',
-            borderRadius: 16,
-            boxShadow: '0 2px 8px rgba(90, 80, 72, 0.10)',
-            cursor: 'pointer',
-            minHeight: 44,
-            transition: 'bottom 0.2s ease, color 0.15s ease',
-          }}
-        >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">
-            <rect x="1" y="2" width="12" height="1.5" rx="0.75" />
-            <rect x="3" y="6" width="8" height="1.5" rx="0.75" />
-            <rect x="5" y="10" width="4" height="1.5" rx="0.75" />
-          </svg>
-          Filters
-          {filtersExpanded ? ' ▾' : ' ▸'}
-        </button>
-      )}
-
-      {/* Filters — always visible on desktop, collapsible on mobile */}
-      {/* Fix #4/#5: Hide filters entirely in constrained landscape */}
-      {(!isMobile || filtersExpanded) && !isLandscapeConstrained && (
-        <div id="filter-panels" ref={filterPanelRef} style={{
-          maxHeight: 'clamp(120px, 25vh, 200px)',
-          overflowY: 'auto',
-        }}>
-          <GenreFilters
-            activeGenres={activeGenres}
-            onToggleGenre={handleToggleGenre}
-            onSelectAll={handleSelectAllGenres}
-            isMobile={isMobile}
-          />
-
-          <ConnectionFilters
-            activeConnectionTypes={activeConnectionTypes}
-            onToggleType={handleToggleConnectionType}
-            onSelectAll={handleSelectAllConnectionTypes}
-            typeCounts={connectionTypeCounts}
-            isMobile={isMobile}
-          />
-        </div>
-      )}
+      {/* Skip-link target for filters is now handled by FilterPanel above */}
 
       <Timeline
         artists={allArtists}

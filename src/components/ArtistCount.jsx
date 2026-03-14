@@ -42,7 +42,7 @@ function ArtistCount({ count, rangeStart, rangeEnd, isPlaying = false }) {
         border: '1px solid rgba(224, 216, 204, 0.7)',
         boxShadow: '0 2px 10px rgba(90, 80, 72, 0.10)',
         fontFamily: '"DM Sans", sans-serif',
-        fontSize: isPointerFine ? '11px' : '13px',
+        fontSize: isPointerFine ? '12px' : '13px',
         fontWeight: 500,
         color: '#1A1512',
         display: 'flex',
