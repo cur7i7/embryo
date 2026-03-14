@@ -1,17 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { GENRE_BUCKETS } from '../utils/genres.js';
 
-const GENRE_SHAPES = {
-  'Classical':    '\u25CF',
-  'Jazz/Blues':   '\u25C6',
-  'Rock':         '\u25B2',
-  'Electronic':   '\u25A0',
-  'Hip-hop':      '\u2605',
-  'Pop/Soul':     '\u2665',
-  'Folk/Country': '\u25C7',
-  'World/Latin':  '\u2B1F',
-  'Other':        '\u2726',
-};
+// All genres use filled circles — Swiss modernist aesthetic
+const GENRE_SHAPE = '\u25CF';
 
 const BUCKET_NAMES = Object.keys(GENRE_BUCKETS);
 
@@ -138,7 +129,7 @@ function GenreLegend({ isMobile = false }) {
           >
             {BUCKET_NAMES.map((name) => {
               const { color } = GENRE_BUCKETS[name];
-              const shape = GENRE_SHAPES[name] ?? '\u25CF';
+              const shape = GENRE_SHAPE;
 
               return (
                 <li

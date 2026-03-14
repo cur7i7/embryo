@@ -4,14 +4,12 @@ import { GENRE_BUCKETS, getGenreBucket } from '../utils/genres.js';
 import {
   GENRE_COLORS,
   preRenderOrbTexture,
-  createGrainTexture,
   drawArcParticle,
   drawArtistNode,
   drawCityGroup,
   hexToRgba,
 } from '../utils/rendering.js';
 import { buildCityGroups } from '../utils/cityGrouping.js';
-import { buildHeatmapGrid } from '../utils/heatmap.js';
 
 // Build a stable mapping from genre bucket color -> pre-rendered texture index
 const BUCKET_COLORS = Object.values(GENRE_BUCKETS).map((b) => b.color);
@@ -23,19 +21,15 @@ const ZOOM_INDIVIDUAL = 9;
 // Animation & rendering constants
 const FADE_DURATION = 400;             // ms for opacity 0→1 or 1→0 transition
 const CLUSTER_RADIUS_BASE = 20;        // cluster orb base radius (px)
-const CLUSTER_RADIUS_MAX = 55;         // cluster orb max radius (px)
+const CLUSTER_RADIUS_MAX = 42;         // cluster orb max radius (px)
 const ARTIST_RADIUS = 14;              // individual artist node radius (px)
 const ARTIST_ACTIVE_SCALE = 1.5;       // scale for active artist in individual mode
 const CLUSTER_ACTIVE_SCALE = 1.5;      // scale for active artist in cluster mode
 const ANIMATION_CYCLE_MS = 3000;       // particle / pulse animation cycle period (ms)
 const HIT_TEST_MIN_RADIUS = 22;        // minimum hit-test radius (44px touch target / 2)
-const SUPERCLUSTER_RADIUS = 60;        // Supercluster clustering radius
+const SUPERCLUSTER_RADIUS = 80;        // Supercluster clustering radius
 const ARC_VIEWPORT_PAD = 100;          // arc viewport culling padding (px)
 const COLOCATION_OFFSET_RADIUS = 0.0008; // co-location spiral offset (degrees)
-const HEATMAP_FADE_IN_START = 4;
-const HEATMAP_FULL_START = 5;
-const HEATMAP_FADE_OUT_START = 6;
-const HEATMAP_FADE_OUT_END = 7;
 
 // AABB overlap helper — hoisted to module scope to avoid per-frame closure allocation
 function overlaps(a, b) {
@@ -96,7 +90,6 @@ export default function CanvasOverlay({
 
   // Pre-rendered textures — created once, never recreated
   const orbTexturesRef = useRef(null);
-  const grainTextureRef = useRef(null);
 
   // posMap stored in ref so mousemove handler can access without stale closure
   const posMapRef = useRef(new Map());
@@ -128,10 +121,6 @@ export default function CanvasOverlay({
     return () => mql.removeEventListener('change', handler);
   }, []);
 
-  // Pre-composited grain canvas
-  const grainFullRef = useRef(null);
-  const grainSizeRef = useRef({ w: 0, h: 0 });
-
   // Focused artist index for keyboard navigation
   const focusedArtistIndexRef = useRef(-1);
 
@@ -148,7 +137,6 @@ export default function CanvasOverlay({
 
   // City groups ref (rebuilt when artists change)
   const cityGroupsRef = useRef(new Map());
-  const heatmapCellsRef = useRef([]);
   const cityPosMapRef = useRef(new Map()); // projected city positions for hit testing
   const hoveredCityKeyRef = useRef(null);  // currently hovered city key for highlight
   const clusterColorCacheRef = useRef(new Map()); // cluster.id → texture index cache
@@ -207,7 +195,6 @@ export default function CanvasOverlay({
     orbTexturesRef.current = GENRE_COLORS.map((color) =>
       preRenderOrbTexture(color, 200)
     );
-    grainTextureRef.current = createGrainTexture(512, 512);
   }, []);
 
   // -------------------------------------------------------------------
@@ -221,8 +208,7 @@ export default function CanvasOverlay({
     if (!map) return false;
 
     const orbTextures = orbTexturesRef.current;
-    const grainTexture = grainTextureRef.current;
-    if (!orbTextures || !grainTexture) return false;
+    if (!orbTextures) return false;
 
     // Read latest props from refs
     const connectionCounts = connectionCountsRef.current;
@@ -384,46 +370,6 @@ export default function CanvasOverlay({
     // always sees the last *complete* frame, even while posMapFrameRef is being
     // cleared and rebuilt for the next frame (Issue #7).
     posMapRef.current = new Map(posMap);
-
-    // --- Genre heatmap phase (mid zoom) ---
-    // Draw behind cluster/city/individual layers using a cached density grid.
-    let heatmapAlpha = 0;
-    if (currentZoomForPos >= HEATMAP_FADE_IN_START && currentZoomForPos < HEATMAP_FADE_OUT_END) {
-      if (currentZoomForPos < HEATMAP_FULL_START) {
-        heatmapAlpha = (currentZoomForPos - HEATMAP_FADE_IN_START) / (HEATMAP_FULL_START - HEATMAP_FADE_IN_START);
-      } else if (currentZoomForPos < HEATMAP_FADE_OUT_START) {
-        heatmapAlpha = 1;
-      } else {
-        heatmapAlpha = 1 - ((currentZoomForPos - HEATMAP_FADE_OUT_START) / (HEATMAP_FADE_OUT_END - HEATMAP_FADE_OUT_START));
-      }
-    }
-    if (heatmapAlpha > 0.01) {
-      const heatmapCells = heatmapCellsRef.current;
-      ctx.save();
-      ctx.globalCompositeOperation = 'lighter';
-      for (const cell of heatmapCells) {
-        const pt = map.project([cell.lng, cell.lat]);
-        const intensity = Math.max(0.2, Math.min(1, cell.normalizedIntensity || 0));
-        const radius = 26 + Math.sqrt(cell.count) * 9;
-        const outerRadius = radius * (1.2 + intensity * 1.5);
-        if (
-          pt.x < -outerRadius || pt.x > cssWidth + outerRadius ||
-          pt.y < -outerRadius || pt.y > cssHeight + outerRadius
-        ) {
-          continue;
-        }
-
-        const grad = ctx.createRadialGradient(pt.x, pt.y, 0, pt.x, pt.y, outerRadius);
-        grad.addColorStop(0, hexToRgba(cell.dominantColor, 0.26 * heatmapAlpha * intensity));
-        grad.addColorStop(0.55, hexToRgba(cell.dominantColor, 0.14 * heatmapAlpha * intensity));
-        grad.addColorStop(1, hexToRgba(cell.dominantColor, 0));
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(pt.x, pt.y, outerRadius, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.restore();
-    }
 
     // Build set of ids connected to hovered/selected artist using indexed lookup
     const connectedIds = new Set();
@@ -608,7 +554,9 @@ export default function CanvasOverlay({
 
           if (cluster.properties.cluster) {
             const count = cluster.properties.point_count;
-            const clusterRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log2(count) * 7, CLUSTER_RADIUS_MAX);
+            // Zoom-based scale: 0.5x at zoom ≤1, scaling to 1.0x at zoom ≥4
+            const zoomScale = Math.min(1, Math.max(0.5, 0.5 + (currentZoom - 1) * (0.5 / 3)));
+            const clusterRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log10(count) * 14, CLUSTER_RADIUS_MAX) * zoomScale;
 
             // Determine dominant genre color by sampling leaves (cached per cluster ID)
             const clusterColorCache = clusterColorCacheRef.current;
@@ -636,10 +584,12 @@ export default function CanvasOverlay({
               clusterColorCache.set(cluster.id, clusterTextureIdx);
             }
             const orbTexture = orbTextures[clusterTextureIdx];
+            ctx.globalCompositeOperation = 'multiply';
             ctx.globalAlpha = clusterAlpha;
             ctx.drawImage(orbTexture, x - clusterRadius, y - clusterRadius, clusterRadius * 2, clusterRadius * 2);
-            ctx.globalAlpha = clusterAlpha;
 
+            // Reset to source-over before drawing labels so they remain legible
+            ctx.globalCompositeOperation = 'source-over';
             ctx.save();
             const countStr = count.toString();
             const isSmall = count < 5;
@@ -654,7 +604,7 @@ export default function CanvasOverlay({
             ctx.strokeStyle = 'rgba(0,0,0,0.35)';
             ctx.lineWidth = 2.5;
             ctx.strokeText(countStr, x, y);
-            ctx.fillStyle = '#FAF3EB';
+            ctx.fillStyle = '#FFFFFF';
             ctx.fillText(countStr, x, y);
             ctx.shadowBlur = 0;
 
@@ -774,8 +724,10 @@ export default function CanvasOverlay({
             }
 
             const baseAlpha = isPassive ? 0.4 : 1.0;
+            ctx.globalCompositeOperation = 'multiply';
             ctx.globalAlpha = baseAlpha * opacity * clusterAlpha;
             ctx.drawImage(orbTexture, x - radius, y - radius, radius * 2, radius * 2);
+            ctx.globalCompositeOperation = 'source-over';
 
             // Track individual-in-cluster position for pill collision
             clusterPositions.push({ x, y, radius });
@@ -1221,33 +1173,6 @@ export default function CanvasOverlay({
       }
     }
 
-    // --- Grain phase --- hard-reset canvas state
-    ctx.globalAlpha = 1.0;
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.setLineDash([]);
-
-    if (grainSizeRef.current.w !== cssWidth || grainSizeRef.current.h !== cssHeight) {
-      // Release old grain buffer so GC can collect it before allocating a new one
-      grainFullRef.current = null;
-      const grainFull = document.createElement('canvas');
-      grainFull.width = cssWidth * dpr;
-      grainFull.height = cssHeight * dpr;
-      const gCtx = grainFull.getContext('2d');
-      gCtx.scale(dpr, dpr);
-      const gw = grainTextureRef.current.width;
-      const gh = grainTextureRef.current.height;
-      for (let gx = 0; gx < cssWidth; gx += gw) {
-        for (let gy = 0; gy < cssHeight; gy += gh) {
-          gCtx.drawImage(grainTextureRef.current, gx, gy);
-        }
-      }
-      grainFullRef.current = grainFull;
-      grainSizeRef.current = { w: cssWidth, h: cssHeight };
-    }
-    if (grainFullRef.current) {
-      ctx.drawImage(grainFullRef.current, 0, 0, cssWidth, cssHeight);
-    }
-
     ctx.restore();
     return true;
   }, [mapRef]);
@@ -1290,10 +1215,6 @@ export default function CanvasOverlay({
     // Cache valid artists (those with coordinates)
     const valid = (artists || []).filter(a => a.birth_lat != null && a.birth_lng != null);
     validArtistsRef.current = valid;
-
-    // Precompute heatmap density grid once per filtered artist set.
-    // Mid-zoom rendering reuses this cached structure each frame.
-    heatmapCellsRef.current = buildHeatmapGrid(valid, 2.2);
 
     // Rebuild cached currentIds set (P1: avoid per-frame allocation)
     currentIdsRef.current = new Set(valid.map(a => a.id));

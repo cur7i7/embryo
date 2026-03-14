@@ -16,69 +16,6 @@ export function hexToRgba(hex, alpha) {
 }
 
 
-export function drawOrb(ctx, x, y, radius, genreColor, peachColor = '#EEC1A2') {
-  // Extended radius for dissolved/feathered edges
-  const outerR = radius * 1.25;
-
-  // 1. Primary gradient — genre color dissolving with peach shift at edges
-  const primary = ctx.createRadialGradient(x, y, 0, x, y, outerR);
-  primary.addColorStop(0, genreColor + 'FF');     // 100% opacity — core
-  primary.addColorStop(0.25, genreColor + 'DD');   // ~87% — inner warmth
-  primary.addColorStop(0.5, genreColor + '88');    // ~53% — mid dissolve
-  primary.addColorStop(0.7, peachColor + '44');    // ~27% — shift to peach
-  primary.addColorStop(0.85, peachColor + '22');   // ~13% — feathered peach
-  primary.addColorStop(1, peachColor + '00');      // transparent
-  ctx.fillStyle = primary;
-  ctx.beginPath();
-  ctx.arc(x, y, outerR, 0, Math.PI * 2);
-  ctx.fill();
-
-  // 2. Secondary warm bleed — offset down-right, larger and softer
-  const offsetX = radius * 0.35;
-  const offsetY = radius * 0.35;
-  const bleedRadius = radius * 0.85;
-  const bleed = ctx.createRadialGradient(
-    x + offsetX, y + offsetY, 0,
-    x + offsetX, y + offsetY, bleedRadius
-  );
-  bleed.addColorStop(0, peachColor + '88'); // ~53% opacity
-  bleed.addColorStop(0.4, peachColor + '55');
-  bleed.addColorStop(0.7, peachColor + '28');
-  bleed.addColorStop(1, peachColor + '00');
-  ctx.fillStyle = bleed;
-  ctx.beginPath();
-  ctx.arc(x + offsetX, y + offsetY, bleedRadius, 0, Math.PI * 2);
-  ctx.fill();
-
-  // 3. Core dot — white center to genre color
-  const coreR = 4;
-  const core = ctx.createRadialGradient(x - 1, y - 1, 0, x, y, coreR);
-  core.addColorStop(0, '#FFFFFFEE');
-  core.addColorStop(0.4, genreColor + 'EE');
-  core.addColorStop(1, genreColor + 'AA');
-  ctx.fillStyle = core;
-  ctx.beginPath();
-  ctx.arc(x, y, coreR, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-export function createGrainTexture(width = 512, height = 512) {
-  const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext('2d');
-  const imgData = ctx.createImageData(width, height);
-  for (let i = 0; i < imgData.data.length; i += 4) {
-    const v = Math.random() * 40;
-    imgData.data[i] = v;
-    imgData.data[i + 1] = v;
-    imgData.data[i + 2] = v;
-    imgData.data[i + 3] = 32; // subtle but visible film grain
-  }
-  ctx.putImageData(imgData, 0, 0);
-  return canvas;
-}
-
 export function preRenderOrbTexture(genreColor, size = 200) {
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -86,8 +23,14 @@ export function preRenderOrbTexture(genreColor, size = 200) {
   const ctx = canvas.getContext('2d');
   const cx = size / 2;
   const cy = size / 2;
-  const r = size / 2;
-  drawOrb(ctx, cx, cy, r, genreColor);
+  const r = size / 2 - 1; // 1px inset to avoid clipping
+
+  // Flat circle with uniform genre color at 60% opacity
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fillStyle = genreColor + '99'; // ~60% opacity hex
+  ctx.fill();
+
   return canvas;
 }
 
@@ -212,16 +155,11 @@ export function drawCityGroup(ctx, x, y, city, count, radius, alpha = 1, genreCo
   ctx.save();
   ctx.globalAlpha = alpha;
 
-  // Genre-colored radial fill — visible and warm like cluster orbs
+  // Flat circle fill — Swiss modernist style
   if (genreColor) {
-    const grad = ctx.createRadialGradient(x, y, 0, x, y, radius);
-    grad.addColorStop(0, hexToRgba(genreColor, 0.45));
-    grad.addColorStop(0.5, hexToRgba(genreColor, 0.25));
-    grad.addColorStop(0.8, hexToRgba(genreColor, 0.10));
-    grad.addColorStop(1, hexToRgba(genreColor, 0.03));
     ctx.beginPath();
     ctx.arc(x, y, radius, 0, Math.PI * 2);
-    ctx.fillStyle = grad;
+    ctx.fillStyle = hexToRgba(genreColor, 0.35);
     ctx.fill();
   } else {
     // Fallback: soft cream fill

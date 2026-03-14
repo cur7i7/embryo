@@ -4,30 +4,8 @@ import { useIsPointerFine } from '../hooks/useIsPointerFine.js';
 
 const BUCKET_NAMES = Object.keys(GENRE_BUCKETS);
 
-/**
- * Non-color genre shape mapping for WCAG 2.2 AA redundant encoding.
- * Each genre gets a distinct Unicode symbol so users who cannot perceive
- * color differences can still distinguish genres by shape.
- *
- * Classical  → ● (U+25CF) filled circle   — traditional, foundational
- * Jazz/Blues → ◆ (U+25C6) filled diamond  — creative, angular
- * Rock       → ▲ (U+25B2) filled triangle — aggressive, pointed
- * Electronic → ■ (U+25A0) filled square   — digital, grid-like
- * Hip-hop    → ★ (U+2605) filled star     — expressive, bold
- * Pop/Soul   → ♥ (U+2665) filled heart    — emotional, warm
- * Other      → ✦ (U+2726) four-pointed star — miscellaneous
- */
-const GENRE_SHAPES = {
-  'Classical':    '●',
-  'Jazz/Blues':   '◆',
-  'Rock':         '▲',
-  'Electronic':   '■',
-  'Hip-hop':      '★',
-  'Pop/Soul':     '♥',
-  'Folk/Country': '◇',
-  'World/Latin':  '⬟',
-  'Other':        '✦',
-};
+// All genres use filled circles — Swiss modernist aesthetic
+const GENRE_SHAPE = '●';
 
 function GenreFilters({ activeGenres, onToggleGenre, onSelectAll, isMobile = false }) {
   const allActive = activeGenres.size === BUCKET_NAMES.length;
@@ -169,13 +147,13 @@ function GenreFilters({ activeGenres, onToggleGenre, onSelectAll, isMobile = fal
                 height: '10px',
                 fontSize: '10px',
                 lineHeight: '10px',
-                color: '#5A5048',
+                color: color,
                 flexShrink: 0,
                 textAlign: 'center',
                 userSelect: 'none',
               }}
             >
-              {GENRE_SHAPES[bucketName] ?? '●'}
+              {GENRE_SHAPE}
             </span>
             {bucketName}
           </button>
