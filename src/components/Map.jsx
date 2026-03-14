@@ -3,6 +3,7 @@ import { Map as MapGL } from 'react-map-gl/maplibre';
 import { Source, Layer } from 'react-map-gl/maplibre';
 import ArtistCount from './ArtistCount.jsx';
 import CanvasOverlay from './CanvasOverlay.jsx';
+import ArcOverlay from './ArcOverlay.jsx';
 import { useIsPointerFine } from '../hooks/useIsPointerFine.js';
 import {
   artistsToGeoJSON,
@@ -391,6 +392,15 @@ export default function Map({
           onHoverPosition={onHoverPosition}
           onSelect={onSelect}
           isFinePointer={isFinePointer}
+        />
+      )}
+      {mapLoaded && selectedArtist && (
+        <ArcOverlay
+          mapRef={mapRef}
+          selectedArtist={selectedArtist}
+          connectionsByArtist={connectionsByArtist}
+          activeConnectionTypes={activeConnectionTypes}
+          artists={artists}
         />
       )}
       <ArtistCount
