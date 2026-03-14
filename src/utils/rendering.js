@@ -28,7 +28,7 @@ export function preRenderOrbTexture(genreColor, size = 200) {
   // Flat circle with uniform genre color at 60% opacity
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.fillStyle = genreColor + 'DD'; // ~87% opacity — compensates for multiply blend mode on light maps
+  ctx.fillStyle = genreColor + 'B3'; // 70% opacity — direct alpha with source-over compositing
   ctx.fill();
 
   return canvas;
@@ -70,7 +70,7 @@ export function drawArtistNode(ctx, x, y, radius, genreColor, name, years, state
   }
 
   // Circle fill: genre color with visible fill + soft glow
-  const fillOpacity = 0.60;
+  const fillOpacity = 0.70;
   ctx.beginPath();
   ctx.arc(x, y, r, 0, Math.PI * 2);
   ctx.fillStyle = hexToRgba(genreColor, fillOpacity);
@@ -159,20 +159,20 @@ export function drawCityGroup(ctx, x, y, city, count, radius, alpha = 1, genreCo
   if (genreColor) {
     ctx.beginPath();
     ctx.arc(x, y, radius, 0, Math.PI * 2);
-    ctx.fillStyle = hexToRgba(genreColor, 0.60);
+    ctx.fillStyle = hexToRgba(genreColor, 0.70);
     ctx.fill();
   } else {
     // Fallback: soft cream fill
     ctx.beginPath();
     ctx.arc(x, y, radius, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(250, 243, 235, 0.60)';
+    ctx.fillStyle = 'rgba(250, 243, 235, 0.70)';
     ctx.fill();
   }
 
   // Dashed boundary stroke
   ctx.setLineDash([4, 4]);
   ctx.lineWidth = 1;
-  ctx.strokeStyle = genreColor ? hexToRgba(genreColor, 0.60) : 'rgba(62,53,48,0.5)';
+  ctx.strokeStyle = genreColor ? hexToRgba(genreColor, 0.70) : 'rgba(62,53,48,0.5)';
   ctx.stroke();
   ctx.setLineDash([]);
 

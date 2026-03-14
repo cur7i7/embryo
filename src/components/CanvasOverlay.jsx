@@ -574,17 +574,13 @@ export default function CanvasOverlay({
 
             if (cluster.properties.cluster) {
               const count = cluster.properties.point_count;
-              const zoomScale = Math.max(0.6, 1.2 - (currentZoom - 2) * 0.15);
-              const clusterRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log10(count) * 3.5, CLUSTER_RADIUS_MAX) * zoomScale;
+              const clusterRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log10(count) * 3.5, CLUSTER_RADIUS_MAX);
 
               // Use the per-genre texture index directly — no sampling needed
               const orbTexture = orbTextures[textureIdx];
-              ctx.globalCompositeOperation = 'multiply';
+              ctx.globalCompositeOperation = 'source-over';
               ctx.globalAlpha = clusterAlpha;
               ctx.drawImage(orbTexture, x - clusterRadius, y - clusterRadius, clusterRadius * 2, clusterRadius * 2);
-
-              // Reset to source-over before drawing labels so they remain legible
-              ctx.globalCompositeOperation = 'source-over';
               ctx.save();
               const countStr = count.toString();
               const showCountLabel = currentZoom >= 7;
@@ -706,8 +702,8 @@ export default function CanvasOverlay({
                 radius *= pulseFactor;
               }
 
-              const baseAlpha = isPassive ? 0.92 : 1.0;
-              ctx.globalCompositeOperation = 'multiply';
+              const baseAlpha = 1.0;
+              ctx.globalCompositeOperation = 'source-over';
               ctx.globalAlpha = baseAlpha * opacity * clusterAlpha;
               ctx.drawImage(orbTexture, x - radius, y - radius, radius * 2, radius * 2);
               ctx.globalCompositeOperation = 'source-over';
@@ -740,7 +736,7 @@ export default function CanvasOverlay({
       for (const [key, group] of sortedCityEntries) {
         const pt = map.project([group.lng, group.lat]);
         cityProjections.set(key, pt);
-        const r = Math.max(30, Math.sqrt(group.artists.length) * 12);
+        const r = Math.max(24, Math.sqrt(group.artists.length) * 6);
         if (pt.x >= -r && pt.x <= cssWidth + r && pt.y >= -r && pt.y <= cssHeight + r) {
           citiesInViewport++;
         }
@@ -758,7 +754,7 @@ export default function CanvasOverlay({
         const point = cityProjections.get(key);
         const { x, y } = point;
 
-        const cityRadius = Math.max(16, Math.sqrt(group.artists.length) * 3);
+        const cityRadius = Math.max(24, Math.sqrt(group.artists.length) * 6);
         // Viewport cull
         if (x < -cityRadius || x > cssWidth + cityRadius || y < -cityRadius || y > cssHeight + cityRadius) continue;
 
@@ -1442,9 +1438,7 @@ export default function CanvasOverlay({
         const dx = pt.x - mx;
         const dy = pt.y - my;
         const count = cluster.properties.point_count;
-        const currentZoom = map.getZoom();
-        const zoomScale = Math.max(0.6, 1.2 - (currentZoom - 2) * 0.15);
-        const visualRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log10(count) * 3.5, CLUSTER_RADIUS_MAX) * zoomScale;
+        const visualRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log10(count) * 3.5, CLUSTER_RADIUS_MAX);
         const clusterRadius = Math.max(visualRadius, HIT_TEST_MIN_RADIUS);
         if (Math.sqrt(dx * dx + dy * dy) <= clusterRadius) {
           return { cluster, scEntry: entry };
