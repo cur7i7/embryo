@@ -53,7 +53,6 @@ function GenreFilters({ activeGenres, onToggleGenre, onSelectAll, isMobile = fal
       zIndex: 20,
     }}>
     <div
-      id="genre-filters"
       role="group"
       aria-label="Filter by genre"
       ref={isMobile ? scrollRef : null}

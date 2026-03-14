@@ -135,7 +135,10 @@ export default function Map({
         href="#genre-filters"
         onClick={(e) => {
           e.preventDefault();
-          document.querySelector('[role="group"][aria-label="Filter by genre"] button')?.focus();
+          // Try the genre filter group first; fall back to the mobile Filters toggle button
+          const target = document.querySelector('[role="group"][aria-label="Filter by genre"] button')
+            || document.getElementById('genre-filters');
+          target?.focus();
         }}
         style={{
           position: 'absolute',

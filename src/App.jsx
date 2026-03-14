@@ -811,7 +811,7 @@ export default function App() {
         </button>
       )}
 
-      <GenreLegend isMobile={isMobile} />
+      {!isLandscapeConstrained && <GenreLegend isMobile={isMobile} />}
 
       {/* Journey button */}
       {journeyManifest.length > 0 && !activeJourney && (
@@ -819,7 +819,7 @@ export default function App() {
           onClick={() => setShowJourneyPicker(true)}
           style={{
             position: 'fixed',
-            top: 'calc(58px + env(safe-area-inset-top))',
+            top: 'calc(62px + env(safe-area-inset-top))',
             right: 'calc(16px + env(safe-area-inset-right))',
             zIndex: 15,
             display: 'flex',
@@ -853,6 +853,9 @@ export default function App() {
           isMobile={isMobile}
         />
       )}
+
+      {/* Permanent skip-link target for genre filters — always in DOM even when filters are collapsed */}
+      <span id="genre-filters" tabIndex={-1} style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }} />
 
       {/* Mobile: collapsible filters toggle */}
       {/* Fix #4/#5: Hide in constrained landscape to save vertical space */}
