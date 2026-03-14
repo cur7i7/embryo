@@ -28,7 +28,7 @@ export function preRenderOrbTexture(genreColor, size = 200) {
   // Flat circle with uniform genre color at 60% opacity
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.fillStyle = genreColor + '99'; // ~60% opacity hex
+  ctx.fillStyle = genreColor + 'DD'; // ~87% opacity — compensates for multiply blend mode on light maps
   ctx.fill();
 
   return canvas;

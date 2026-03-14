@@ -20,8 +20,8 @@ const ZOOM_INDIVIDUAL = 9;
 
 // Animation & rendering constants
 const FADE_DURATION = 400;             // ms for opacity 0→1 or 1→0 transition
-const CLUSTER_RADIUS_BASE = 6;         // cluster orb base radius (px)
-const CLUSTER_RADIUS_MAX = 18;         // cluster orb max radius (px)
+const CLUSTER_RADIUS_BASE = 3;         // cluster orb base radius (px)
+const CLUSTER_RADIUS_MAX = 10;         // cluster orb max radius (px)
 const ARTIST_RADIUS = 12;              // individual artist node radius (px)
 const ARTIST_ACTIVE_SCALE = 1.4;       // scale for active artist in individual mode
 const CLUSTER_ACTIVE_SCALE = 1.4;      // scale for active artist in cluster mode
@@ -574,8 +574,8 @@ export default function CanvasOverlay({
 
             if (cluster.properties.cluster) {
               const count = cluster.properties.point_count;
-              const zoomScale = Math.max(0.7, 1.1 - (currentZoom - 2) * 0.1);
-              const clusterRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log10(count) * 5, CLUSTER_RADIUS_MAX) * zoomScale;
+              const zoomScale = Math.max(0.6, 1.2 - (currentZoom - 2) * 0.15);
+              const clusterRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log10(count) * 3.5, CLUSTER_RADIUS_MAX) * zoomScale;
 
               // Use the per-genre texture index directly — no sampling needed
               const orbTexture = orbTextures[textureIdx];
@@ -680,8 +680,8 @@ export default function CanvasOverlay({
               if (opacity <= 0) continue;
 
               const connCount = (connectionCounts && connectionCounts.get(artistData.id)) || 0;
-              const scaleFactor = validArtists.length > 200 ? 0.6 : 0.85;
-              const baseRadius = (CLUSTER_RADIUS_BASE + Math.min(connCount * 0.8, 10)) * scaleFactor;
+              const scaleFactor = validArtists.length > 200 ? 0.4 : 0.8;
+              const baseRadius = (CLUSTER_RADIUS_BASE + Math.min(connCount * 0.6, 8)) * scaleFactor;
 
               const isActive = activeArtist && artistData.id === activeArtist.id;
               const isConnected = connectedIds.has(artistId);
@@ -1056,7 +1056,7 @@ export default function CanvasOverlay({
       if (pos) {
         const connCount = (connectionCounts && connectionCounts.get(activeArtist.id)) || 0;
         const isIndividual = renderModeRef.current === 'individual';
-        const baseRadius = isIndividual ? ARTIST_RADIUS : CLUSTER_RADIUS_BASE + Math.min(connCount * 0.8, 10);
+        const baseRadius = isIndividual ? ARTIST_RADIUS : CLUSTER_RADIUS_BASE + Math.min(connCount * 0.6, 8);
         const radius = baseRadius * (isIndividual ? ARTIST_ACTIVE_SCALE : CLUSTER_ACTIVE_SCALE);
 
         const meta = artistMeta.get(activeArtist.id);
@@ -1410,7 +1410,7 @@ export default function CanvasOverlay({
       const connCount = (connectionCountsRef.current?.get(artist?.id)) || 0;
       const scaleFactor = validArtistsRef.current.length > 200 ? 0.5 : 1;
       const inputScale = hitRadiusRef.current / HIT_TEST_MIN_RADIUS;
-      const baseRadius = (CLUSTER_RADIUS_BASE + Math.min(connCount * 0.8, 10)) * scaleFactor;
+      const baseRadius = (CLUSTER_RADIUS_BASE + Math.min(connCount * 0.6, 8)) * scaleFactor;
       effectiveHitRadius = Math.max(20 * inputScale, baseRadius * 0.4);
     }
 
@@ -1443,8 +1443,8 @@ export default function CanvasOverlay({
         const dy = pt.y - my;
         const count = cluster.properties.point_count;
         const currentZoom = map.getZoom();
-        const zoomScale = Math.max(0.7, 1.1 - (currentZoom - 2) * 0.1);
-        const visualRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log10(count) * 5, CLUSTER_RADIUS_MAX) * zoomScale;
+        const zoomScale = Math.max(0.6, 1.2 - (currentZoom - 2) * 0.15);
+        const visualRadius = Math.min(CLUSTER_RADIUS_BASE + Math.log10(count) * 3.5, CLUSTER_RADIUS_MAX) * zoomScale;
         const clusterRadius = Math.max(visualRadius, HIT_TEST_MIN_RADIUS);
         if (Math.sqrt(dx * dx + dy * dy) <= clusterRadius) {
           return { cluster, scEntry: entry };
