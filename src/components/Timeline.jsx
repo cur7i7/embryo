@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useCallback, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect, useLayoutEffect, memo } from 'react';
 import { useIsPointerFine } from '../hooks/useIsPointerFine';
 
 const MIN_YEAR = 1400;
@@ -23,7 +23,7 @@ function buildBins(artists) {
   return bins;
 }
 
-export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange, isPlaying, onPlayPause, isMobile, initialMode }) {
+function Timeline({ artists, rangeStart, rangeEnd, onRangeChange, isPlaying, onPlayPause, isMobile, initialMode }) {
   const isPointerFine = useIsPointerFine();
   const containerRef = useRef(null);
   const dragging = useRef(null); // 'left' | 'right' | 'year' | null
@@ -904,3 +904,5 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
     </div>
   );
 }
+
+export default memo(Timeline);

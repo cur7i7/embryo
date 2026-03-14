@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react';
 
 const BAR_STYLE = {
   position: 'fixed',
@@ -34,7 +34,7 @@ const BTN_STYLE = {
   fontFamily: 'inherit',
 };
 
-export default function JourneyPlayer({
+function JourneyPlayer({
   journey,
   allArtists,
   onNavigate,
@@ -193,3 +193,5 @@ export default function JourneyPlayer({
     </div>
   );
 }
+
+export default memo(JourneyPlayer);
