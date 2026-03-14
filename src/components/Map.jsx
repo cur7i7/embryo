@@ -2,9 +2,7 @@ import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { Map as MapGL } from 'react-map-gl/maplibre';
 import { Source, Layer } from 'react-map-gl/maplibre';
 import ArtistCount from './ArtistCount.jsx';
-import CanvasOverlay from './CanvasOverlay.jsx';
 import ArcOverlay from './ArcOverlay.jsx';
-import { useIsPointerFine } from '../hooks/useIsPointerFine.js';
 import {
   artistsToGeoJSON,
   clusterProperties,
@@ -160,7 +158,6 @@ export default function Map({
 }) {
   const [mapLoaded, setMapLoaded] = useState(false);
   const [cursor, setCursor] = useState('auto');
-  const isFinePointer = useIsPointerFine();
 
   const handleMapLoad = useCallback(() => {
     setMapLoaded(true);
@@ -406,21 +403,6 @@ export default function Map({
           </Source>
         )}
       </MapGL>
-      {mapLoaded && (
-        <CanvasOverlay
-          mapRef={mapRef}
-          artists={artists}
-          connectionCounts={connectionCounts}
-          connectionsByArtist={connectionsByArtist}
-          activeConnectionTypes={activeConnectionTypes}
-          hoveredArtist={hoveredArtist}
-          selectedArtist={selectedArtist}
-          onHover={onHover}
-          onHoverPosition={onHoverPosition}
-          onSelect={onSelect}
-          isFinePointer={isFinePointer}
-        />
-      )}
       {mapLoaded && selectedArtist && (
         <ArcOverlay
           mapRef={mapRef}
