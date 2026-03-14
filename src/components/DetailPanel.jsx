@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { getGenreBucket } from '../utils/genres.js';
 import { hexToRgba } from '../utils/rendering.js';
-import { useIsPointerFine } from '../hooks/useIsPointerFine.js';
 import SuggestionForm from './SuggestionForm.jsx';
 
 const PANEL_WIDTH = 'clamp(320px, 30vw, 420px)';
@@ -181,8 +180,6 @@ function ConnectionCard({ conn, artist, artistMap, onClickArtist }) {
 
 function ConnectionsList({ connections, artist, artistMap, onClickArtist }) {
   const [expandedGroups, setExpandedGroups] = useState({});
-  const isPointerFine = useIsPointerFine();
-
   // Group connections by type
   const groups = React.useMemo(() => {
     const grouped = {};
