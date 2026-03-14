@@ -142,12 +142,10 @@ const selectedArtistLayer = {
 export default function Map({
   mapRef,
   artists,
-  connectionCounts,
   connectionsByArtist,
   activeConnectionTypes,
   rangeStart,
   rangeEnd,
-  hoveredArtist,
   selectedArtist,
   onHover,
   onHoverPosition,
