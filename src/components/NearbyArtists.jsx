@@ -77,6 +77,7 @@ export default function NearbyArtists({ artists, connectionCounts, onSelect, isM
     );
   }
 
+  // TODO(P2#33): Add role="region", aria-label, and aria-label on list items for screen reader context
   return (
     <div style={isMobile ? { ...PANEL_STYLE, right: 8, left: 8, width: 'auto' } : PANEL_STYLE}>
       {/* Header */}

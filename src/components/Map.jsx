@@ -79,6 +79,7 @@ function makeClusterCountLayer(sourceId, textColor = '#FFFFFF') {
   };
 }
 
+// TODO(P2#25): Unclustered point radius 7px (14px diameter) at zoom 10 is below WCAG 24px touch target. Consider increasing at lower zoom levels
 function makeUnclusteredPointLayer(sourceId, color) {
   return {
     id: `${sourceId}-point`,
@@ -290,6 +291,7 @@ export default function Map({
     }
   }, [selectedArtist, mapRef]);
 
+  // TODO(P2#24): artistsByGenreBucket + 9 Supercluster rebuilds per timeline tick (~50-90ms). Consider caching or debouncing during playback
   const genreBuckets = useMemo(
     () => artistsByGenreBucket(artists || []),
     [artists]

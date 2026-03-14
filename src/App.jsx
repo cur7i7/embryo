@@ -1,3 +1,6 @@
+// TODO(P2#21): Extract 35+ hardcoded colors, 12 border-radius values, 17 font sizes into a design token system
+// TODO(P2#34): Extract URL hash sync (~120 lines), toast system (~40 lines), loading screens (~70 lines) into separate modules
+// TODO(P1#15): Set up Sentry error tracking and usage analytics
 import React, { useState, useReducer, useMemo, useEffect, useRef, useCallback } from 'react';
 import Map from './components/Map.jsx';
 import Timeline from './components/Timeline.jsx';
@@ -186,6 +189,7 @@ export default function App() {
 
   const mapRef = useRef(null);
   const hashUpdateTimer = useRef(null);
+  // TODO(P2#23): Rapid back/forward navigation can desync hash due to 600ms suppressHashSync timeout
   const suppressHashSync = useRef(false);
   const prevSelectedArtistId = useRef(null);
 
@@ -309,6 +313,7 @@ export default function App() {
   }, [syncHashNow]);
 
   // ---- Popstate (back/forward) ----
+  // TODO(P2#22): URL hash restoration bypasses handleSelect — fragile if genre defaults change
   useEffect(() => {
     const onPop = () => {
       suppressHashSync.current = true;
@@ -722,6 +727,7 @@ export default function App() {
         </div>
       )}
 
+      {/* TODO(P2#26): hoveredArtist, connections, connectionCounts props passed to Map but never destructured — remove to prevent unnecessary re-renders */}
       <Map
         mapRef={mapRef}
         artists={filteredArtists}

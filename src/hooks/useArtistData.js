@@ -7,6 +7,7 @@ export function useArtistData() {
 
   useEffect(() => {
     const controller = new AbortController();
+    // TODO(P2#19): Parse 11MB JSON in Web Worker to avoid 200-500ms main thread block on slow devices
     fetch('/data/artists_final.json', { signal: controller.signal })
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -49,5 +50,6 @@ export function useArtistData() {
     return () => controller.abort();
   }, []);
 
+  // TODO(P2#30): birth_country field is 99% null (181/17288 artists) — consider removing to save space
   return { artists, loading, error };
 }

@@ -7,6 +7,7 @@
   # NOTE: Spotify is disabled client-side (secret intentionally unbundled). If a server-side
   # proxy for Spotify token exchange is added in future, connect-src will need:
   #   https://accounts.spotify.com https://api.spotify.com
+  # TODO(P2#20): Investigate if 'unsafe-inline' in script-src can be removed (Cloudflare Challenges may require it)
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https: data:; connect-src 'self' https://tile.openstreetmap.org; worker-src 'self' blob:; frame-src https://challenges.cloudflare.com; base-uri 'self'; form-action 'self'
   Cross-Origin-Opener-Policy: same-origin
   Cross-Origin-Resource-Policy: same-origin
