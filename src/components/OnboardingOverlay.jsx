@@ -311,8 +311,6 @@ export default function OnboardingOverlay({ onComplete }) {
             justifyContent: 'center',
             borderRadius: 6,
           }}
-          onFocus={e => { e.currentTarget.style.outline = '2px solid #6B5E54'; e.currentTarget.style.outlineOffset = '2px'; }}
-          onBlur={e => { e.currentTarget.style.outline = 'none'; }}
           aria-label="Skip onboarding"
         >
           Skip
@@ -387,8 +385,6 @@ export default function OnboardingOverlay({ onComplete }) {
                 minHeight: 0,
                 boxSizing: 'content-box',
               }}
-              onFocus={e => { e.currentTarget.style.outline = '2px solid #B8336A'; e.currentTarget.style.outlineOffset = '2px'; }}
-              onBlur={e => { e.currentTarget.style.outline = 'none'; }}
             />
           ))}
         </div>
@@ -420,8 +416,6 @@ export default function OnboardingOverlay({ onComplete }) {
               }}
               onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(107, 94, 84, 0.06)'; }}
               onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; }}
-              onFocus={e => { e.currentTarget.style.outline = '2px solid #6B5E54'; e.currentTarget.style.outlineOffset = '2px'; }}
-              onBlur={e => { e.currentTarget.style.outline = 'none'; }}
             >
               Back
             </button>
@@ -448,8 +442,6 @@ export default function OnboardingOverlay({ onComplete }) {
             }}
             onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#A02D5E'; }}
             onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#B8336A'; }}
-            onFocus={e => { e.currentTarget.style.outline = '2px solid #B8336A'; e.currentTarget.style.outlineOffset = '2px'; }}
-            onBlur={e => { e.currentTarget.style.outline = 'none'; }}
           >
             {isLastStep ? 'Start exploring' : 'Next'}
           </button>

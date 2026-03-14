@@ -521,8 +521,6 @@ export default function Map({
           }}
           onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#F0E8DE'; }}
           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#FAF3EB'; }}
-          onFocus={(e) => { e.currentTarget.style.outline = '2px solid #C4366F'; e.currentTarget.style.outlineOffset = '2px'; }}
-          onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
         >
           +
         </button>
@@ -553,8 +551,6 @@ export default function Map({
           }}
           onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#F0E8DE'; }}
           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#FAF3EB'; }}
-          onFocus={(e) => { e.currentTarget.style.outline = '2px solid #C4366F'; e.currentTarget.style.outlineOffset = '2px'; }}
-          onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
         >
           &minus;
         </button>
@@ -585,8 +581,6 @@ export default function Map({
           }}
           onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#F0E8DE'; }}
           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#FAF3EB'; }}
-          onFocus={(e) => { e.currentTarget.style.outline = '2px solid #C4366F'; e.currentTarget.style.outlineOffset = '2px'; }}
-          onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
         >
           {/* Home icon as inline SVG for clarity */}
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true" style={{ display: 'block' }}>

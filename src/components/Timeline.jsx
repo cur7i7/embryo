@@ -331,10 +331,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
             alignItems: 'center',
             justifyContent: 'center',
             flexShrink: 0,
-            outline: 'none',
           }}
-          onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 3px rgba(196,50,107,0.4)'; }}
-          onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
         >
           <span style={{
             width: 36,
@@ -427,10 +424,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
             backgroundColor: isYearMode ? 'rgba(196,50,107,0.12)' : 'transparent',
             color: isYearMode ? '#C4326B' : '#6B5F55',
             transition: 'background-color 0.15s, color 0.15s',
-            outline: 'none',
           }}
-          onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 3px rgba(196,50,107,0.4)'; }}
-          onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">
             <circle cx="7" cy="3" r="2.5" />
@@ -461,10 +455,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
             backgroundColor: !isYearMode ? 'rgba(196,50,107,0.12)' : 'transparent',
             color: !isYearMode ? '#C4326B' : '#6B5F55',
             transition: 'background-color 0.15s, color 0.15s',
-            outline: 'none',
           }}
-          onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 3px rgba(196,50,107,0.4)'; }}
-          onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">
             <rect x="2" y="2" width="2" height="10" rx="1" />
@@ -566,7 +557,6 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                 borderBottom: clampedFeedback != null ? '2px solid #C0392B' : '1px dashed rgba(196,50,107,0.4)',
                 borderRadius: 0,
                 textAlign: 'center',
-                outline: 'none',
                 boxSizing: 'border-box',
                 transition: 'border-color 0.2s',
               }}
@@ -672,8 +662,6 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
               onPointerDown={(e) => handlePointerDown(e, 'left')}
               onPointerMove={(e) => handlePointerMoveRef.current(e)}
               onPointerUp={handlePointerUp}
-              onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) { e.currentTarget.style.outline = '2px solid #C4366F'; e.currentTarget.style.outlineOffset = '2px'; } }}
-              onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
               onKeyDown={(e) => {
                 if (e.key === 'ArrowLeft') onRangeChange(Math.max(MIN_YEAR, rangeStart - 10), rangeEnd);
                 if (e.key === 'ArrowRight') onRangeChange(Math.min(rangeEnd - 10, rangeStart + 10), rangeEnd);
@@ -720,8 +708,6 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
               onPointerDown={(e) => handlePointerDown(e, 'right')}
               onPointerMove={(e) => handlePointerMoveRef.current(e)}
               onPointerUp={handlePointerUp}
-              onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) { e.currentTarget.style.outline = '2px solid #C4366F'; e.currentTarget.style.outlineOffset = '2px'; } }}
-              onBlur={(e) => { e.currentTarget.style.outline = 'none'; }}
               onKeyDown={(e) => {
                 if (e.key === 'ArrowLeft') onRangeChange(rangeStart, Math.max(rangeStart + 10, rangeEnd - 10));
                 if (e.key === 'ArrowRight') onRangeChange(rangeStart, Math.min(MAX_YEAR, rangeEnd + 10));
@@ -833,7 +819,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                   bottom: 0, width: 56, minHeight: 44, padding: '0 4px',
                   fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
                   color: '#C4326B', backgroundColor: 'rgba(250,243,235,0.95)',
-                  border: '1px solid #C4326B', borderRadius: 4, textAlign: 'center', outline: 'none',
+                  border: '1px solid #C4326B', borderRadius: 4, textAlign: 'center',
                   zIndex: 10, boxSizing: 'border-box',
                 }}
               />
@@ -847,10 +833,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                   fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
                   color: '#C4326B', padding: '2px 4px', minHeight: 44, minWidth: 44, display: 'flex', alignItems: 'center',
                   borderBottom: '1px dashed rgba(196,50,107,0.4)',
-                  outline: 'none',
                 }}
-                onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 2px rgba(196,50,107,0.4)'; }}
-                onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
               >
                 {rangeStart}
               </button>
@@ -891,7 +874,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                   bottom: 0, width: 56, minHeight: 44, padding: '0 4px',
                   fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
                   color: '#C4326B', backgroundColor: 'rgba(250,243,235,0.95)',
-                  border: '1px solid #C4326B', borderRadius: 4, textAlign: 'center', outline: 'none',
+                  border: '1px solid #C4326B', borderRadius: 4, textAlign: 'center',
                   zIndex: 10, boxSizing: 'border-box',
                 }}
               />
@@ -905,10 +888,7 @@ export default function Timeline({ artists, rangeStart, rangeEnd, onRangeChange,
                   fontSize: 12, fontFamily: '"DM Sans", sans-serif', fontWeight: 600,
                   color: '#C4326B', padding: '2px 4px', minHeight: 44, minWidth: 44, display: 'flex', alignItems: 'center',
                   borderBottom: '1px dashed rgba(196,50,107,0.4)',
-                  outline: 'none',
                 }}
-                onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) e.currentTarget.style.boxShadow = '0 0 0 2px rgba(196,50,107,0.4)'; }}
-                onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
               >
                 {rangeEnd}
               </button>
